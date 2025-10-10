@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accords Jazz</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #0f1420;
+      color: #e8ecf8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    input, button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #7c9cff;
+      background: #151b2b;
+      color: #e8ecf8;
+    }
+    button {
+      background: #7c9cff;
+      color: #0f1420;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .status {
+      font-size: 14px;
+      text-align: center;
+      color: #9aa7c7;
+    }
+    .error {
+      color: #ff6b6b;
+    }
+    .notes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .note {
+      background: #1e2638;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid #7c9cff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reconnaissance d'accords</h1>
+  <div class="container">
+    <input type="file" id="fileInput" accept=".xlsx" />
+    <input type="text" id="accordInput" placeholder="Tapez un accord (ex: F#dim, Bbmaj7, C7)" />
+    <div class="status" id="status">Importez un fichier Excel (.xlsx)</div>
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const input = document.getElementById("accordInput");
+    const notesEl = document.getElementById("notes");
+    const statusEl = document.getElementById("status");
+
+    let accords = {};
+
+    function normalize(str) {
+      return str.replace(/#/g, "♯").replace(/b/g, "♭").replace(/\s+/g, "").toUpperCase();
+    }
+
+    function showNotes(name) {
+      const key = normalize(name);
+      const match = Object.keys(accords).find(k => normalize(k) === key);
+      if (!match) {
+        statusEl.textContent = "Accord non reconnu.";
+        statusEl.className = "status error";
+        notesEl.innerHTML = "";
+        return;
+      }
+      const acc = accords[match];
+      statusEl.textContent = `${acc.nomFrancais} → ${acc.notes.join(" · ")}`;
+      statusEl.className = "status";
+      notesEl.innerHTML = "";
+      acc.notes.forEach(n => {
+        const div = document.createElement("div");
+        div.className = "note";
+        div.textContent = n;
+        notesEl.appendChild(div);
+      });
+    }
+
+    input.addEventListener("input", () => {
+      const val = input.value;
+      if (val.length > 0) showNotes(val);
+      else {
+        statusEl.textContent = "Tapez un accord pour voir les notes.";
+        statusEl.className = "status";
+        notesEl.innerHTML = "";
+      }
+    });
+
+    function buildDict(rows) {
+      const dict = {};
+      rows.slice(1).forEach(row => {
+        const [notation, variante, nomFr, notes] = row;
+        if (notation && notes) {
+          dict[notation.trim()] = {
+            notation: notation.trim(),
+            variante: variante?.trim(),
+            nomFrancais: nomFr?.trim(),
+            notes: notes.split(";").map(n => n.trim()).filter(Boolean)
+          };
+        }
+      });
+      return dict;
+    }
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        accords = buildDict(rows);
+        statusEl.textContent = `✅ ${Object.keys(accords).length} accords importés depuis ${file.name}`;
+        statusEl.className = "status";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+</body>
+</html>
