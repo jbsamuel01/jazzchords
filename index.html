@@ -1,156 +1,107 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accords Jazz</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #0f1420;
-      color: #e8ecf8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    input, button {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #7c9cff;
-      background: #151b2b;
-      color: #e8ecf8;
-    }
-    button {
-      background: #7c9cff;
-      color: #0f1420;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-    .status {
-      font-size: 14px;
-      text-align: center;
-      color: #9aa7c7;
-    }
-    .error {
-      color: #ff6b6b;
-    }
-    .notes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 12px;
-    }
-    .note {
-      background: #1e2638;
-      padding: 10px 16px;
-      border-radius: 999px;
-      border: 1px solid #7c9cff;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reconnaissance d'Accords Jazz</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Reconnaissance d'accords</h1>
-  <div class="container">
-    <input type="file" id="fileInput" accept=".xlsx" />
-    <input type="text" id="accordInput" placeholder="Tapez un accord (ex: F#dim, Bbmaj7, C7)" />
-    <div class="status" id="status">Importez un fichier Excel (.xlsx)</div>
-    <div class="notes" id="notes"></div>
+  <div id="app">
+    <!-- Header avec boutons intégrés -->
+    <header>
+      <div class="title-row">
+        <h1>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          Reconnaissance d'Accords Jazz
+        </h1>
+        <div class="modes">
+          <button id="modeManual" class="mode-btn active">Construction Manuelle</button>
+          <button id="modeRandom" class="mode-btn">Mode Aléatoire</button>
+        </div>
+      </div>
+      <p class="chord-count" id="chordCount">Chargement...</p>
+    </header>
+
+    <!-- Accord détecté -->
+    <div id="detectedChord" class="detected-chord" style="display: none;"></div>
+
+    <!-- Microphone -->
+    <div class="mic-container">
+      <button id="micToggle" class="mic-btn">
+        <svg id="micIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" x2="12" y1="19" y2="22"></line>
+        </svg>
+        <span id="micText">Activer le micro</span>
+      </button>
+    </div>
+
+    <!-- Notes jouées -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Notes jouées</h3>
+        <button id="resetNotes" class="reset-btn" title="Réinitialiser">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M3 21v-5h5"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="playedNotes" class="played-notes">
+        <div class="empty-state">Aucune note jouée</div>
+      </div>
+    </div>
+
+    <!-- Clavier virtuel -->
+    <div class="panel">
+      <h3>Clavier virtuel (2.5 octaves)</h3>
+      <div id="keyboard" class="keyboard"></div>
+    </div>
+
+    <!-- Mini-clavier de construction en bas -->
+    <div id="manualMode" class="bottom-controls">
+      <div class="mini-keyboard-panel">
+        <div class="mini-keyboard-row">
+          <div id="rootNotes" class="root-notes"></div>
+          <div class="spacer"></div>
+          <div id="alterations" class="alterations"></div>
+          <div class="spacer"></div>
+          <div id="qualities" class="qualities"></div>
+          <div class="spacer"></div>
+          <div id="extensions" class="extensions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloc aléatoire en bas -->
+    <div id="randomMode" class="bottom-controls" style="display: none;">
+      <div class="random-panel">
+        <div class="random-controls">
+          <div class="note-count-section">
+            <div class="note-count-grid">
+              <button class="note-count-btn active" data-count="3">3</button>
+              <button class="note-count-btn" data-count="4">4</button>
+              <button class="note-count-btn" data-count="5">5</button>
+              <button class="note-count-btn" data-count="6">6</button>
+            </div>
+          </div>
+          <button id="generateRandom" class="primary-btn-small">Générer</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const fileInput = document.getElementById("fileInput");
-    const input = document.getElementById("accordInput");
-    const notesEl = document.getElementById("notes");
-    const statusEl = document.getElementById("status");
-
-    let accords = {};
-
-    function normalize(str) {
-      return str.replace(/#/g, "♯").replace(/b/g, "♭").replace(/\s+/g, "").toUpperCase();
-    }
-
-    function showNotes(name) {
-      const key = normalize(name);
-      const match = Object.keys(accords).find(k => normalize(k) === key);
-      if (!match) {
-        statusEl.textContent = "Accord non reconnu.";
-        statusEl.className = "status error";
-        notesEl.innerHTML = "";
-        return;
-      }
-      const acc = accords[match];
-      statusEl.textContent = `${acc.nomFrancais} → ${acc.notes.join(" · ")}`;
-      statusEl.className = "status";
-      notesEl.innerHTML = "";
-      acc.notes.forEach(n => {
-        const div = document.createElement("div");
-        div.className = "note";
-        div.textContent = n;
-        notesEl.appendChild(div);
-      });
-    }
-
-    input.addEventListener("input", () => {
-      const val = input.value;
-      if (val.length > 0) showNotes(val);
-      else {
-        statusEl.textContent = "Tapez un accord pour voir les notes.";
-        statusEl.className = "status";
-        notesEl.innerHTML = "";
-      }
-    });
-
-    function buildDict(rows) {
-      const dict = {};
-      rows.slice(1).forEach(row => {
-        const [notation, variante, nomFr, notes] = row;
-        if (notation && notes) {
-          dict[notation.trim()] = {
-            notation: notation.trim(),
-            variante: variante?.trim(),
-            nomFrancais: nomFr?.trim(),
-            notes: notes.split(";").map(n => n.trim()).filter(Boolean)
-          };
-        }
-      });
-      return dict;
-    }
-
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        accords = buildDict(rows);
-        statusEl.textContent = `✅ ${Object.keys(accords).length} accords importés depuis ${file.name}`;
-        statusEl.className = "status";
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  </script>
+  <script src="chords.js"></script>
+  <script src="keyboard.js"></script>
+  <script src="detector.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
