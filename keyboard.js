@@ -9,8 +9,8 @@ function createKeyboard() {
   const whiteKeysDiv = document.createElement('div');
   whiteKeysDiv.className = 'white-keys';
   
-  // 20 touches blanches (C4 à G6)
-  for (let i = 0; i < 20; i++) {
+  // 19 touches blanches (C4 à G6, sans A#6)
+  for (let i = 0; i < 19; i++) {
     const octave = Math.floor(i / 7);
     const noteIndex = i % 7;
     const fullNote = WHITE_KEYS[noteIndex] + (4 + octave);
@@ -29,7 +29,7 @@ function createKeyboard() {
   const blackKeysDiv = document.createElement('div');
   blackKeysDiv.className = 'black-keys';
   
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 19; i++) {
     const octave = Math.floor(i / 7);
     const noteIndex = i % 7;
     const blackKey = BLACK_KEYS[noteIndex];

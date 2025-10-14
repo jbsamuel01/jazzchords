@@ -10,7 +10,8 @@ let currentMode = 'manual';
 let audioContext = null;
 let mediaStream = null;
 let analyser = null;
-let lastSelectedChordName = ''; // Mémoriser l'accord sélectionné
+let lastSelectedChordName = '';
+let showChordNotes = true;
 
 // Conversion notes vers français
 const NOTE_FR_SHARP = {
@@ -23,10 +24,9 @@ const NOTE_FR_SHARP = {
 document.addEventListener('DOMContentLoaded', () => {
   createKeyboard();
   initializeUI();
-  updateChordCount();
 });
 
-// Fréquences des notes (A4 = 440Hz)
+// Fréquences des notes
 const NOTE_FREQUENCIES = {
   'C': [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00],
   'C#': [17.32, 34.65, 69.30, 138.59, 277.18, 554.37, 1108.73, 2217.46],
@@ -56,12 +56,8 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
   
   const frequency = NOTE_FREQUENCIES[noteName]?.[octave];
-  if (!frequency) {
-    console.log('Fréquence non trouvée pour', note, noteName, octave);
-    return;
-  }
+  if (!frequency) return;
   
-  // Son de piano plus réaliste avec harmoniques
   const fundamental = ctx.createOscillator();
   const harmonic2 = ctx.createOscillator();
   const harmonic3 = ctx.createOscillator();
@@ -82,7 +78,6 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   harmonic3.frequency.setValueAtTime(frequency * 3, ctx.currentTime + startTime);
   harmonic4.frequency.setValueAtTime(frequency * 4, ctx.currentTime + startTime);
   
-  // Enveloppe ADSR pour piano
   gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
   gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + startTime + 0.005);
   gainNode.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + startTime + 0.05);
@@ -123,19 +118,17 @@ window.playChord = function() {
   
   getAudioContext();
   
-  // Arpège de notes séparées d'abord
   playedNotes.forEach((note, index) => {
     playNoteSound(note, 0.6, index * 0.15);
   });
   
-  // Puis jouer l'accord complet
   playedNotes.forEach((note, index) => {
     playNoteSound(note, 2.5, playedNotes.length * 0.15 + 0.2 + index * 0.05);
   });
 };
 
 function initializeUI() {
-  // Notes naturelles dans l'ordre A-B-C-D-E-F-G
+  // Notes en ordre A-B-C-D-E-F-G
   const rootNotesDiv = document.getElementById('rootNotes');
   const orderedNotes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   orderedNotes.forEach(note => {
@@ -146,7 +139,7 @@ function initializeUI() {
     rootNotesDiv.appendChild(btn);
   });
 
-  // Altérations - Mini clavier
+  // Altérations
   const alterationsDiv = document.getElementById('alterations');
   ALTERATIONS.forEach(alt => {
     const btn = document.createElement('button');
@@ -157,18 +150,22 @@ function initializeUI() {
     alterationsDiv.appendChild(btn);
   });
 
-  // Qualités - Mini clavier
+  // Qualités (avec abréviations courtes)
   const qualitiesDiv = document.getElementById('qualities');
+  const shortQualityLabels = {
+    'm': 'min', 'dim': 'dim', 'aug': 'aug', '7': '7', 
+    'maj7': 'maj7', 'm7': 'mi7', 'dim7': 'dim7', 'm7b5': 'ø7'
+  };
   CHORD_QUALITIES.forEach(quality => {
     const btn = document.createElement('button');
     btn.className = 'mini-key';
-    btn.textContent = quality.label;
+    btn.textContent = shortQualityLabels[quality.value] || quality.label;
     btn.dataset.value = quality.value;
-    btn.onclick = () => selectQuality(quality.label, quality.value);
+    btn.onclick = () => selectQuality(quality.value);
     qualitiesDiv.appendChild(btn);
   });
 
-  // Extensions - Mini clavier
+  // Extensions
   const extensionsDiv = document.getElementById('extensions');
   EXTENSIONS.forEach(ext => {
     const btn = document.createElement('button');
@@ -179,10 +176,11 @@ function initializeUI() {
   });
 
   // Boutons de contrôle
-  document.getElementById('modeManual').onclick = () => switchMode('manual');
-  document.getElementById('modeRandom').onclick = () => switchMode('random');
+  document.getElementById('tabManual').onclick = () => switchTab('manual');
+  document.getElementById('tabRandom').onclick = () => switchTab('random');
   document.getElementById('generateRandom').onclick = generateRandomChord;
   document.getElementById('resetNotes').onclick = resetNotes;
+  document.getElementById('toggleChordNotes').onclick = () => toggleChordNotes();
   document.getElementById('micToggle').onclick = toggleMicrophone;
 
   // Nombre de notes aléatoires
@@ -191,17 +189,13 @@ function initializeUI() {
   });
 }
 
-function updateChordCount() {
-  document.getElementById('chordCount').textContent = 
-    `${Object.keys(ALL_CHORDS).length} accords disponibles`;
-}
-
-function switchMode(mode) {
-  currentMode = mode;
-  document.getElementById('modeManual').classList.toggle('active', mode === 'manual');
-  document.getElementById('modeRandom').classList.toggle('active', mode === 'random');
-  document.getElementById('manualMode').style.display = mode === 'manual' ? 'flex' : 'none';
-  document.getElementById('randomMode').style.display = mode === 'random' ? 'flex' : 'none';
+function switchTab(tab) {
+  currentMode = tab;
+  
+  document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
+  document.getElementById('tabRandom').classList.toggle('active', tab === 'random');
+  document.getElementById('modeManual').classList.toggle('active', tab === 'manual');
+  document.getElementById('randomMode').classList.toggle('active', tab === 'random');
   
   resetNotes();
   resetManualSelection();
@@ -235,7 +229,7 @@ function selectAlteration(alt) {
   buildManualChordLive();
 }
 
-function selectQuality(label, value) {
+function selectQuality(value) {
   if (selectedQuality === value) {
     selectedQuality = '';
   } else {
@@ -250,7 +244,6 @@ function selectQuality(label, value) {
 }
 
 function selectExtension(ext) {
-  // Une seule extension à la fois
   if (selectedExtension === ext) {
     selectedExtension = '';
   } else {
@@ -283,32 +276,29 @@ function buildManualChordLive() {
     return;
   }
   
+  // Construire le nom de l'accord correctement
+  // C # 9 = C + # (alteration) + (rien qualité) + 9 (extension)
+  // C 9 = C + (rien alterations) + (rien qualité) + 9 (extension)
   const fullRoot = selectedRootNote + selectedAlteration;
   const chordName = fullRoot + selectedQuality + selectedExtension;
   const chord = ALL_CHORDS[chordName];
   
   if (chord) {
-    // Mémoriser le nom de l'accord sélectionné
     lastSelectedChordName = chordName;
     
-    // Commencer à l'octave 4
     playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
-    document.querySelectorAll('#rootNotes .mini-key.active').forEach(btn => {
+    
+    // Enlever les erreurs
+    document.querySelectorAll('.mini-key.error').forEach(btn => {
       btn.classList.remove('error');
     });
-    document.querySelectorAll('#alterations .mini-key.active').forEach(btn => {
-      btn.classList.remove('error');
-    });
-    document.querySelectorAll('#qualities .mini-key.active').forEach(btn => {
-      btn.classList.remove('error');
-    });
-    document.querySelectorAll('#extensions .mini-key.active').forEach(btn => {
-      btn.classList.remove('error');
-    });
+    
     updateDisplay(true, chordName);
   } else {
     playedNotes = [];
     lastSelectedChordName = '';
+    
+    // Ajouter erreur seulement si au moins une sélection existe
     if (selectedRootNote) {
       document.querySelectorAll('#rootNotes .mini-key.active').forEach(btn => {
         btn.classList.add('error');
@@ -329,6 +319,7 @@ function buildManualChordLive() {
         btn.classList.add('error');
       });
     }
+    
     updateDisplay(false);
   }
 }
@@ -343,20 +334,17 @@ function selectNoteCount(count) {
 function generateRandomChord() {
   resetNotes();
   
-  // Filtrer les accords par nombre de notes
   const availableChords = Object.entries(ALL_CHORDS).filter(([name, chord]) => {
     return chord.notes.length === randomNoteCount;
   });
   
   if (availableChords.length === 0) {
-    // Si pas d'accord avec ce nombre exact, prendre n'importe quel accord
     const allChordNames = Object.keys(ALL_CHORDS);
     const randomChordName = allChordNames[Math.floor(Math.random() * allChordNames.length)];
     const chord = ALL_CHORDS[randomChordName];
     playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
     lastSelectedChordName = randomChordName;
   } else {
-    // Choisir un accord aléatoire avec le bon nombre de notes
     const randomIndex = Math.floor(Math.random() * availableChords.length);
     const [chordName, chord] = availableChords[randomIndex];
     playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
@@ -367,7 +355,6 @@ function generateRandomChord() {
 }
 
 window.playNote = function(note) {
-  // Toggle : si la note est déjà jouée, on l'enlève
   const index = playedNotes.indexOf(note);
   if (index > -1) {
     playedNotes.splice(index, 1);
@@ -384,7 +371,14 @@ function resetNotes() {
   updateDisplay();
 }
 
+function toggleChordNotes() {
+  showChordNotes = !showChordNotes;
+  const display = document.getElementById('chordNotesDisplay');
+  display.style.display = showChordNotes ? 'block' : 'none';
+}
+
 function updateDisplay(chordExists = null, forcedChordName = null) {
+  // Mise à jour des notes jouées
   const playedNotesDiv = document.getElementById('playedNotes');
   if (playedNotes.length === 0) {
     playedNotesDiv.innerHTML = '<div class="empty-state">Aucune note jouée</div>';
@@ -394,7 +388,7 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
         const noteName = note.replace(/[0-9]/g, '');
         let noteFr = NOTE_FR_SHARP[noteName] || noteName;
         
-        // Si on est en mode manuel avec un accord bémol, afficher les notes en bémol
+        // Si mode manuel avec accord bémol, afficher en bémol
         if (currentMode === 'manual' && lastSelectedChordName && lastSelectedChordName.includes('b')) {
           const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
           const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -411,14 +405,42 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
 
   updateKeyboardHighlight(playedNotes);
 
-  // Si on vient du mode manuel, utiliser l'accord mémorisé
+  // Déterminer quel accord afficher
   let chord = null;
   if (currentMode === 'manual' && lastSelectedChordName) {
     chord = ALL_CHORDS[lastSelectedChordName];
   } else {
     chord = detectChord(playedNotes);
   }
+  
   displayDetectedChord(chord, chordExists);
+}
+
+function displayDetectedChord(chord, chordExists = null) {
+  const chordName = document.getElementById('chordName');
+  const chordNotesList = document.getElementById('chordNotesList');
+  
+  if (!chord) {
+    chordName.textContent = '-';
+    chordNotesList.innerHTML = '';
+    return;
+  }
+  
+  if (chordExists === false) {
+    chordName.textContent = '✗';
+    chordName.style.color = '#ef4444';
+    chordNotesList.innerHTML = '';
+  } else {
+    chordName.textContent = chord.notation;
+    chordName.style.color = '#22c55e';
+    
+    // Afficher les notes avec la bonne notation
+    const notesDisplay = chord.notesFr.map(noteFr => {
+      return `<div class="chord-note">${noteFr}</div>`;
+    }).join('');
+    
+    chordNotesList.innerHTML = notesDisplay;
+  }
 }
 
 async function toggleMicrophone() {
@@ -429,9 +451,7 @@ async function toggleMicrophone() {
     }
     isListening = false;
     const btn = document.getElementById('micToggle');
-    const text = document.getElementById('micText');
     btn.classList.remove('active');
-    text.textContent = 'Activer le micro';
   } else {
     try {
       const ctx = getAudioContext();
@@ -445,14 +465,12 @@ async function toggleMicrophone() {
       
       isListening = true;
       const btn = document.getElementById('micToggle');
-      const text = document.getElementById('micText');
       btn.classList.add('active');
-      text.textContent = 'Arrêter le micro';
       
       detectPitchFromMic();
     } catch (err) {
-      console.error('Erreur d\'accès au microphone:', err);
-      alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+      console.error('Erreur microphone:', err);
+      alert('Impossible d\'accéder au microphone.');
     }
   }
 }
