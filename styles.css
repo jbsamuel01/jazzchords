@@ -9,7 +9,7 @@ body {
   background: #0a0e1a;
   color: #e8ecf8;
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 20px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
 }
@@ -18,104 +18,263 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  flex: 1;
+  height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-h1 {
-  font-size: 32px;
-  display: flex;
-  align-items: center;
   gap: 12px;
 }
 
-.chord-count {
-  color: #22c55e;
-  font-size: 14px;
+/* Conteneur accord + notes jouées */
+.chord-notes-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-height: 100px;
+  flex-shrink: 0;
 }
 
-.modes {
-  display: flex;
-  gap: 10px;
-}
-
-.mode-btn {
-  padding: 10px 20px;
-  background: #151b2b;
-  color: #e8ecf8;
-  border: 1px solid #22c55e;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.mode-btn.active {
-  background: #22c55e;
-  color: #0a0e1a;
-}
-
-.panel {
-  background: #151b2b;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #22c55e;
-}
-
-.panel h3 {
-  color: #22c55e;
-  margin-bottom: 15px;
-  font-size: 18px;
-}
-
-.section {
-  margin-bottom: 15px;
-}
-
-.section label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #9aa7c7;
-}
-
-/* Mini-clavier en bas */
-.bottom-controls {
-  margin-top: auto;
-  margin-bottom: 0;
-}
-
-.mini-keyboard-panel {
+.chord-display-section,
+.played-notes-section {
   background: #151b2b;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+}
+
+.chord-header,
+.played-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  min-height: 24px;
+  flex-shrink: 0;
+}
+
+.chord-display-section h2,
+.played-notes-section h3 {
+  color: #22c55e;
+  font-size: 18px;
+  margin: 0;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.toggle-btn,
+.reset-btn,
+.mic-btn-small {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: #22c55e;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover,
+.reset-btn:hover,
+.mic-btn-small:hover {
+  transform: scale(1.1);
+}
+
+.mic-btn-small.active {
+  color: #16a34a;
+}
+
+.chord-notes-display {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 30px;
+}
+
+.chord-notes-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-height: 30px;
+  align-items: center;
+}
+
+.chord-note {
+  background: #1e2638;
+  color: #22c55e;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #22c55e;
+  font-size: 13px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.played-notes-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 30px;
+}
+
+.note-badge {
+  background: #22c55e;
+  color: #0a0e1a;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.empty-state {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* Clavier virtuel */
+.panel {
+  background: #151b2b;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.keyboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+}
+
+.white-keys {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  gap: 1px;
+}
+
+.white-key {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #000;
+  border-radius: 0 0 3px 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s;
+}
+
+.white-key.active {
+  background: #22c55e;
+}
+
+.black-keys {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  display: flex;
+  pointer-events: none;
+  width: 100%;
+}
+
+.black-key-container {
+  flex: 1;
+  position: relative;
+}
+
+.black-key {
+  position: absolute;
+  right: -12px;
+  width: 24px;
+  height: 100%;
+  background: #000;
+  border: 1px solid #000;
+  border-radius: 0 0 2px 2px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.1s;
+}
+
+.black-key.active {
+  background: #16a34a;
+}
+
+/* Pavé du bas */
+.bottom-panel {
+  background: #151b2b;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mode-tabs {
+  display: flex;
+  border-bottom: 1px solid #374151;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  color: #9aa7c7;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.mode-tab.active {
+  color: #22c55e;
+  border-bottom-color: #22c55e;
+  background: #1e2638;
+}
+
+.mode-content {
+  display: none;
+  padding: 10px;
+  animation: slideIn 0.2s ease;
+}
+
+.mode-content.active {
+  display: block;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .mini-keyboard-row {
   display: flex;
-  gap: 20px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  overflow-x: auto;
+  padding: 4px 0;
 }
 
 .root-notes,
@@ -123,27 +282,28 @@ h1 {
 .qualities,
 .extensions {
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .spacer {
   width: 1px;
-  height: 30px;
+  height: 24px;
   background: #374151;
 }
 
 .mini-key {
-  padding: 8px 14px;
+  padding: 6px 10px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: bold;
   transition: all 0.2s;
-  min-width: 32px;
-  text-align: center;
+  white-space: nowrap;
 }
 
 .mini-key.active {
@@ -158,41 +318,36 @@ h1 {
   border-color: #ef4444;
 }
 
-/* Bloc aléatoire */
-.random-panel {
-  background: #151b2b;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #22c55e;
-}
-
-.random-controls {
+/* Mode aléatoire */
+.random-section {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  padding: 4px 0;
 }
 
-.note-count-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.random-label {
+  font-size: 12px;
+  color: #9aa7c7;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .note-count-grid {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .note-count-btn {
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   transition: all 0.2s;
 }
@@ -204,305 +359,149 @@ h1 {
 }
 
 .primary-btn-small {
-  padding: 8px 24px;
+  padding: 6px 20px;
   background: #22c55e;
   color: #0a0e1a;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .primary-btn-small:hover {
   background: #16a34a;
 }
 
-.primary-btn {
-  width: 100%;
-  padding: 14px;
-  background: #22c55e;
-  color: #0a0e1a;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.primary-btn:hover {
-  background: #16a34a;
-}
-
-.keyboard {
-  position: relative;
-  height: 180px;
-}
-
-.white-keys {
-  display: flex;
-  height: 100%;
-  gap: 2px;
-}
-
-.white-key {
-  flex: 1;
-  background: #ffffff;
-  border: 1px solid #000;
-  border-radius: 0 0 4px 4px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.1s;
-}
-
-.white-key.active {
-  background: #22c55e;
-  color: #fff;
-  font-weight: bold;
-}
-
-.black-keys {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60%;
-  display: flex;
-  pointer-events: none;
-}
-
-.black-key-container {
-  flex: 1;
-  position: relative;
-}
-
-.black-key {
-  position: absolute;
-  right: -15px;
-  width: 30px;
-  height: 100%;
-  background: #000;
-  border: 1px solid #000;
-  border-radius: 0 0 4px 4px;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: all 0.1s;
-}
-
-.black-key.active {
-  background: #16a34a;
-  font-weight: bold;
-}
-
-.mic-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.mic-btn {
-  padding: 14px 28px;
-  background: #151b2b;
-  color: #e8ecf8;
-  border: 1px solid #22c55e;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.2s;
-}
-
-.mic-btn.active {
-  background: #22c55e;
-  color: #0a0e1a;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.panel-header h3 {
-  margin: 0;
-}
-
-.reset-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s;
-}
-
-.reset-btn:hover {
-  transform: rotate(180deg);
-}
-
-.played-notes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  min-height: 40px;
-}
-
-.empty-state {
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.note-badge {
-  background: #22c55e;
-  color: #0a0e1a;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.detected-chord {
-  background: #151b2b;
-  padding: 25px;
-  border-radius: 12px;
-  border: 2px solid #22c55e;
-  margin-bottom: 20px;
-}
-
-.detected-chord.error {
-  border-color: #ef4444;
-}
-
-.chord-display-inline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.detected-chord h2 {
-  color: #22c55e;
-  font-size: 36px;
-  margin: 0;
-  font-weight: bold;
-}
-
-.detected-chord.error h2 {
-  color: #ef4444;
-}
-
-.chord-notes-inline {
-  color: #22c55e;
-  font-size: 20px;
-  font-weight: normal;
-  flex: 1;
-}
-
-.detected-chord.error .chord-notes-inline {
-  color: #ef4444;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 18px;
-}
-
-.play-chord-btn-inline {
-  padding: 10px 16px;
-  background: #22c55e;
-  color: #0a0e1a;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.play-chord-btn-inline:hover {
-  background: #16a34a;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-  .title-row {
-    flex-direction: column;
-    align-items: stretch;
+  body {
+    padding: 8px;
   }
-  
-  h1 {
-    font-size: 24px;
-    justify-content: center;
+
+  #app {
+    height: calc(100vh - 16px);
   }
-  
-  .modes {
-    justify-content: center;
+
+  .chord-notes-container {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    min-height: auto;
   }
-  
-  .mode-btn {
-    flex: 1;
+
+  .chord-display-section,
+  .played-notes-section {
+    padding: 10px;
+    min-height: 80px;
   }
-  
-  .detected-chord h2 {
-    font-size: 28px;
+
+  .panel {
+    min-height: 150px;
   }
-  
-  .chord-notes-inline {
-    font-size: 16px;
-  }
-  
-  .chord-display-inline {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .play-chord-btn-inline {
-    width: 100%;
-    justify-content: center;
-  }
-  
+
   .keyboard {
-    height: 150px;
+    min-height: 130px;
   }
-  
-  .white-key {
-    font-size: 9px;
-  }
-  
-  .black-key {
-    width: 25px;
-    right: -12.5px;
-  }
-  
-  .mini-keyboard-row {
-    gap: 10px;
-  }
-  
+
   .mini-key {
-    padding: 6px 10px;
-    font-size: 12px;
+    padding: 5px 8px;
+    font-size: 10px;
   }
-  
+
+  .note-count-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .primary-btn-small {
+    padding: 5px 16px;
+    font-size: 11px;
+  }
+
+  .mini-keyboard-row {
+    gap: 6px;
+  }
+
   .spacer {
     display: none;
   }
-  
-  .random-controls {
-    gap: 10px;
+
+  .random-section {
+    gap: 8px;
   }
-  
-  .note-count-btn {
-    padding: 6px 10px;
+
+  .black-key {
+    width: 20px;
+    right: -10px;
+  }
+
+  .mode-tab {
     font-size: 12px;
+    padding: 8px;
+  }
+
+  .chord-notes-list,
+  .played-notes-list {
+    min-height: 28px;
+  }
+
+  .note-badge {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .chord-note {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .random-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mini-key {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+
+  .note-count-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .primary-btn-small {
+    padding: 4px 12px;
+    font-size: 10px;
+  }
+
+  .chord-display-section h2,
+  .played-notes-section h3 {
+    font-size: 16px;
+  }
+
+  .note-badge {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .chord-note {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .random-label {
+    font-size: 10px;
+  }
+
+  .panel {
+    min-height: 120px;
+  }
+
+  .keyboard {
+    min-height: 100px;
   }
 }
