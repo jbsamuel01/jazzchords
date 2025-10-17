@@ -1,0 +1,466 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background: #0a0e1a;
+  color: #e8ecf8;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 10px;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Affichage principal - Notes combinées */
+.main-display {
+  background: #151b2b;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+}
+
+.display-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chord-info-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.display-header h2 {
+  color: #22c55e;
+  font-size: 22px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.chord-separator {
+  color: #22c55e;
+  font-size: 22px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.notes-list-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.played-notes-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: #22c55e;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.icon-btn.active {
+  color: #16a34a;
+}
+
+/* Une seule ligne pour les deux types de notes */
+.notes-unified {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.notes-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-label {
+  font-size: 11px;
+  color: #9aa7c7;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.toggle-visibility-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  color: #9aa7c7;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-visibility-btn:hover {
+  color: #22c55e;
+}
+
+.toggle-visibility-btn.hidden svg {
+  opacity: 0.3;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+  align-items: center;
+}
+
+.chord-note,
+.note-badge {
+  background: #22c55e;
+  color: #0a0e1a;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.note-badge.correct {
+  background: #22c55e;
+  color: #0a0e1a;
+}
+
+.note-badge.incorrect {
+  background: #ef4444;
+  color: #fff;
+}
+
+.chord-note {
+  background: #1e2638;
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.empty-state {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+/* Clavier virtuel - Hauteur réduite */
+.keyboard-panel {
+  background: #151b2b;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  height: 140px;
+}
+
+.keyboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.white-keys {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  gap: 1px;
+}
+
+.white-key {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #000;
+  border-radius: 0 0 3px 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s;
+}
+
+.white-key.active {
+  background: #22c55e;
+}
+
+.black-keys {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  display: flex;
+  pointer-events: none;
+  width: 100%;
+}
+
+.black-key-container {
+  flex: 1;
+  position: relative;
+}
+
+.black-key {
+  position: absolute;
+  right: -12px;
+  width: 24px;
+  height: 100%;
+  background: #000;
+  border: 2px solid #333;
+  border-radius: 0 0 2px 2px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.1s;
+}
+
+.black-key.active {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+/* Zone de saisie manuelle - 3 lignes fixes */
+.input-panel {
+  background: #151b2b;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.row-spacer {
+  width: 16px;
+  height: 1px;
+  background: #374151;
+}
+
+.mini-key {
+  padding: 6px 11px;
+  background: #1e2638;
+  color: #e8ecf8;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: center;
+}
+
+.mini-key.active {
+  background: #22c55e;
+  color: #0a0e1a;
+  border-color: #22c55e;
+}
+
+.mini-key.error {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+/* Zone aléatoire - Sous la saisie manuelle */
+.random-panel {
+  background: #151b2b;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  font-size: 12px;
+  color: #e8ecf8;
+  font-weight: bold;
+}
+
+.note-count-grid {
+  display: flex;
+  gap: 6px;
+}
+
+.note-count-btn {
+  padding: 6px 12px;
+  background: #1e2638;
+  color: #e8ecf8;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.note-count-btn.active {
+  background: #22c55e;
+  color: #0a0e1a;
+  border-color: #22c55e;
+}
+
+.notes-label {
+  font-size: 12px;
+  color: #9aa7c7;
+  font-weight: bold;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+
+  .chord-info-line {
+    flex-wrap: wrap;
+  }
+
+  .display-header h2,
+  .chord-separator {
+    font-size: 20px;
+  }
+
+  .keyboard-panel {
+    height: 100px;
+  }
+
+  .black-key {
+    width: 18px;
+    right: -9px;
+    border-width: 1.5px;
+  }
+
+  .mini-key {
+    padding: 5px 9px;
+    font-size: 10px;
+    min-width: 32px;
+  }
+
+  .note-count-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .chord-note,
+  .note-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .row-spacer {
+    width: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mini-key {
+    padding: 4px 7px;
+    font-size: 9px;
+    min-width: 28px;
+  }
+
+  .note-count-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .display-header h2,
+  .chord-separator {
+    font-size: 18px;
+  }
+
+  .chord-note,
+  .note-badge {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .keyboard-panel {
+    height: 80px;
+  }
+
+  .black-key {
+    width: 14px;
+    right: -7px;
+    border-width: 1px;
+  }
+
+  .row-spacer {
+    width: 10px;
+  }
+
+  .input-row {
+    gap: 6px;
+  }
+
+  .btn-group {
+    gap: 3px;
+  }
+
+  .random-panel {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .notes-label,
+  .generate-label {
+    font-size: 11px;
+  }
+}
