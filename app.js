@@ -1,7 +1,8 @@
-// app.js - Logique principale (PARTIE 1/2)
+// app.js - Logique principale
 let playedNotes = [];
 let selectedRootNote = '';
 let selectedAlteration = '';
+let selectedMinor = false;
 let selectedQuality = '';
 let selectedSimpleExtension = '';
 let selectedAlteredExtension = '';
@@ -49,7 +50,6 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   const frequency = NOTE_FREQUENCIES[noteName]?.[octave];
   if (!frequency) return;
   
-  // Créer plusieurs oscillateurs pour un son de piano riche
   const fundamental = ctx.createOscillator();
   const harmonic2 = ctx.createOscillator();
   const harmonic3 = ctx.createOscillator();
@@ -183,102 +183,6 @@ window.playChord = function() {
     });
   }
 };
-// app.js - Logique principale (PARTIE 2/2) - À AJOUTER À LA SUITE
-
-// app.js - Logique principale (PARTIE 2/2) - À AJOUTER À LA SUITE
-
-function initializeUI() {
-  const rootNotesDiv = document.getElementById('rootNotes');
-  const orderedNotes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-  orderedNotes.forEach(note => {
-    const btn = document.createElement('button');
-    btn.className = 'mini-key';
-    btn.textContent = note;
-    btn.onclick = () => selectRootNote(note);
-    rootNotesDiv.appendChild(btn);
-  });
-
-  const alterationsDiv = document.getElementById('alterations');
-  ALTERATIONS.forEach(alt => {
-    const btn = document.createElement('button');
-    btn.className = 'mini-key';
-    btn.textContent = alt;
-    btn.dataset.value = alt;
-    btn.onclick = () => selectAlteration(alt);
-    alterationsDiv.appendChild(btn);
-  });
-
-  const qualitiesDiv = document.getElementById('qualities');
-  
-  // Groupes de synonymes avec tirets
-  const qualityGroups = [
-    [{ label: '-', value: 'm' }, { label: 'min', value: 'm' }],
-    [{ label: '7', value: '7' }],
-    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }],
-    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
-    [{ label: 'aug', value: 'aug' }],
-    [{ label: 'ø7', value: 'ø7' }],
-    [{ label: 'dim7', value: 'dim7' }],
-    [{ label: 'sus2', value: 'sus2' }],
-    [{ label: 'sus4', value: 'sus4' }]
-  ];
-  
-  qualityGroups.forEach((group, groupIndex) => {
-    group.forEach((quality, index) => {
-      const btn = document.createElement('button');
-      btn.className = 'mini-key';
-      btn.textContent = quality.label;
-      btn.dataset.value = quality.value;
-      btn.onclick = () => selectQuality(quality.value);
-      qualitiesDiv.appendChild(btn);
-      
-      // Ajouter un tiret entre les synonymes
-      if (index < group.length - 1) {
-        const link = document.createElement('span');
-        link.className = 'synonym-link';
-        link.textContent = '—';
-        qualitiesDiv.appendChild(link);
-      }
-    });
-    
-    // Ajouter un espace entre les groupes (sauf après le dernier)
-    if (groupIndex < qualityGroups.length - 1) {
-      const spacer = document.createElement('span');
-      spacer.style.width = '8px';
-      qualitiesDiv.appendChild(spacer);
-    }
-  });
-
-  const simpleExtDiv = document.getElementById('simpleExtensions');
-  SIMPLE_EXTENSIONS.forEach(ext => {
-    const btn = document.createElement('button');
-    btn.className = 'mini-key';
-    btn.textContent = ext;
-    btn.onclick = () => selectSimpleExtension(ext);
-    simpleExtDiv.appendChild(btn);
-  });
-
-  const alteredExtDiv = document.getElementById('alteredExtensions');
-  ALTERED_EXTENSIONS.forEach(ext => {
-    const btn = document.createElement('button');
-    btn.className = 'mini-key';
-    btn.textContent = ext;
-    btn.onclick = () => selectAlteredExtension(ext);
-    alteredExtDiv.appendChild(btn);
-  });
-
-  document.getElementById('resetNotes').onclick = resetNotes;
-  document.getElementById('micToggle').onclick = toggleMicrophone;
-  document.getElementById('toggleChordVisibility').onclick = toggleChordVisibility;
-  document.getElementById('playChordBtn').onclick = window.playChord;
-
-  document.querySelectorAll('.note-count-btn').forEach(btn => {
-    btn.onclick = () => {
-      selectNoteCount(parseInt(btn.dataset.count));
-      startQuizMode();
-    };
-  });
-}
 
 function selectRootNote(note) {
   if (quizMode) exitQuizMode();
@@ -307,8 +211,21 @@ function selectAlteration(alt) {
     selectedAlteration = alt;
   }
   
-  document.querySelectorAll('#alterations .mini-key').forEach(btn => {
+  document.querySelectorAll('#alterations .mini-key[data-type="alteration"]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.value === selectedAlteration);
+    btn.classList.remove('error');
+  });
+  buildManualChordLive();
+}
+
+function selectMinor() {
+  if (quizMode) exitQuizMode();
+  deselectNoteCountButtons();
+  
+  selectedMinor = !selectedMinor;
+  
+  document.querySelectorAll('#alterations .mini-key[data-type="minor"]').forEach(btn => {
+    btn.classList.toggle('active', selectedMinor);
     btn.classList.remove('error');
   });
   buildManualChordLive();
@@ -368,6 +285,7 @@ function selectAlteredExtension(ext) {
 function resetManualSelection() {
   selectedRootNote = '';
   selectedAlteration = '';
+  selectedMinor = false;
   selectedQuality = '';
   selectedSimpleExtension = '';
   selectedAlteredExtension = '';
@@ -386,7 +304,8 @@ function buildManualChordLive() {
   }
   
   const fullRoot = selectedRootNote + selectedAlteration;
-  let chordName = fullRoot + selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
+  const minorPart = selectedMinor ? 'm' : '';
+  let chordName = fullRoot + minorPart + selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
   
   const chord = ALL_CHORDS[chordName];
   
@@ -411,499 +330,12 @@ function buildManualChordLive() {
       });
     }
     if (selectedAlteration !== '') {
-      document.querySelectorAll('#alterations .mini-key.active').forEach(btn => {
+      document.querySelectorAll('#alterations .mini-key[data-type="alteration"].active').forEach(btn => {
         btn.classList.add('error');
       });
     }
-    if (selectedQuality !== '') {
-      document.querySelectorAll('#qualities .mini-key.active').forEach(btn => {
-        btn.classList.add('error');
-      });
-    }
-    if (selectedSimpleExtension !== '') {
-      document.querySelectorAll('#simpleExtensions .mini-key.active').forEach(btn => {
-        btn.classList.add('error');
-      });
-    }
-    if (selectedAlteredExtension !== '') {
-      document.querySelectorAll('#alteredExtensions .mini-key.active').forEach(btn => {
-        btn.classList.add('error');
-      });
-    }
-    
-    updateDisplay(false);
-  }
-}
-
-function selectNoteCount(count) {
-  randomNoteCount = count;
-  document.querySelectorAll('.note-count-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.count) === count);
-  });
-}
-
-function deselectNoteCountButtons() {
-  document.querySelectorAll('.note-count-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-}
-
-function startQuizMode() {
-  quizMode = true;
-  playedNotes = [];
-  resetManualSelection();
-  
-  const availableChords = Object.entries(ALL_CHORDS).filter(([name, chord]) => {
-    return chord.notes.length === randomNoteCount;
-  });
-  
-  if (availableChords.length === 0) {
-    const allChordNames = Object.keys(ALL_CHORDS);
-    const randomChordName = allChordNames[Math.floor(Math.random() * allChordNames.length)];
-    quizChord = ALL_CHORDS[randomChordName];
-    lastSelectedChordName = randomChordName;
-  } else {
-    const randomIndex = Math.floor(Math.random() * availableChords.length);
-    const [chordName, chord] = availableChords[randomIndex];
-    quizChord = chord;
-    lastSelectedChordName = chordName;
-  }
-  
-  chordNotesVisible = false;
-  updateChordVisibilityButton();
-  
-  const playBtn = document.getElementById('playChordBtn');
-  if (playBtn) {
-    playBtn.style.display = 'flex';
-  }
-  
-  updateDisplay();
-}
-
-function exitQuizMode() {
-  quizMode = false;
-  quizChord = null;
-  chordNotesVisible = true;
-  updateChordVisibilityButton();
-  document.getElementById('playChordBtn').style.display = 'none';
-}
-
-function toggleChordVisibility() {
-  chordNotesVisible = !chordNotesVisible;
-  updateChordVisibilityButton();
-  updateDisplay();
-}
-
-function updateChordVisibilityButton() {
-  const btn = document.getElementById('toggleChordVisibility');
-  if (chordNotesVisible) {
-    btn.classList.remove('hidden');
-    btn.title = 'Masquer';
-  } else {
-    btn.classList.add('hidden');
-    btn.title = 'Afficher';
-  }
-}
-
-window.playNote = function(note) {
-  const index = playedNotes.indexOf(note);
-  if (index > -1) {
-    playedNotes.splice(index, 1);
-  } else {
-    playedNotes.push(note);
-    playNoteSound(note, 1.0);
-  }
-  updateDisplay();
-};
-
-function resetNotes() {
-  playedNotes = [];
-  resetManualSelection();
-  document.getElementById('playChordBtn').style.display = 'none';
-  updateDisplay();
-}
-
-function updateDisplay(chordExists = null, forcedChordName = null) {
-  const playedNotesDiv = document.getElementById('playedNotes');
-  const successIndicator = document.getElementById('successIndicator');
-  
-  if (quizMode && quizChord) {
-    if (playedNotes.length === 0) {
-      playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
-      if (successIndicator) successIndicator.style.display = 'none';
-    } else {
-      const quizChordNotes = quizChord.notes;
-      const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
-      const useFlats = lastSelectedChordName && lastSelectedChordName.includes('b');
-      
-      let allCorrect = true;
-      
-      const notesHTML = playedNotes
-        .map(note => {
-          const noteName = note.replace(/[0-9]/g, '');
-          let noteFr;
-          
-          if (useFlats) {
-            const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-            const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const idx = sharpNotes.indexOf(noteName);
-            if (idx !== -1) {
-              noteFr = NOTE_FR_SHARP[flatNotes[idx]] || noteName;
-            } else {
-              noteFr = NOTE_FR_SHARP[noteName] || noteName;
-            }
-          } else {
-            noteFr = NOTE_FR_SHARP[noteName] || noteName;
-          }
-          
-          const isCorrect = quizChordNotes.includes(noteName);
-          const colorClass = isCorrect ? 'correct' : 'incorrect';
-          
-          if (!isCorrect) {
-            allCorrect = false;
-          }
-          
-          return `<span class="note-badge ${colorClass}">${noteFr}</span>`;
-        })
-        .join(' ');
-      
-      playedNotesDiv.innerHTML = notesHTML;
-      
-      const allNotesFound = quizChordNotes.every(note => playedBaseNotes.includes(note));
-      const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === quizChordNotes.length;
-      
-      if (successIndicator) {
-        successIndicator.style.display = perfectMatch ? 'inline' : 'none';
-      }
-    }
-  } else {
-    if (successIndicator) successIndicator.style.display = 'none';
-    
-    if (playedNotes.length === 0) {
-      playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
-    } else {
-      const notesHTML = playedNotes
-        .map(note => {
-          const noteName = note.replace(/[0-9]/g, '');
-          let noteFr = NOTE_FR_SHARP[noteName] || noteName;
-          
-          if (lastSelectedChordName && lastSelectedChordName.includes('b')) {
-            const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-            const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const idx = sharpNotes.indexOf(noteName);
-            if (idx !== -1) {
-              noteFr = NOTE_FR_SHARP[flatNotes[idx]] || noteFr;
-            }
-          }
-          
-          return `<span class="note-badge">${noteFr}</span>`;
-        })
-        .join(' ');
-      
-      playedNotesDiv.innerHTML = notesHTML;
-    }
-  }
-
-  updateKeyboardHighlight(playedNotes);
-
-  let chord = null;
-  if (quizMode && quizChord) {
-    chord = quizChord;
-  } else if (lastSelectedChordName) {
-    chord = ALL_CHORDS[lastSelectedChordName];
-  } else {
-    chord = detectChord(playedNotes);
-  }
-  
-  displayDetectedChord(chord, chordExists);
-}
-
-function displayDetectedChord(chord, chordExists = null) {
-  const chordName = document.getElementById('chordName');
-  const chordNotesList = document.getElementById('chordNotesList');
-  
-  if (!chord) {
-    chordName.textContent = '-';
-    chordName.style.color = '#22c55e';
-    chordNotesList.innerHTML = '<span class="empty-state">-</span>';
-    return;
-  }
-  
-  if (chordExists === false) {
-    chordName.textContent = '✗';
-    chordName.style.color = '#ef4444';
-    chordNotesList.innerHTML = '<span class="empty-state">Accord introuvable</span>';
-  } else {
-    chordName.textContent = chord.notation;
-    chordName.style.color = '#22c55e';
-    
-    if (quizMode === true && chordNotesVisible === false) {
-      chordNotesList.innerHTML = '<span class="empty-state">???</span>';
-    } else {
-      const notesDisplay = chord.notesFr.map(noteFr => {
-        return `<span class="chord-note">${noteFr}</span>`;
-      }).join(' ');
-      
-      chordNotesList.innerHTML = notesDisplay;
-    }
-  }
-}
-
-async function toggleMicrophone() {
-  if (isListening) {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      mediaStream = null;
-    }
-    isListening = false;
-    const btn = document.getElementById('micToggle');
-    btn.classList.remove('active');
-  } else {
-    try {
-      const ctx = getAudioContext();
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
-      
-      const source = ctx.createMediaStreamSource(mediaStream);
-      source.connect(analyser);
-      
-      isListening = true;
-      const btn = document.getElementById('micToggle');
-      btn.classList.add('active');
-      
-      detectPitchFromMic();
-    } catch (err) {
-      console.error('Erreur microphone:', err);
-      alert('Impossible d\'accéder au microphone.');
-    }
-  }
-}
-
-function detectPitchFromMic() {
-  if (!isListening || !analyser) return;
-  
-  const bufferLength = analyser.fftSize;
-  const buffer = new Float32Array(bufferLength);
-  
-  function analyze() {
-    if (!isListening) return;
-    
-    analyser.getFloatTimeDomainData(buffer);
-    const detectedFreq = autoCorrelate(buffer, audioContext.sampleRate);
-    
-    if (detectedFreq > 0) {
-      const note = frequencyToNote(detectedFreq);
-      if (note && !playedNotes.includes(note)) {
-        playedNotes.push(note);
-        updateDisplay();
-      }
-    }
-    
-    requestAnimationFrame(analyze);
-  }
-  
-  analyze();
-}
-
-function autoCorrelate(buffer, sampleRate) {
-  let size = buffer.length;
-  let maxSamples = Math.floor(size / 2);
-  let bestOffset = -1;
-  let bestCorrelation = 0;
-  let rms = 0;
-  
-  for (let i = 0; i < size; i++) {
-    let val = buffer[i];
-    rms += val * val;
-  }
-  rms = Math.sqrt(rms / size);
-  
-  if (rms < 0.01) return -1;
-  
-  let lastCorrelation = 1;
-  for (let offset = 0; offset < maxSamples; offset++) {
-    let correlation = 0;
-    
-    for (let i = 0; i < maxSamples; i++) {
-      correlation += Math.abs(buffer[i] - buffer[i + offset]);
-    }
-    
-    correlation = 1 - (correlation / maxSamples);
-    
-    if (correlation > 0.9 && correlation > lastCorrelation) {
-      let foundGoodCorrelation = false;
-      
-      if (correlation > bestCorrelation) {
-        bestCorrelation = correlation;
-        bestOffset = offset;
-        foundGoodCorrelation = true;
-      }
-      
-      if (foundGoodCorrelation) {
-        let shift = (buffer[0] < 0 ? -1 : 1);
-        return sampleRate / (bestOffset + shift);
-      }
-    }
-    
-    lastCorrelation = correlation;
-  }
-  
-  if (bestCorrelation > 0.01) {
-    return sampleRate / bestOffset;
-  }
-  
-  return -1;
-}
-
-function frequencyToNote(frequency) {
-  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const A4 = 440;
-  const C0 = A4 * Math.pow(2, -4.75);
-  
-  if (frequency < 50 || frequency > 2000) return null;
-  
-  const halfSteps = 12 * Math.log2(frequency / C0);
-  const octave = Math.floor(halfSteps / 12);
-  const noteIndex = Math.round(halfSteps % 12);
-  
-  if (octave < 2 || octave > 6) return null;
-  
-  return noteNames[noteIndex] + octave;
-}
-function selectRootNote(note) {
-  if (quizMode) exitQuizMode();
-  deselectNoteCountButtons();
-  
-  if (selectedRootNote === note) {
-    selectedRootNote = '';
-  } else {
-    selectedRootNote = note;
-  }
-  
-  document.querySelectorAll('#rootNotes .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === selectedRootNote);
-    btn.classList.remove('error');
-  });
-  buildManualChordLive();
-}
-
-function selectAlteration(alt) {
-  if (quizMode) exitQuizMode();
-  deselectNoteCountButtons();
-  
-  if (selectedAlteration === alt) {
-    selectedAlteration = '';
-  } else {
-    selectedAlteration = alt;
-  }
-  
-  document.querySelectorAll('#alterations .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.value === selectedAlteration);
-    btn.classList.remove('error');
-  });
-  buildManualChordLive();
-}
-
-function selectQuality(value) {
-  if (quizMode) exitQuizMode();
-  deselectNoteCountButtons();
-  
-  if (selectedQuality === value) {
-    selectedQuality = '';
-  } else {
-    selectedQuality = value;
-  }
-
-  document.querySelectorAll('#qualities .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.value === selectedQuality);
-    btn.classList.remove('error');
-  });
-  buildManualChordLive();
-}
-
-function selectSimpleExtension(ext) {
-  if (quizMode) exitQuizMode();
-  deselectNoteCountButtons();
-  
-  if (selectedSimpleExtension === ext) {
-    selectedSimpleExtension = '';
-  } else {
-    selectedSimpleExtension = ext;
-  }
-  
-  document.querySelectorAll('#simpleExtensions .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === selectedSimpleExtension);
-    btn.classList.remove('error');
-  });
-  buildManualChordLive();
-}
-
-function selectAlteredExtension(ext) {
-  if (quizMode) exitQuizMode();
-  deselectNoteCountButtons();
-  
-  if (selectedAlteredExtension === ext) {
-    selectedAlteredExtension = '';
-  } else {
-    selectedAlteredExtension = ext;
-  }
-  
-  document.querySelectorAll('#alteredExtensions .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === selectedAlteredExtension);
-    btn.classList.remove('error');
-  });
-  buildManualChordLive();
-}
-
-function resetManualSelection() {
-  selectedRootNote = '';
-  selectedAlteration = '';
-  selectedQuality = '';
-  selectedSimpleExtension = '';
-  selectedAlteredExtension = '';
-  lastSelectedChordName = '';
-  
-  document.querySelectorAll('.mini-key').forEach(btn => {
-    btn.classList.remove('active', 'error');
-  });
-}
-
-function buildManualChordLive() {
-  if (!selectedRootNote) {
-    playedNotes = [];
-    updateDisplay();
-    return;
-  }
-  
-  const fullRoot = selectedRootNote + selectedAlteration;
-  let chordName = fullRoot + selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
-  
-  const chord = ALL_CHORDS[chordName];
-  
-  if (chord) {
-    lastSelectedChordName = chordName;
-    playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
-    
-    document.querySelectorAll('.mini-key.error').forEach(btn => {
-      btn.classList.remove('error');
-    });
-    
-    document.getElementById('playChordBtn').style.display = 'flex';
-    updateDisplay(true, chordName);
-  } else {
-    playedNotes = [];
-    lastSelectedChordName = '';
-    document.getElementById('playChordBtn').style.display = 'none';
-    
-    if (selectedRootNote) {
-      document.querySelectorAll('#rootNotes .mini-key.active').forEach(btn => {
-        btn.classList.add('error');
-      });
-    }
-    if (selectedAlteration !== '') {
-      document.querySelectorAll('#alterations .mini-key.active').forEach(btn => {
+    if (selectedMinor) {
+      document.querySelectorAll('#alterations .mini-key[data-type="minor"].active').forEach(btn => {
         btn.classList.add('error');
       });
     }

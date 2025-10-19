@@ -3,17 +3,17 @@ const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 const ROOT_NOTES_NATURAL = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const ALTERATIONS = ['#', 'b'];
+const MINOR_MARKERS = ['-', 'm']; // Pour ligne 1
 
-// Qualités de base (sans "maj" qui est sous-entendu)
+// Qualités de base (ligne 2 - sans min qui est remonté ligne 1)
 const CHORD_QUALITIES = [
-  { label: '-', value: 'm' },
-  { label: 'min', value: 'm' },
   { label: '7', value: '7' },
   { label: 'M7', value: 'maj7' },
   { label: 'maj7', value: 'maj7' },
   { label: '°', value: 'dim' },
   { label: 'dim', value: 'dim' },
   { label: 'aug', value: 'aug' },
+  { label: 'm7b5', value: 'm7b5' },
   { label: 'ø7', value: 'ø7' },
   { label: 'dim7', value: 'dim7' },
   { label: 'sus2', value: 'sus2' },
@@ -41,7 +41,6 @@ function getIntervals(quality) {
     '': [0, 4, 7],
     'm': [0, 3, 7],
     'dim': [0, 3, 6],
-    'ø': [0, 3, 6],
     'ø7': [0, 3, 6, 10],
     'aug': [0, 4, 8],
     '7': [0, 4, 7, 10],
@@ -146,7 +145,7 @@ function generateAllChords() {
       
       // Toutes les qualités
       const allQualities = [
-        'm', 'dim', 'ø', 'ø7', 'aug', '7', 'maj7', 'm7', 'dim7', 'm7b5',
+        'm', 'dim', 'ø7', 'aug', '7', 'maj7', 'm7', 'dim7', 'm7b5',
         '6', 'm6', 'sus2', 'sus4', '7sus4', 'add9', '6/9', 'm6/9',
         '9', 'maj9', 'm9', '11', 'maj11', 'm11', '13', 'maj13', 'm13',
         '7b5', '7#5', '7b9', '7#9', '7#11', '7b13', '7alt',
