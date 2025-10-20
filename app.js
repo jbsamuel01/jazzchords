@@ -447,9 +447,41 @@ function resetNotes() {
   updateDisplay();
 }
 
+// Fonction pour convertir une note jouée en nom français selon le contexte de l'accord
+function getPlayedNoteFrenchName(playedNote, chord) {
+  if (!chord || !chord.notesWithOctave) {
+    // Pas de contexte d'accord, utiliser la notation par défaut
+    const noteName = playedNote.replace(/[0-9]/g, '');
+    return NOTE_FR_SHARP[noteName] || noteName;
+  }
+  
+  // Extraire la note sans octave
+  const playedNoteName = playedNote.replace(/[0-9]/g, '');
+  
+  // Chercher la correspondance dans les notes de l'accord
+  for (let i = 0; i < chord.notesWithOctave.length; i++) {
+    const chordNote = chord.notesWithOctave[i];
+    if (chordNote.note === playedNoteName) {
+      // Utiliser le displayNote de l'accord (qui respecte les degrés)
+      return chord.notesFr[i];
+    }
+  }
+  
+  // Note non trouvée dans l'accord, utiliser la notation par défaut
+  return NOTE_FR_SHARP[playedNoteName] || playedNoteName;
+}
+
 function updateDisplay(chordExists = null, forcedChordName = null) {
   const playedNotesDiv = document.getElementById('playedNotes');
   const successIndicator = document.getElementById('successIndicator');
+  
+  // Récupérer l'accord actuel pour le contexte
+  let currentChord = null;
+  if (quizMode && quizChord) {
+    currentChord = quizChord;
+  } else if (lastSelectedChordName) {
+    currentChord = ALL_CHORDS[lastSelectedChordName];
+  }
   
   if (quizMode && quizChord) {
     if (playedNotes.length === 0) {
@@ -458,27 +490,13 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     } else {
       const quizChordNotes = quizChord.notes;
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
-      const useFlats = lastSelectedChordName && lastSelectedChordName.includes('b');
       
       let allCorrect = true;
       
       const notesHTML = playedNotes
         .map(note => {
           const noteName = note.replace(/[0-9]/g, '');
-          let noteFr;
-          
-          if (useFlats) {
-            const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-            const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const idx = sharpNotes.indexOf(noteName);
-            if (idx !== -1) {
-              noteFr = NOTE_FR_SHARP[flatNotes[idx]] || noteName;
-            } else {
-              noteFr = NOTE_FR_SHARP[noteName] || noteName;
-            }
-          } else {
-            noteFr = NOTE_FR_SHARP[noteName] || noteName;
-          }
+          const noteFr = getPlayedNoteFrenchName(note, currentChord);
           
           const isCorrect = quizChordNotes.includes(noteName);
           const colorClass = isCorrect ? 'correct' : 'incorrect';
@@ -508,18 +526,7 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     } else {
       const notesHTML = playedNotes
         .map(note => {
-          const noteName = note.replace(/[0-9]/g, '');
-          let noteFr = NOTE_FR_SHARP[noteName] || noteName;
-          
-          if (lastSelectedChordName && lastSelectedChordName.includes('b')) {
-            const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-            const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const idx = sharpNotes.indexOf(noteName);
-            if (idx !== -1) {
-              noteFr = NOTE_FR_SHARP[flatNotes[idx]] || noteFr;
-            }
-          }
-          
+          const noteFr = getPlayedNoteFrenchName(note, currentChord);
           return `<span class="note-badge">${noteFr}</span>`;
         })
         .join(' ');
