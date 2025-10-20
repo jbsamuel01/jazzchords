@@ -15,41 +15,36 @@ function initializeUI() {
   // Altérations # b - min (ligne 1)
   const alterationsDiv = document.getElementById('alterations');
   
-  const alterationGroups = [
-    [{ label: '#', value: '#' }, { label: 'b', value: 'b' }],
-    [{ label: '-', value: 'm' }, { label: 'min', value: 'm' }]
-  ];
-  
-  alterationGroups.forEach((group, groupIndex) => {
-    group.forEach((alt, index) => {
-      const btn = document.createElement('button');
-      btn.className = 'mini-key';
-      btn.textContent = alt.label;
-      btn.dataset.value = alt.value;
-      btn.dataset.type = groupIndex === 0 ? 'alteration' : 'minor';
-      btn.onclick = () => {
-        if (groupIndex === 0) {
-          selectAlteration(alt.value);
-        } else {
-          selectMinor();
-        }
-      };
-      alterationsDiv.appendChild(btn);
-      
-      if (index < group.length - 1) {
-        const link = document.createElement('span');
-        link.className = 'synonym-link';
-        link.textContent = '—';
-        alterationsDiv.appendChild(link);
-      }
-    });
-    
-    if (groupIndex < alterationGroups.length - 1) {
-      const spacer = document.createElement('span');
-      spacer.style.width = '12px';
-      alterationsDiv.appendChild(spacer);
-    }
+  // Groupe # et b (côte à côte, pas superposés)
+  [{ label: '#', value: '#' }, { label: 'b', value: 'b' }].forEach(alt => {
+    const btn = document.createElement('button');
+    btn.className = 'mini-key';
+    btn.textContent = alt.label;
+    btn.dataset.value = alt.value;
+    btn.dataset.type = 'alteration';
+    btn.onclick = () => selectAlteration(alt.value);
+    alterationsDiv.appendChild(btn);
   });
+  
+  // Spacer
+  const spacer = document.createElement('span');
+  spacer.style.width = '12px';
+  alterationsDiv.appendChild(spacer);
+  
+  // Groupe - et min (superposés)
+  const minorContainer = document.createElement('div');
+  minorContainer.className = 'btn-stack-group';
+  
+  [{ label: '-', value: 'm' }, { label: 'min', value: 'm' }].forEach(alt => {
+    const btn = document.createElement('button');
+    btn.className = 'mini-key stacked';
+    btn.textContent = alt.label;
+    btn.dataset.value = alt.value;
+    btn.dataset.type = 'minor';
+    btn.onclick = () => selectMinor();
+    minorContainer.appendChild(btn);
+  });
+  alterationsDiv.appendChild(minorContainer);
 
   // Qualités (ligne 2)
   const qualitiesDiv = document.getElementById('qualities');
@@ -59,28 +54,35 @@ function initializeUI() {
     [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }],
     [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
     [{ label: 'aug', value: 'aug' }],
-    [{ label: 'm7b5', value: 'm7b5' }, { label: 'ø7', value: 'ø7' }],
+    [{ label: 'm7b5', value: 'm7b5' }, { label: 'ø7', value: 'm7b5' }], // Même valeur pour s'allumer ensemble
     [{ label: 'dim7', value: 'dim7' }],
     [{ label: 'sus2', value: 'sus2' }],
     [{ label: 'sus4', value: 'sus4' }]
   ];
   
   qualityGroups.forEach((group, groupIndex) => {
-    group.forEach((quality, index) => {
+    if (group.length > 1) {
+      const container = document.createElement('div');
+      container.className = 'btn-stack-group';
+      
+      group.forEach(quality => {
+        const btn = document.createElement('button');
+        btn.className = 'mini-key stacked';
+        btn.textContent = quality.label;
+        btn.dataset.value = quality.value;
+        btn.onclick = () => selectQuality(quality.value);
+        container.appendChild(btn);
+      });
+      
+      qualitiesDiv.appendChild(container);
+    } else {
       const btn = document.createElement('button');
       btn.className = 'mini-key';
-      btn.textContent = quality.label;
-      btn.dataset.value = quality.value;
-      btn.onclick = () => selectQuality(quality.value);
+      btn.textContent = group[0].label;
+      btn.dataset.value = group[0].value;
+      btn.onclick = () => selectQuality(group[0].value);
       qualitiesDiv.appendChild(btn);
-      
-      if (index < group.length - 1) {
-        const link = document.createElement('span');
-        link.className = 'synonym-link';
-        link.textContent = '—';
-        qualitiesDiv.appendChild(link);
-      }
-    });
+    }
     
     if (groupIndex < qualityGroups.length - 1) {
       const spacer = document.createElement('span');

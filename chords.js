@@ -157,7 +157,20 @@ function generateAllChords() {
       allQualities.forEach(quality => {
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
-        const notes = intervals.map(interval => getNoteName(rootIndex, interval, useFlats));
+        
+        // Forcer les bémols si l'accord contient des altérations descendantes ou est mineur diminué
+        const shouldUseFlats = useFlats || 
+                               quality.includes('b') || 
+                               quality.includes('dim') || 
+                               quality.includes('ø') ||
+                               quality === 'm' ||
+                               quality === 'm7' ||
+                               quality === 'm9' ||
+                               quality === 'm11' ||
+                               quality === 'm13' ||
+                               quality === 'm6';
+        
+        const notes = intervals.map(interval => getNoteName(rootIndex, interval, shouldUseFlats));
         
         chords[chordName] = {
           notation: chordName,
