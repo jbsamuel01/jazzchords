@@ -469,7 +469,6 @@ function getPlayedNoteFrenchName(playedNote, chord) {
 
 function updateDisplay(chordExists = null, forcedChordName = null) {
   const playedNotesDiv = document.getElementById('playedNotes');
-  const successIndicator = document.getElementById('successIndicator');
   
   // Récupérer l'accord actuel pour le contexte
   let currentChord = null;
@@ -482,7 +481,6 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
   if (quizMode && quizChord) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
-      if (successIndicator) successIndicator.style.display = 'none';
     } else {
       const quizChordNotes = quizChord.notes;
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
@@ -505,18 +503,17 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
         })
         .join(' ');
       
-      playedNotesDiv.innerHTML = notesHTML;
-      
       const allNotesFound = quizChordNotes.every(note => playedBaseNotes.includes(note));
       const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === quizChordNotes.length;
       
-      if (successIndicator) {
-        successIndicator.style.display = perfectMatch ? 'inline' : 'none';
+      // Ajouter le pouce juste après les notes si réussite
+      if (perfectMatch) {
+        playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
+      } else {
+        playedNotesDiv.innerHTML = notesHTML;
       }
     }
   } else {
-    if (successIndicator) successIndicator.style.display = 'none';
-    
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
@@ -548,6 +545,7 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
 function displayDetectedChord(chord, chordExists = null) {
   const chordName = document.getElementById('chordName');
   const chordNotesList = document.getElementById('chordNotesList');
+  const toggleBtn = document.getElementById('toggleChordVisibility');
   
   if (!chord) {
     chordName.textContent = '-';
@@ -565,13 +563,23 @@ function displayDetectedChord(chord, chordExists = null) {
     chordName.style.color = '#22c55e';
     
     if (quizMode === true && chordNotesVisible === false) {
-      chordNotesList.innerHTML = '<span class="empty-state">???</span>';
+      chordNotesList.innerHTML = '<span class="quiz-message">Appuyez pour voir les notes</span>';
+      // Changer l'icône en œil fermé
+      toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>`;
     } else {
       const notesDisplay = chord.notesFr.map(noteFr => {
         return `<span class="chord-note">${noteFr}</span>`;
       }).join(' ');
       
       chordNotesList.innerHTML = notesDisplay;
+      // Changer l'icône en œil ouvert
+      toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>`;
     }
   }
 }

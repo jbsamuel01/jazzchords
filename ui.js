@@ -26,9 +26,9 @@ function initializeUI() {
     alterationsDiv.appendChild(btn);
   });
   
-  // Spacer
+  // Spacer réduit
   const spacer = document.createElement('span');
-  spacer.style.width = '12px';
+  spacer.style.width = '8px';
   alterationsDiv.appendChild(spacer);
   
   // Groupe - et min (superposés)
@@ -86,7 +86,7 @@ function initializeUI() {
     
     if (groupIndex < qualityGroups.length - 1) {
       const spacer = document.createElement('span');
-      spacer.style.width = '4px';
+      spacer.style.width = '2px';
       qualitiesDiv.appendChild(spacer);
     }
   });

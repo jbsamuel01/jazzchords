@@ -245,7 +245,7 @@ function generateAllChords() {
     });
   });
   
-  // Ajouter spécifiquement Cb (même si C avec b)
+  // Ajouter spécifiquement Cb (même si C avec b) et remonter d'une octave
   const cbRoot = 'Cb';
   const cbIntervals = getIntervals('');
   const cbNotes = cbIntervals.map(interval => {
@@ -263,6 +263,25 @@ function generateAllChords() {
     notes: cbNotes.map(n => n.note),
     notesFr: cbNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
     notesWithOctave: cbNotes
+  };
+  
+  // Ajouter Cbm (Cb mineur) aussi
+  const cbmIntervals = getIntervals('m');
+  const cbmNotes = cbmIntervals.map(interval => {
+    const note = getNoteName(cbRoot, interval);
+    if (note) {
+      // Remonter d'une octave pour Cbm aussi
+      return { ...note, octave: note.octave + 1 };
+    }
+    return note;
+  }).filter(n => n !== null);
+  
+  chords[cbRoot + 'm'] = {
+    notation: cbRoot + 'm',
+    nomFrancais: `${cbRoot} mineur`,
+    notes: cbmNotes.map(n => n.note),
+    notesFr: cbmNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
+    notesWithOctave: cbmNotes
   };
   
   return chords;
