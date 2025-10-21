@@ -86,7 +86,7 @@ function initializeUI() {
     
     if (groupIndex < qualityGroups.length - 1) {
       const spacer = document.createElement('span');
-      spacer.style.width = '8px';
+      spacer.style.width = '4px';
       qualitiesDiv.appendChild(spacer);
     }
   });

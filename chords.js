@@ -20,23 +20,23 @@ const CHORD_QUALITIES = [
   { label: 'sus4', value: 'sus4' }
 ];
 
-const SIMPLE_EXTENSIONS = ['6', '9', '11', '13', '6/9', 'add9'];
-const ALTERED_EXTENSIONS = ['b5', '#5', 'b9', '#9', '#11', 'b13', 'alt'];
+const SIMPLE_EXTENSIONS = ['6', '9', '11', '13', '6/9', 'add9', 'add11', 'add13'];
+const ALTERED_EXTENSIONS = ['b5', '#5', 'b9', '#9', '#11', 'b13'];
 
-// Conversion notes vers français
+// Conversion notes vers français avec vrais symboles # et ♭
 const NOTE_FR = {
-  'C': 'Do', 'C#': 'Do#', 'Db': 'Réb', 'D': 'Ré', 'D#': 'Ré#', 'Eb': 'Mib',
-  'E': 'Mi', 'E#': 'Mi#', 'Fb': 'Fab', 'F': 'Fa', 'F#': 'Fa#', 'Gb': 'Solb', 
-  'G': 'Sol', 'G#': 'Sol#', 'Ab': 'Lab', 'A': 'La', 'A#': 'La#', 'Bb': 'Sib', 
-  'B': 'Si', 'B#': 'Si#', 'Cb': 'Dob',
-  'Abb': 'Labb', 'Bbb': 'Sibb', 'Cbb': 'Dobb', 'Dbb': 'Rébb', 'Ebb': 'Mibb', 
-  'Fbb': 'Fabb', 'Gbb': 'Solbb'
+  'C': 'Do', 'C#': 'Do♯', 'C##': 'Do𝄪', 'Cb': 'Do♭', 'Cbb': 'Do𝄫',
+  'D': 'Ré', 'D#': 'Ré♯', 'D##': 'Ré𝄪', 'Db': 'Ré♭', 'Dbb': 'Ré𝄫',
+  'E': 'Mi', 'E#': 'Mi♯', 'E##': 'Mi𝄪', 'Eb': 'Mi♭', 'Ebb': 'Mi𝄫',
+  'F': 'Fa', 'F#': 'Fa♯', 'F##': 'Fa𝄪', 'Fb': 'Fa♭', 'Fbb': 'Fa𝄫',
+  'G': 'Sol', 'G#': 'Sol♯', 'G##': 'Sol𝄪', 'Gb': 'Sol♭', 'Gbb': 'Sol𝄫',
+  'A': 'La', 'A#': 'La♯', 'A##': 'La𝄪', 'Ab': 'La♭', 'Abb': 'La𝄫',
+  'B': 'Si', 'B#': 'Si♯', 'B##': 'Si𝄪', 'Bb': 'Si♭', 'Bbb': 'Si𝄫'
 };
 
 const NOTE_FR_SHARP = NOTE_FR;
 
-// Correspondance entre demi-tons et degrés (interval = nombre de demi-tons)
-// degree = position dans la gamme (0=I, 1=II, 2=III, 3=IV, 4=V, 5=VI, 6=VII)
+// Correspondance entre demi-tons et degrés
 const DEGREE_INTERVALS = {
   0: 0,   // I (unisson)
   2: 1,   // II (seconde)
@@ -52,8 +52,10 @@ const DEGREE_INTERVALS = {
   14: 1,  // IX (neuvième = 2 + octave)
   13: 1,  // IX (neuvième bémol)
   15: 1,  // IX (neuvième dièse)
+  16: 2,  // add9 mais contexte de tierce
   17: 3,  // XI (onzième = 4 + octave)
   18: 3,  // XI (onzième dièse)
+  19: 4,  // add11 contexte
   21: 5,  // XIII (treizième = 6 + octave)
   20: 5   // XIII (treizième bémol)
 };
@@ -76,6 +78,8 @@ function getIntervals(quality) {
     'sus4': [0, 5, 7],
     '7sus4': [0, 5, 7, 10],
     'add9': [0, 4, 7, 14],
+    'add11': [0, 4, 7, 17],
+    'add13': [0, 4, 7, 21],
     '6/9': [0, 4, 7, 9, 14],
     'm6/9': [0, 3, 7, 9, 14],
     '9': [0, 4, 7, 10, 14],
@@ -93,7 +97,6 @@ function getIntervals(quality) {
     '7#9': [0, 4, 7, 10, 15],
     '7#11': [0, 4, 7, 10, 18],
     '7b13': [0, 4, 7, 10, 20],
-    '7alt': [0, 4, 8, 10, 13],
     '7b5b9': [0, 4, 6, 10, 13],
     '7#5b9': [0, 4, 8, 10, 13],
     '7b5#9': [0, 4, 6, 10, 15],
@@ -111,7 +114,6 @@ function getIntervals(quality) {
 
 // Obtenir le nom de la note naturelle à partir de la fondamentale
 function getRootNoteLetter(rootNote) {
-  // Enlever les altérations pour obtenir la lettre de base
   return rootNote.charAt(0);
 }
 
@@ -121,18 +123,15 @@ function getNoteNameByDegree(rootNote, interval) {
   const rootLetter = getRootNoteLetter(rootNote);
   const rootIndex = naturalNotes.indexOf(rootLetter);
   
-  // Trouver le degré correspondant à l'intervalle
   const degree = DEGREE_INTERVALS[interval];
   if (degree === undefined) {
     console.warn(`Degré non défini pour l'intervalle ${interval}`);
     return null;
   }
   
-  // Calculer la lettre cible
   const targetLetterIndex = (rootIndex + degree) % 7;
   const targetLetter = naturalNotes[targetLetterIndex];
   
-  // Calculer le nombre de demi-tons de la fondamentale
   const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
   
@@ -141,20 +140,14 @@ function getNoteNameByDegree(rootNote, interval) {
     rootSemitone = flatNotes.indexOf(rootNote);
   }
   
-  // Note cible en demi-tons
   const targetSemitone = (rootSemitone + interval) % 12;
-  
-  // Note naturelle cible en demi-tons
   const targetNaturalSemitone = sharpNotes.indexOf(targetLetter);
   
-  // Calculer l'altération nécessaire
   let alteration = targetSemitone - targetNaturalSemitone;
   
-  // Gérer le passage de B à C (ou inversement)
   if (alteration > 6) alteration -= 12;
   if (alteration < -6) alteration += 12;
   
-  // Construire le nom de la note
   let noteName = targetLetter;
   if (alteration === 1) noteName += '#';
   else if (alteration === -1) noteName += 'b';
@@ -168,7 +161,6 @@ function getNoteName(rootNote, interval) {
   const noteName = getNoteNameByDegree(rootNote, interval);
   if (!noteName) return null;
   
-  // Calculer l'octave
   const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
   
@@ -180,11 +172,9 @@ function getNoteName(rootNote, interval) {
   const totalSemitones = rootIndex + interval;
   const octave = Math.floor(totalSemitones / 12);
   
-  // Trouver l'équivalent en notation sharp pour la note de base
   let baseNote = noteName.replace(/[#b]/g, '');
   let baseSemitone = sharpNotes.indexOf(baseNote);
   
-  // Ajouter les altérations
   if (noteName.includes('##')) baseSemitone += 2;
   else if (noteName.includes('#')) baseSemitone += 1;
   else if (noteName.includes('bb')) baseSemitone -= 2;
@@ -207,14 +197,16 @@ function generateAllChords() {
     [''].concat(ALTERATIONS).forEach(alt => {
       const fullRoot = rootNote + alt;
       
-      if ((rootNote === 'E' && alt === '#') || 
-          (rootNote === 'F' && alt === 'b') ||
-          (rootNote === 'B' && alt === '#') ||
-          (rootNote === 'C' && alt === 'b')) {
+      // Exclure les tonalités non utilisées
+      if ((rootNote === 'E' && alt === '#') ||  // Mi# = Fa
+          (rootNote === 'F' && alt === 'b') ||  // Fab = Mi
+          (rootNote === 'B' && alt === '#') ||  // Si# = Do
+          (rootNote === 'D' && alt === '#') ||  // Ré# majeur (jamais utilisé)
+          (rootNote === 'A' && alt === '#')) {  // La# majeur (jamais utilisé)
         return;
       }
       
-      // Accord majeur
+      // Ajouter Cb (Do bémol) qui manquait
       const majorIntervals = getIntervals('');
       const majorNotes = majorIntervals.map(interval => getNoteName(fullRoot, interval)).filter(n => n !== null);
       
@@ -229,9 +221,9 @@ function generateAllChords() {
       // Toutes les qualités
       const allQualities = [
         'm', 'dim', 'ø7', 'aug', '7', 'maj7', 'm7', 'dim7', 'm7b5',
-        '6', 'm6', 'sus2', 'sus4', '7sus4', 'add9', '6/9', 'm6/9',
+        '6', 'm6', 'sus2', 'sus4', '7sus4', 'add9', 'add11', 'add13', '6/9', 'm6/9',
         '9', 'maj9', 'm9', '11', 'maj11', 'm11', '13', 'maj13', 'm13',
-        '7b5', '7#5', '7b9', '7#9', '7#11', '7b13', '7alt',
+        '7b5', '7#5', '7b9', '7#9', '7#11', '7b13',
         '7b5b9', '7#5b9', '7b5#9', '7#5#9',
         '7b9b13', '7#9b13', '7b9#11', '7#9#11',
         'maj7#5', 'maj7#11', 'm9b5'
@@ -252,6 +244,26 @@ function generateAllChords() {
       });
     });
   });
+  
+  // Ajouter spécifiquement Cb (même si C avec b)
+  const cbRoot = 'Cb';
+  const cbIntervals = getIntervals('');
+  const cbNotes = cbIntervals.map(interval => {
+    const note = getNoteName(cbRoot, interval);
+    if (note) {
+      // Remonter d'une octave pour Cb
+      return { ...note, octave: note.octave + 1 };
+    }
+    return note;
+  }).filter(n => n !== null);
+  
+  chords[cbRoot] = {
+    notation: cbRoot,
+    nomFrancais: `${cbRoot} majeur`,
+    notes: cbNotes.map(n => n.note),
+    notesFr: cbNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
+    notesWithOctave: cbNotes
+  };
   
   return chords;
 }

@@ -50,13 +50,13 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   const frequency = NOTE_FREQUENCIES[noteName]?.[octave];
   if (!frequency) return;
   
+  // Oscillateurs pour créer un son de piano plus réaliste
   const fundamental = ctx.createOscillator();
   const harmonic2 = ctx.createOscillator();
   const harmonic3 = ctx.createOscillator();
   const harmonic4 = ctx.createOscillator();
   const harmonic5 = ctx.createOscillator();
   const harmonic6 = ctx.createOscillator();
-  const harmonic7 = ctx.createOscillator();
   
   const gainNode = ctx.createGain();
   const gain2 = ctx.createGain();
@@ -64,73 +64,72 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   const gain4 = ctx.createGain();
   const gain5 = ctx.createGain();
   const gain6 = ctx.createGain();
-  const gain7 = ctx.createGain();
   const masterGain = ctx.createGain();
   
+  // Filtre pour adoucir le son
   const filter = ctx.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(frequency * 8, ctx.currentTime + startTime);
-  filter.Q.setValueAtTime(1, ctx.currentTime + startTime);
+  filter.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
+  filter.Q.setValueAtTime(0.8, ctx.currentTime + startTime);
   
+  // Types d'oscillateurs pour un son plus naturel
   fundamental.type = 'sine';
   harmonic2.type = 'sine';
   harmonic3.type = 'sine';
-  harmonic4.type = 'triangle';
-  harmonic5.type = 'sine';
-  harmonic6.type = 'sine';
-  harmonic7.type = 'triangle';
+  harmonic4.type = 'sine';
+  harmonic5.type = 'triangle';
+  harmonic6.type = 'triangle';
   
+  // Fréquences harmoniques
   fundamental.frequency.setValueAtTime(frequency, ctx.currentTime + startTime);
   harmonic2.frequency.setValueAtTime(frequency * 2, ctx.currentTime + startTime);
   harmonic3.frequency.setValueAtTime(frequency * 3, ctx.currentTime + startTime);
   harmonic4.frequency.setValueAtTime(frequency * 4, ctx.currentTime + startTime);
   harmonic5.frequency.setValueAtTime(frequency * 5, ctx.currentTime + startTime);
   harmonic6.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
-  harmonic7.frequency.setValueAtTime(frequency * 7, ctx.currentTime + startTime);
   
-  const attackTime = 0.002;
-  const decayTime = 0.1;
-  const sustainLevel = 0.3;
-  const releaseTime = duration * 0.8;
+  // Enveloppe ADSR plus proche du piano - attaque rapide, decay moyen, release court
+  const attackTime = 0.005;
+  const decayTime = 0.15;
+  const sustainLevel = 0.2;
+  const releaseTime = Math.min(duration * 0.6, 0.8); // Durée plus courte
   
+  // Enveloppe fondamentale (la plus forte)
   gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + startTime + attackTime);
+  gainNode.gain.linearRampToValueAtTime(0.6, ctx.currentTime + startTime + attackTime);
   gainNode.gain.exponentialRampToValueAtTime(sustainLevel, ctx.currentTime + startTime + attackTime + decayTime);
   gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + releaseTime);
   
+  // Harmoniques qui s'éteignent plus vite (comme un vrai piano)
   gain2.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + startTime + attackTime);
-  gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.5);
+  gain2.gain.linearRampToValueAtTime(0.3, ctx.currentTime + startTime + attackTime);
+  gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.3);
   
   gain3.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain3.gain.linearRampToValueAtTime(0.15, ctx.currentTime + startTime + attackTime);
-  gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.4);
+  gain3.gain.linearRampToValueAtTime(0.18, ctx.currentTime + startTime + attackTime);
+  gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.25);
   
   gain4.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain4.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + attackTime);
-  gain4.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.3);
+  gain4.gain.linearRampToValueAtTime(0.12, ctx.currentTime + startTime + attackTime);
+  gain4.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.2);
   
   gain5.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain5.gain.linearRampToValueAtTime(0.05, ctx.currentTime + startTime + attackTime);
-  gain5.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.25);
+  gain5.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + attackTime);
+  gain5.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.15);
   
   gain6.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain6.gain.linearRampToValueAtTime(0.03, ctx.currentTime + startTime + attackTime);
-  gain6.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.2);
+  gain6.gain.linearRampToValueAtTime(0.04, ctx.currentTime + startTime + attackTime);
+  gain6.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.1);
   
-  gain7.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain7.gain.linearRampToValueAtTime(0.02, ctx.currentTime + startTime + attackTime);
-  gain7.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.15);
+  masterGain.gain.setValueAtTime(0.5, ctx.currentTime + startTime);
   
-  masterGain.gain.setValueAtTime(0.6, ctx.currentTime + startTime);
-  
+  // Connexions
   fundamental.connect(gainNode);
   harmonic2.connect(gain2);
   harmonic3.connect(gain3);
   harmonic4.connect(gain4);
   harmonic5.connect(gain5);
   harmonic6.connect(gain6);
-  harmonic7.connect(gain7);
   
   gainNode.connect(filter);
   gain2.connect(filter);
@@ -138,7 +137,6 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   gain4.connect(filter);
   gain5.connect(filter);
   gain6.connect(filter);
-  gain7.connect(filter);
   
   filter.connect(masterGain);
   masterGain.connect(ctx.destination);
@@ -150,16 +148,14 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   harmonic4.start(startMoment);
   harmonic5.start(startMoment);
   harmonic6.start(startMoment);
-  harmonic7.start(startMoment);
   
-  const stopMoment = ctx.currentTime + startTime + duration;
+  const stopMoment = ctx.currentTime + startTime + Math.min(duration, 1.2);
   fundamental.stop(stopMoment);
   harmonic2.stop(stopMoment);
   harmonic3.stop(stopMoment);
   harmonic4.stop(stopMoment);
   harmonic5.stop(stopMoment);
   harmonic6.stop(stopMoment);
-  harmonic7.stop(stopMoment);
 }
 
 window.playChord = function() {
