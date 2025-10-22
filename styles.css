@@ -26,46 +26,45 @@ body {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.display-header {
+.control-buttons-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  justify-content: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #374151;
 }
 
 .chord-info-line {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
-  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .display-header h2 {
   color: #22c55e;
-  font-size: 30px;
+  font-size: 34px;
   margin: 0;
   flex-shrink: 0;
 }
 
 .chord-separator {
   color: #22c55e;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: bold;
   flex-shrink: 0;
 }
 
 .notes-list-inline {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
-  flex: 1;
-  min-width: 0;
 }
 
 .played-notes-section {
@@ -90,11 +89,13 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   display: flex;
   align-items: center;
   color: #22c55e;
   transition: all 0.2s;
+  min-width: 32px;
+  justify-content: center;
 }
 
 .icon-btn:hover {
@@ -103,11 +104,6 @@ body {
 
 .icon-btn.active {
   color: #16a34a;
-}
-
-#helpBtn svg {
-  width: 22px;
-  height: 22px;
 }
 
 .section-label {
@@ -152,9 +148,9 @@ body {
 .note-badge {
   background: #22c55e;
   color: #0a0e1a;
-  padding: 7px 13px;
+  padding: 7px 10px;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: bold;
   white-space: nowrap;
   flex-shrink: 0;
@@ -187,8 +183,8 @@ body {
   color: #6b7280;
   font-size: 14px;
   font-style: italic;
-  display: inline-block;
-  margin-right: 4px;
+  display: inline;
+  margin-right: 2px;
 }
 
 .success-indicator {

@@ -52,10 +52,10 @@ function initializeUI() {
   const qualityGroups = [
     [{ label: '7', value: '7' }],
     [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }],
-    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
-    [{ label: 'aug', value: 'aug' }],
     [{ label: 'm7b5', value: 'm7b5' }, { label: 'ø7', value: 'm7b5' }], // Même valeur pour s'allumer ensemble
+    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
     [{ label: 'dim7', value: 'dim7' }],
+    [{ label: 'aug', value: 'aug' }],
     [{ label: 'sus2', value: 'sus2' }],
     [{ label: 'sus4', value: 'sus4' }]
   ];
