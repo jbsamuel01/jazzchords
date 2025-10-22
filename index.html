@@ -25,13 +25,6 @@
           </button>
         </div>
         <div class="control-buttons">
-          <button id="helpBtn" class="icon-btn" title="Mode d'emploi">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-          </button>
           <button id="playChordBtn" class="icon-btn" title="Écouter l'accord" style="display: none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -50,6 +43,13 @@
               <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
               <line x1="12" x2="12" y1="19" y2="22"></line>
+            </svg>
+          </button>
+          <button id="helpBtn" class="icon-btn" title="Mode d'emploi">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
           </button>
         </div>
@@ -109,6 +109,45 @@
         <button class="note-count-btn" data-count="6">6</button>
       </div>
       <span class="notes-label">notes</span>
+    </div>
+  </div>
+
+  <!-- Modale d'aide -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <button id="closeHelp" class="close-modal">✕</button>
+      <h3>Mode d'emploi</h3>
+      
+      <div class="help-section">
+        <h4>🎹 Saisie manuelle</h4>
+        <p>Construisez votre accord en cliquant sur les boutons :</p>
+        <ul>
+          <li><strong>Ligne 1 :</strong> Note fondamentale (A-G) + altération (♯/♭) + mineur (-/min)</li>
+          <li><strong>Ligne 2 :</strong> Qualité (7, M7, °, aug, m7b5, dim7, sus...)</li>
+          <li><strong>Ligne 3 :</strong> Extensions (6, 9, 11, 13, add9...)</li>
+          <li><strong>Ligne 4 :</strong> Altérations (♭5, ♯5, ♭9, ♯9, ♯11, ♭13...)</li>
+        </ul>
+      </div>
+      
+      <div class="help-section">
+        <h4>🎮 Quiz</h4>
+        <p>Choisissez le nombre de notes (3, 4, 5 ou 6) pour générer un accord aléatoire. Trouvez les bonnes notes sur le clavier !</p>
+        <p>Le bouton orange 🔶 permet de masquer/afficher les notes de l'accord.</p>
+      </div>
+      
+      <div class="help-section">
+        <h4>🎼 Clavier virtuel</h4>
+        <p>Cliquez sur les touches pour jouer les notes. Les notes sélectionnées s'affichent en vert.</p>
+      </div>
+      
+      <div class="help-section">
+        <h4>⚙️ Boutons</h4>
+        <ul>
+          <li><strong>▶ :</strong> Écouter l'accord</li>
+          <li><strong>🔄 :</strong> Réinitialiser</li>
+          <li><strong>🎤 :</strong> Détecter via micro (expérimental)</li>
+        </ul>
+      </div>
     </div>
   </div>
 

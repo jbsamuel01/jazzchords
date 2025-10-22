@@ -105,10 +105,6 @@ body {
   color: #16a34a;
 }
 
-#helpBtn {
-  margin-left: auto;
-}
-
 #helpBtn svg {
   width: 22px;
   height: 22px;
@@ -126,13 +122,14 @@ body {
   border: 1px solid #22c55e;
   cursor: pointer;
   padding: 6px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   color: #0a0e1a;
   transition: all 0.2s;
   flex-shrink: 0;
   border-radius: 4px;
-  margin-left: 4px;
+  margin-left: 2px;
+  vertical-align: middle;
 }
 
 .toggle-visibility-btn:hover {
