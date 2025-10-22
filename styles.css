@@ -47,14 +47,14 @@ body {
 
 .display-header h2 {
   color: #22c55e;
-  font-size: 26px;
+  font-size: 30px;
   margin: 0;
   flex-shrink: 0;
 }
 
 .chord-separator {
   color: #22c55e;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: bold;
   flex-shrink: 0;
 }
@@ -105,6 +105,15 @@ body {
   color: #16a34a;
 }
 
+#helpBtn {
+  margin-left: auto;
+}
+
+#helpBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
 .section-label {
   font-size: 11px;
   color: #9aa7c7;
@@ -132,23 +141,23 @@ body {
 }
 
 .toggle-visibility-btn.hidden {
-  background: #ef4444;
-  border-color: #ef4444;
+  background: #f97316;
+  border-color: #f97316;
   color: #fff;
 }
 
 .toggle-visibility-btn.hidden:hover {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: #ea580c;
+  border-color: #ea580c;
 }
 
 .chord-note,
 .note-badge {
   background: #22c55e;
   color: #0a0e1a;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   white-space: nowrap;
   flex-shrink: 0;
@@ -178,7 +187,7 @@ body {
 }
 
 .quiz-message {
-  color: #22c55e;
+  color: #6b7280;
   font-size: 14px;
   font-style: italic;
   display: inline-block;
@@ -500,4 +509,99 @@ body {
   .generate-label {
     font-size: 11px;
   }
+}
+
+/* Modale d'aide */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 14, 26, 0.9);
+  overflow-y: auto;
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #151b2b;
+  border: 2px solid #22c55e;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-content h3 {
+  color: #22c55e;
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+.modal-content h4 {
+  color: #22c55e;
+  margin: 16px 0 8px 0;
+  font-size: 16px;
+}
+
+.help-section {
+  margin-bottom: 20px;
+}
+
+.help-section p {
+  color: #e8ecf8;
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.help-section ul {
+  color: #e8ecf8;
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.help-section li {
+  margin: 6px 0;
+}
+
+.help-section strong {
+  color: #22c55e;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #e8ecf8;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-modal:hover {
+  color: #22c55e;
+  transform: scale(1.1);
 }

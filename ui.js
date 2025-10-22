@@ -84,11 +84,7 @@ function initializeUI() {
       qualitiesDiv.appendChild(btn);
     }
     
-    if (groupIndex < qualityGroups.length - 1) {
-      const spacer = document.createElement('span');
-      spacer.style.width = '2px';
-      qualitiesDiv.appendChild(spacer);
-    }
+    // Pas d'espacement entre les groupes
   });
 
   // Extensions simples (ligne 3)
@@ -116,6 +112,27 @@ function initializeUI() {
   document.getElementById('micToggle').onclick = toggleMicrophone;
   document.getElementById('toggleChordVisibility').onclick = toggleChordVisibility;
   document.getElementById('playChordBtn').onclick = window.playChord;
+  
+  // Bouton d'aide
+  const helpBtn = document.getElementById('helpBtn');
+  const helpModal = document.getElementById('helpModal');
+  const closeHelp = document.getElementById('closeHelp');
+  
+  if (helpBtn && helpModal && closeHelp) {
+    helpBtn.onclick = () => {
+      helpModal.classList.add('active');
+    };
+    
+    closeHelp.onclick = () => {
+      helpModal.classList.remove('active');
+    };
+    
+    helpModal.onclick = (e) => {
+      if (e.target === helpModal) {
+        helpModal.classList.remove('active');
+      }
+    };
+  }
 
   // Mode quiz
   document.querySelectorAll('.note-count-btn').forEach(btn => {
