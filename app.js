@@ -616,10 +616,17 @@ async function toggleMicrophone() {
   } else {
     try {
       const ctx = getAudioContext();
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false
+        } 
+      });
       
       analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
+      analyser.fftSize = 4096; // Augmenté pour plus de précision
+      analyser.smoothingTimeConstant = 0.3; // Réduction du lissage
       
       const source = ctx.createMediaStreamSource(mediaStream);
       source.connect(analyser);
@@ -636,23 +643,50 @@ async function toggleMicrophone() {
   }
 }
 
+let lastDetectedNote = null;
+let lastDetectionTime = 0;
+const DETECTION_COOLDOWN = 500; // ms entre deux détections
+
 function detectPitchFromMic() {
   if (!isListening || !analyser) return;
   
   const bufferLength = analyser.fftSize;
   const buffer = new Float32Array(bufferLength);
+  const frequencyData = new Uint8Array(analyser.frequencyBinCount);
   
   function analyze() {
     if (!isListening) return;
     
     analyser.getFloatTimeDomainData(buffer);
-    const detectedFreq = autoCorrelate(buffer, audioContext.sampleRate);
+    analyser.getFrequencyData(frequencyData);
+    
+    // Vérifier le niveau sonore minimum
+    const rms = getRMS(buffer);
+    if (rms < 0.02) { // Seuil minimum augmenté
+      requestAnimationFrame(analyze);
+      return;
+    }
+    
+    // Détection par autocorrélation améliorée
+    const detectedFreq = improvedAutoCorrelate(buffer, audioContext.sampleRate);
     
     if (detectedFreq > 0) {
-      const note = frequencyToNote(detectedFreq);
-      if (note && !playedNotes.includes(note)) {
-        playedNotes.push(note);
-        updateDisplay();
+      // Vérifier la clarté du signal
+      const clarity = getSignalClarity(frequencyData, detectedFreq);
+      
+      if (clarity > 0.6) { // Seuil de clarté élevé
+        const note = frequencyToNote(detectedFreq);
+        const now = Date.now();
+        
+        // Éviter les détections multiples rapides de la même note
+        if (note && note !== lastDetectedNote && (now - lastDetectionTime) > DETECTION_COOLDOWN) {
+          if (!playedNotes.includes(note)) {
+            playedNotes.push(note);
+            updateDisplay();
+            lastDetectedNote = note;
+            lastDetectionTime = now;
+          }
+        }
       }
     }
     
@@ -662,50 +696,104 @@ function detectPitchFromMic() {
   analyze();
 }
 
-function autoCorrelate(buffer, sampleRate) {
-  let size = buffer.length;
-  let maxSamples = Math.floor(size / 2);
+function getRMS(buffer) {
+  let sum = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    sum += buffer[i] * buffer[i];
+  }
+  return Math.sqrt(sum / buffer.length);
+}
+
+function getSignalClarity(frequencyData, targetFreq) {
+  const sampleRate = audioContext.sampleRate;
+  const binSize = sampleRate / analyser.fftSize;
+  const targetBin = Math.round(targetFreq / binSize);
+  
+  if (targetBin < 0 || targetBin >= frequencyData.length) return 0;
+  
+  const targetMagnitude = frequencyData[targetBin];
+  
+  // Calculer la magnitude moyenne des autres bins
+  let otherSum = 0;
+  let count = 0;
+  const range = 5;
+  
+  for (let i = 0; i < frequencyData.length; i++) {
+    if (Math.abs(i - targetBin) > range) {
+      otherSum += frequencyData[i];
+      count++;
+    }
+  }
+  
+  const otherAverage = count > 0 ? otherSum / count : 1;
+  
+  // Ratio signal/bruit
+  return targetMagnitude / (otherAverage + 1);
+}
+
+function improvedAutoCorrelate(buffer, sampleRate) {
+  const size = buffer.length;
+  const maxSamples = Math.floor(size / 2);
   let bestOffset = -1;
   let bestCorrelation = 0;
-  let rms = 0;
   
+  // RMS pour vérifier le niveau du signal
+  let rms = 0;
   for (let i = 0; i < size; i++) {
-    let val = buffer[i];
-    rms += val * val;
+    rms += buffer[i] * buffer[i];
   }
   rms = Math.sqrt(rms / size);
   
-  if (rms < 0.01) return -1;
+  if (rms < 0.02) return -1;
   
-  let lastCorrelation = 1;
-  for (let offset = 0; offset < maxSamples; offset++) {
+  // Autocorrélation améliorée
+  const minPeriod = Math.floor(sampleRate / 1000); // 1000 Hz max
+  const maxPeriod = Math.floor(sampleRate / 80);   // 80 Hz min
+  
+  for (let offset = minPeriod; offset < Math.min(maxPeriod, maxSamples); offset++) {
     let correlation = 0;
     
     for (let i = 0; i < maxSamples; i++) {
-      correlation += Math.abs(buffer[i] - buffer[i + offset]);
+      correlation += buffer[i] * buffer[i + offset];
     }
     
-    correlation = 1 - (correlation / maxSamples);
+    correlation = correlation / maxSamples;
     
-    if (correlation > 0.9 && correlation > lastCorrelation) {
-      let foundGoodCorrelation = false;
-      
-      if (correlation > bestCorrelation) {
-        bestCorrelation = correlation;
-        bestOffset = offset;
-        foundGoodCorrelation = true;
-      }
-      
-      if (foundGoodCorrelation) {
-        let shift = (buffer[0] < 0 ? -1 : 1);
-        return sampleRate / (bestOffset + shift);
-      }
+    if (correlation > bestCorrelation) {
+      bestCorrelation = correlation;
+      bestOffset = offset;
     }
-    
-    lastCorrelation = correlation;
   }
   
-  if (bestCorrelation > 0.01) {
+  // Seuil de corrélation plus strict
+  if (bestCorrelation > 0.2 && bestOffset > 0) {
+    // Interpolation parabolique pour plus de précision
+    if (bestOffset > 0 && bestOffset < maxSamples - 1) {
+      const y1 = bestCorrelation;
+      
+      let c2 = 0;
+      for (let i = 0; i < maxSamples; i++) {
+        c2 += buffer[i] * buffer[i + bestOffset + 1];
+      }
+      c2 = c2 / maxSamples;
+      
+      let c0 = 0;
+      for (let i = 0; i < maxSamples; i++) {
+        c0 += buffer[i] * buffer[i + bestOffset - 1];
+      }
+      c0 = c0 / maxSamples;
+      
+      const a = (c0 - 2 * y1 + c2) / 2;
+      const b = (c2 - c0) / 2;
+      
+      if (a !== 0) {
+        const adjustment = -b / (2 * a);
+        if (Math.abs(adjustment) < 1) {
+          bestOffset += adjustment;
+        }
+      }
+    }
+    
     return sampleRate / bestOffset;
   }
   

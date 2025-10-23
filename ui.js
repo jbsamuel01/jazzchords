@@ -46,18 +46,18 @@ function initializeUI() {
   });
   alterationsDiv.appendChild(minorContainer);
 
-  // Qualités (ligne 2)
+  // Qualités (ligne 2) : 7, M7/maj7, °7/dim7, ø7/m7b5, °/dim, aug, sus2, sus4
   const qualitiesDiv = document.getElementById('qualities');
   
   const qualityGroups = [
-    [{ label: '7', value: '7' }],
-    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }],
-    [{ label: 'm7b5', value: 'm7b5' }, { label: 'ø7', value: 'm7b5' }], // Même valeur pour s'allumer ensemble
-    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
-    [{ label: 'dim7', value: 'dim7' }],
-    [{ label: 'aug', value: 'aug' }],
-    [{ label: 'sus2', value: 'sus2' }],
-    [{ label: 'sus4', value: 'sus4' }]
+    [{ label: '7', value: '7' }],                                        // 1
+    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }], // 2
+    [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }], // 3
+    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }], // 4 - ø7 en haut, m7b5 en bas
+    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],     // 5
+    [{ label: 'aug', value: 'aug' }],                                    // 6
+    [{ label: 'sus2', value: 'sus2' }],                                  // 7
+    [{ label: 'sus4', value: 'sus4' }]                                   // 8
   ];
   
   qualityGroups.forEach((group, groupIndex) => {

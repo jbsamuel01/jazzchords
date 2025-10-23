@@ -34,9 +34,17 @@ body {
 .control-buttons-row {
   display: flex;
   gap: 6px;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid #374151;
+}
+
+.app-description {
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
 }
 
 .chord-info-line {
@@ -124,7 +132,7 @@ body {
   transition: all 0.2s;
   flex-shrink: 0;
   border-radius: 4px;
-  margin-left: 2px;
+  margin-left: 4px;
   vertical-align: middle;
 }
 
