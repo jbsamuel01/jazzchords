@@ -15,6 +15,9 @@ let lastSelectedChordName = '';
 let quizMode = false;
 let quizChord = null;
 let chordNotesVisible = true;
+let lastDetectedNote = null;
+let lastDetectionTime = 0;
+const DETECTION_COOLDOWN = 500;
 
 const NOTE_FREQUENCIES = {
   'C': [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00],
@@ -616,17 +619,15 @@ async function toggleMicrophone() {
   } else {
     try {
       const ctx = getAudioContext();
+      
+      // Configuration simplifiée pour meilleure compatibilité
       mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: false
-        } 
+        audio: true
       });
       
       analyser = ctx.createAnalyser();
-      analyser.fftSize = 4096; // Augmenté pour plus de précision
-      analyser.smoothingTimeConstant = 0.3; // Réduction du lissage
+      analyser.fftSize = 4096;
+      analyser.smoothingTimeConstant = 0.3;
       
       const source = ctx.createMediaStreamSource(mediaStream);
       source.connect(analyser);
@@ -638,14 +639,10 @@ async function toggleMicrophone() {
       detectPitchFromMic();
     } catch (err) {
       console.error('Erreur microphone:', err);
-      alert('Impossible d\'accéder au microphone.');
+      alert('Impossible d\'accéder au microphone. Erreur : ' + err.message);
     }
   }
 }
-
-let lastDetectedNote = null;
-let lastDetectionTime = 0;
-const DETECTION_COOLDOWN = 500; // ms entre deux détections
 
 function detectPitchFromMic() {
   if (!isListening || !analyser) return;
@@ -658,27 +655,23 @@ function detectPitchFromMic() {
     if (!isListening) return;
     
     analyser.getFloatTimeDomainData(buffer);
-    analyser.getFrequencyData(frequencyData);
+    analyser.getByteFrequencyData(frequencyData);
     
-    // Vérifier le niveau sonore minimum
     const rms = getRMS(buffer);
-    if (rms < 0.02) { // Seuil minimum augmenté
+    if (rms < 0.02) {
       requestAnimationFrame(analyze);
       return;
     }
     
-    // Détection par autocorrélation améliorée
     const detectedFreq = improvedAutoCorrelate(buffer, audioContext.sampleRate);
     
     if (detectedFreq > 0) {
-      // Vérifier la clarté du signal
       const clarity = getSignalClarity(frequencyData, detectedFreq);
       
-      if (clarity > 0.6) { // Seuil de clarté élevé
+      if (clarity > 0.6) {
         const note = frequencyToNote(detectedFreq);
         const now = Date.now();
         
-        // Éviter les détections multiples rapides de la même note
         if (note && note !== lastDetectedNote && (now - lastDetectionTime) > DETECTION_COOLDOWN) {
           if (!playedNotes.includes(note)) {
             playedNotes.push(note);
@@ -713,7 +706,6 @@ function getSignalClarity(frequencyData, targetFreq) {
   
   const targetMagnitude = frequencyData[targetBin];
   
-  // Calculer la magnitude moyenne des autres bins
   let otherSum = 0;
   let count = 0;
   const range = 5;
@@ -726,8 +718,6 @@ function getSignalClarity(frequencyData, targetFreq) {
   }
   
   const otherAverage = count > 0 ? otherSum / count : 1;
-  
-  // Ratio signal/bruit
   return targetMagnitude / (otherAverage + 1);
 }
 
@@ -737,7 +727,6 @@ function improvedAutoCorrelate(buffer, sampleRate) {
   let bestOffset = -1;
   let bestCorrelation = 0;
   
-  // RMS pour vérifier le niveau du signal
   let rms = 0;
   for (let i = 0; i < size; i++) {
     rms += buffer[i] * buffer[i];
@@ -746,9 +735,8 @@ function improvedAutoCorrelate(buffer, sampleRate) {
   
   if (rms < 0.02) return -1;
   
-  // Autocorrélation améliorée
-  const minPeriod = Math.floor(sampleRate / 1000); // 1000 Hz max
-  const maxPeriod = Math.floor(sampleRate / 80);   // 80 Hz min
+  const minPeriod = Math.floor(sampleRate / 1000);
+  const maxPeriod = Math.floor(sampleRate / 80);
   
   for (let offset = minPeriod; offset < Math.min(maxPeriod, maxSamples); offset++) {
     let correlation = 0;
@@ -765,9 +753,7 @@ function improvedAutoCorrelate(buffer, sampleRate) {
     }
   }
   
-  // Seuil de corrélation plus strict
   if (bestCorrelation > 0.2 && bestOffset > 0) {
-    // Interpolation parabolique pour plus de précision
     if (bestOffset > 0 && bestOffset < maxSamples - 1) {
       const y1 = bestCorrelation;
       
