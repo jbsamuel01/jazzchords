@@ -656,7 +656,7 @@ function detectPitchFromMic() {
     analyser.getFloatTimeDomainData(buffer);
     
     const rms = getRMS(buffer);
-    if (rms < 0.005) {
+    if (rms < 0.01) { // Seuil augmenté pour moins de faux positifs
       requestAnimationFrame(analyze);
       return;
     }
@@ -667,7 +667,7 @@ function detectPitchFromMic() {
       const note = frequencyToNote(detectedFreq);
       const now = Date.now();
       
-      if (note && (now - lastDetectionTime) > 300) {
+      if (note && (now - lastDetectionTime) > 800) { // Cooldown augmenté à 800ms
         if (note !== lastDetectedNote) {
           if (!playedNotes.includes(note)) {
             playedNotes.push(note);
@@ -705,7 +705,7 @@ function simpleAutoCorrelate(buffer, sampleRate) {
     rms += buffer[i] * buffer[i];
   }
   rms = Math.sqrt(rms / size);
-  if (rms < 0.005) return -1;
+  if (rms < 0.01) return -1;
   
   // Limites de fréquence : 80 Hz à 1000 Hz
   const minOffset = Math.floor(sampleRate / 1000);
@@ -725,8 +725,8 @@ function simpleAutoCorrelate(buffer, sampleRate) {
     }
   }
   
-  // Seuil de corrélation bas pour plus de sensibilité
-  if (bestCorrelation > 0.5 && bestOffset > 0) {
+  // Seuil plus strict pour éviter les faux positifs
+  if (bestCorrelation > 0.7 && bestOffset > 0) {
     return sampleRate / bestOffset;
   }
   
@@ -738,11 +738,17 @@ function frequencyToNote(frequency) {
   const A4 = 440;
   const C0 = A4 * Math.pow(2, -4.75);
   
-  if (frequency < 50 || frequency > 2000) return null;
+  if (frequency < 60 || frequency > 2000) return null;
   
   const halfSteps = 12 * Math.log2(frequency / C0);
   const octave = Math.floor(halfSteps / 12);
-  const noteIndex = Math.round(halfSteps % 12);
+  let noteIndex = Math.round(halfSteps % 12);
+  
+  // Vérifier que la note est proche de la fréquence théorique (tolérance de 30 cents)
+  const theoreticalFreq = C0 * Math.pow(2, (octave * 12 + noteIndex) / 12);
+  const cents = 1200 * Math.log2(frequency / theoreticalFreq);
+  
+  if (Math.abs(cents) > 30) return null; // Rejeter si trop désaccordé
   
   if (octave < 2 || octave > 6) return null;
   
