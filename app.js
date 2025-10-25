@@ -658,7 +658,7 @@ function detectPitchFromMic() {
     analyser.getByteFrequencyData(frequencyData);
     
     const rms = getRMS(buffer);
-    if (rms < 0.02) {
+    if (rms < 0.01) { // Seuil réduit
       requestAnimationFrame(analyze);
       return;
     }
@@ -668,7 +668,7 @@ function detectPitchFromMic() {
     if (detectedFreq > 0) {
       const clarity = getSignalClarity(frequencyData, detectedFreq);
       
-      if (clarity > 0.6) {
+      if (clarity > 0.3) { // Seuil réduit de 0.6 à 0.3
         const note = frequencyToNote(detectedFreq);
         const now = Date.now();
         
@@ -733,7 +733,7 @@ function improvedAutoCorrelate(buffer, sampleRate) {
   }
   rms = Math.sqrt(rms / size);
   
-  if (rms < 0.02) return -1;
+  if (rms < 0.01) return -1; // Seuil réduit
   
   const minPeriod = Math.floor(sampleRate / 1000);
   const maxPeriod = Math.floor(sampleRate / 80);
@@ -753,7 +753,7 @@ function improvedAutoCorrelate(buffer, sampleRate) {
     }
   }
   
-  if (bestCorrelation > 0.2 && bestOffset > 0) {
+  if (bestCorrelation > 0.1 && bestOffset > 0) { // Seuil réduit de 0.2 à 0.1
     if (bestOffset > 0 && bestOffset < maxSamples - 1) {
       const y1 = bestCorrelation;
       
