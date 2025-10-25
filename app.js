@@ -298,6 +298,7 @@ function resetManualSelection() {
 function buildManualChordLive() {
   if (!selectedRootNote) {
     playedNotes = [];
+    document.getElementById('playChordBtn').style.display = 'none';
     updateDisplay();
     return;
   }
@@ -316,7 +317,7 @@ function buildManualChordLive() {
       btn.classList.remove('error');
     });
     
-    document.getElementById('playChordBtn').style.display = 'flex';
+    document.getElementById('playChordBtn').style.display = 'inline-flex';
     updateDisplay(true, chordName);
   } else {
     playedNotes = [];
@@ -397,7 +398,7 @@ function startQuizMode() {
   
   const playBtn = document.getElementById('playChordBtn');
   if (playBtn) {
-    playBtn.style.display = 'flex';
+    playBtn.style.display = 'inline-flex';
   }
   
   updateDisplay();
@@ -695,9 +696,7 @@ function getRMS(buffer) {
 
 function simpleAutoCorrelate(buffer, sampleRate) {
   const size = buffer.length;
-  const maxSamples = Math.floor(size / 2);
-  let bestOffset = -1;
-  let bestCorrelation = 0;
+  const halfSize = Math.floor(size / 2);
   
   // Vérifier le niveau du signal
   let rms = 0;
@@ -707,27 +706,54 @@ function simpleAutoCorrelate(buffer, sampleRate) {
   rms = Math.sqrt(rms / size);
   if (rms < 0.01) return -1;
   
-  // Limites de fréquence : 80 Hz à 1000 Hz
-  const minOffset = Math.floor(sampleRate / 1000);
-  const maxOffset = Math.floor(sampleRate / 80);
+  // YIN algorithm - plus précis
+  const yinBuffer = new Float32Array(halfSize);
   
-  // Autocorrélation simple et rapide
-  for (let offset = minOffset; offset < Math.min(maxOffset, maxSamples); offset++) {
-    let correlation = 0;
-    for (let i = 0; i < maxSamples; i++) {
-      correlation += Math.abs(buffer[i] - buffer[i + offset]);
+  // Step 1: Calcul de la fonction de différence
+  yinBuffer[0] = 1;
+  let runningSum = 0;
+  
+  for (let tau = 1; tau < halfSize; tau++) {
+    let sum = 0;
+    for (let i = 0; i < halfSize; i++) {
+      const delta = buffer[i] - buffer[i + tau];
+      sum += delta * delta;
     }
-    correlation = 1 - (correlation / maxSamples);
-    
-    if (correlation > bestCorrelation) {
-      bestCorrelation = correlation;
-      bestOffset = offset;
-    }
+    yinBuffer[tau] = sum;
   }
   
-  // Seuil plus strict pour éviter les faux positifs
-  if (bestCorrelation > 0.7 && bestOffset > 0) {
-    return sampleRate / bestOffset;
+  // Step 2: Différence cumulée normalisée
+  for (let tau = 1; tau < halfSize; tau++) {
+    runningSum += yinBuffer[tau];
+    yinBuffer[tau] *= tau / runningSum;
+  }
+  
+  // Step 3: Recherche du minimum absolu
+  const threshold = 0.1;
+  let tau = 2;
+  
+  // Limites de recherche
+  const minTau = Math.floor(sampleRate / 1000); // 1000 Hz max
+  const maxTau = Math.floor(sampleRate / 80);   // 80 Hz min
+  
+  while (tau < maxTau && tau < halfSize) {
+    if (yinBuffer[tau] < threshold) {
+      while (tau + 1 < halfSize && yinBuffer[tau + 1] < yinBuffer[tau]) {
+        tau++;
+      }
+      
+      // Interpolation parabolique
+      let betterTau = tau;
+      if (tau > 0 && tau < halfSize - 1) {
+        const s0 = yinBuffer[tau - 1];
+        const s1 = yinBuffer[tau];
+        const s2 = yinBuffer[tau + 1];
+        betterTau = tau + (s2 - s0) / (2 * (2 * s1 - s2 - s0));
+      }
+      
+      return sampleRate / betterTau;
+    }
+    tau++;
   }
   
   return -1;
