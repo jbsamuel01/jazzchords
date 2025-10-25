@@ -614,20 +614,20 @@ async function toggleMicrophone() {
       mediaStream = null;
     }
     isListening = false;
+    lastDetectedNote = null;
     const btn = document.getElementById('micToggle');
     btn.classList.remove('active');
   } else {
     try {
       const ctx = getAudioContext();
       
-      // Configuration simplifiée pour meilleure compatibilité
       mediaStream = await navigator.mediaDevices.getUserMedia({ 
         audio: true
       });
       
       analyser = ctx.createAnalyser();
-      analyser.fftSize = 4096;
-      analyser.smoothingTimeConstant = 0.3;
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.8;
       
       const source = ctx.createMediaStreamSource(mediaStream);
       source.connect(analyser);
@@ -649,37 +649,33 @@ function detectPitchFromMic() {
   
   const bufferLength = analyser.fftSize;
   const buffer = new Float32Array(bufferLength);
-  const frequencyData = new Uint8Array(analyser.frequencyBinCount);
   
   function analyze() {
     if (!isListening) return;
     
     analyser.getFloatTimeDomainData(buffer);
-    analyser.getByteFrequencyData(frequencyData);
     
     const rms = getRMS(buffer);
-    if (rms < 0.01) { // Seuil réduit
+    if (rms < 0.005) {
       requestAnimationFrame(analyze);
       return;
     }
     
-    const detectedFreq = improvedAutoCorrelate(buffer, audioContext.sampleRate);
+    const detectedFreq = simpleAutoCorrelate(buffer, audioContext.sampleRate);
     
     if (detectedFreq > 0) {
-      const clarity = getSignalClarity(frequencyData, detectedFreq);
+      const note = frequencyToNote(detectedFreq);
+      const now = Date.now();
       
-      if (clarity > 0.3) { // Seuil réduit de 0.6 à 0.3
-        const note = frequencyToNote(detectedFreq);
-        const now = Date.now();
-        
-        if (note && note !== lastDetectedNote && (now - lastDetectionTime) > DETECTION_COOLDOWN) {
+      if (note && (now - lastDetectionTime) > 300) {
+        if (note !== lastDetectedNote) {
           if (!playedNotes.includes(note)) {
             playedNotes.push(note);
             updateDisplay();
-            lastDetectedNote = note;
-            lastDetectionTime = now;
           }
+          lastDetectedNote = note;
         }
+        lastDetectionTime = now;
       }
     }
     
@@ -697,55 +693,31 @@ function getRMS(buffer) {
   return Math.sqrt(sum / buffer.length);
 }
 
-function getSignalClarity(frequencyData, targetFreq) {
-  const sampleRate = audioContext.sampleRate;
-  const binSize = sampleRate / analyser.fftSize;
-  const targetBin = Math.round(targetFreq / binSize);
-  
-  if (targetBin < 0 || targetBin >= frequencyData.length) return 0;
-  
-  const targetMagnitude = frequencyData[targetBin];
-  
-  let otherSum = 0;
-  let count = 0;
-  const range = 5;
-  
-  for (let i = 0; i < frequencyData.length; i++) {
-    if (Math.abs(i - targetBin) > range) {
-      otherSum += frequencyData[i];
-      count++;
-    }
-  }
-  
-  const otherAverage = count > 0 ? otherSum / count : 1;
-  return targetMagnitude / (otherAverage + 1);
-}
-
-function improvedAutoCorrelate(buffer, sampleRate) {
+function simpleAutoCorrelate(buffer, sampleRate) {
   const size = buffer.length;
   const maxSamples = Math.floor(size / 2);
   let bestOffset = -1;
   let bestCorrelation = 0;
   
+  // Vérifier le niveau du signal
   let rms = 0;
   for (let i = 0; i < size; i++) {
     rms += buffer[i] * buffer[i];
   }
   rms = Math.sqrt(rms / size);
+  if (rms < 0.005) return -1;
   
-  if (rms < 0.01) return -1; // Seuil réduit
+  // Limites de fréquence : 80 Hz à 1000 Hz
+  const minOffset = Math.floor(sampleRate / 1000);
+  const maxOffset = Math.floor(sampleRate / 80);
   
-  const minPeriod = Math.floor(sampleRate / 1000);
-  const maxPeriod = Math.floor(sampleRate / 80);
-  
-  for (let offset = minPeriod; offset < Math.min(maxPeriod, maxSamples); offset++) {
+  // Autocorrélation simple et rapide
+  for (let offset = minOffset; offset < Math.min(maxOffset, maxSamples); offset++) {
     let correlation = 0;
-    
     for (let i = 0; i < maxSamples; i++) {
-      correlation += buffer[i] * buffer[i + offset];
+      correlation += Math.abs(buffer[i] - buffer[i + offset]);
     }
-    
-    correlation = correlation / maxSamples;
+    correlation = 1 - (correlation / maxSamples);
     
     if (correlation > bestCorrelation) {
       bestCorrelation = correlation;
@@ -753,33 +725,8 @@ function improvedAutoCorrelate(buffer, sampleRate) {
     }
   }
   
-  if (bestCorrelation > 0.1 && bestOffset > 0) { // Seuil réduit de 0.2 à 0.1
-    if (bestOffset > 0 && bestOffset < maxSamples - 1) {
-      const y1 = bestCorrelation;
-      
-      let c2 = 0;
-      for (let i = 0; i < maxSamples; i++) {
-        c2 += buffer[i] * buffer[i + bestOffset + 1];
-      }
-      c2 = c2 / maxSamples;
-      
-      let c0 = 0;
-      for (let i = 0; i < maxSamples; i++) {
-        c0 += buffer[i] * buffer[i + bestOffset - 1];
-      }
-      c0 = c0 / maxSamples;
-      
-      const a = (c0 - 2 * y1 + c2) / 2;
-      const b = (c2 - c0) / 2;
-      
-      if (a !== 0) {
-        const adjustment = -b / (2 * a);
-        if (Math.abs(adjustment) < 1) {
-          bestOffset += adjustment;
-        }
-      }
-    }
-    
+  // Seuil de corrélation bas pour plus de sensibilité
+  if (bestCorrelation > 0.5 && bestOffset > 0) {
     return sampleRate / bestOffset;
   }
   
