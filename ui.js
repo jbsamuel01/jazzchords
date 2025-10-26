@@ -50,14 +50,14 @@ function initializeUI() {
   const qualitiesDiv = document.getElementById('qualities');
   
   const qualityGroups = [
-    [{ label: '7', value: '7' }],
-    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }],
-    [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }],
-    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }],
-    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],
-    [{ label: 'aug', value: 'aug' }],
-    [{ label: 'sus2', value: 'sus2' }],
-    [{ label: 'sus4', value: 'sus4' }]
+    [{ label: '7', value: '7' }],                                        // 1
+    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }], // 2
+    [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }], // 3
+    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }], // 4 - ø7 en haut, m7b5 en bas
+    [{ label: '°', value: 'dim' }, { label: 'dim', value: 'dim' }],     // 5
+    [{ label: 'aug', value: 'aug' }],                                    // 6
+    [{ label: 'sus2', value: 'sus2' }],                                  // 7
+    [{ label: 'sus4', value: 'sus4' }]                                   // 8
   ];
   
   qualityGroups.forEach((group, groupIndex) => {
@@ -83,6 +83,8 @@ function initializeUI() {
       btn.onclick = () => selectQuality(group[0].value);
       qualitiesDiv.appendChild(btn);
     }
+    
+    // Pas d'espacement entre les groupes
   });
 
   // Extensions simples (ligne 3)
@@ -107,7 +109,7 @@ function initializeUI() {
 
   // Boutons de contrôle
   document.getElementById('resetNotes').onclick = resetNotes;
-  document.getElementById('micToggle').onclick = handleToggleMicrophone;
+  document.getElementById('micToggle').onclick = toggleMicrophone;
   document.getElementById('toggleChordVisibility').onclick = toggleChordVisibility;
   document.getElementById('playChordBtn').onclick = window.playChord;
   
