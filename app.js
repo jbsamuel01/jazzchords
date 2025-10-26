@@ -17,7 +17,7 @@ let quizChord = null;
 let chordNotesVisible = true;
 let lastDetectedNote = null;
 let lastDetectionTime = 0;
-const DETECTION_COOLDOWN = 500;
+const DETECTION_COOLDOWN = 400;
 
 const NOTE_FREQUENCIES = {
   'C': [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00],
@@ -95,7 +95,7 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   const attackTime = 0.005;
   const decayTime = 0.15;
   const sustainLevel = 0.2;
-  const releaseTime = Math.min(duration * 0.6, 0.8); // Durée plus courte
+  const releaseTime = Math.min(duration * 0.6, 0.8);
   
   // Enveloppe fondamentale (la plus forte)
   gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
@@ -623,12 +623,16 @@ async function toggleMicrophone() {
       const ctx = getAudioContext();
       
       mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: true
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: true
+        }
       });
       
       analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 4096;
+      analyser.smoothingTimeConstant = 0.3;
       
       const source = ctx.createMediaStreamSource(mediaStream);
       source.connect(analyser);
@@ -657,7 +661,7 @@ function detectPitchFromMic() {
     analyser.getFloatTimeDomainData(buffer);
     
     const rms = getRMS(buffer);
-    if (rms < 0.01) { // Seuil augmenté pour moins de faux positifs
+    if (rms < 0.003) {
       requestAnimationFrame(analyze);
       return;
     }
@@ -668,7 +672,7 @@ function detectPitchFromMic() {
       const note = frequencyToNote(detectedFreq);
       const now = Date.now();
       
-      if (note && (now - lastDetectionTime) > 800) { // Cooldown augmenté à 800ms
+      if (note && (now - lastDetectionTime) > 400) {
         if (note !== lastDetectedNote) {
           if (!playedNotes.includes(note)) {
             playedNotes.push(note);
@@ -704,7 +708,7 @@ function simpleAutoCorrelate(buffer, sampleRate) {
     rms += buffer[i] * buffer[i];
   }
   rms = Math.sqrt(rms / size);
-  if (rms < 0.01) return -1;
+  if (rms < 0.003) return -1;
   
   // YIN algorithm - plus précis
   const yinBuffer = new Float32Array(halfSize);
@@ -729,7 +733,7 @@ function simpleAutoCorrelate(buffer, sampleRate) {
   }
   
   // Step 3: Recherche du minimum absolu
-  const threshold = 0.1;
+  const threshold = 0.15;
   let tau = 2;
   
   // Limites de recherche
@@ -770,11 +774,11 @@ function frequencyToNote(frequency) {
   const octave = Math.floor(halfSteps / 12);
   let noteIndex = Math.round(halfSteps % 12);
   
-  // Vérifier que la note est proche de la fréquence théorique (tolérance de 30 cents)
+  // Vérifier que la note est proche de la fréquence théorique (tolérance augmentée)
   const theoreticalFreq = C0 * Math.pow(2, (octave * 12 + noteIndex) / 12);
   const cents = 1200 * Math.log2(frequency / theoreticalFreq);
   
-  if (Math.abs(cents) > 30) return null; // Rejeter si trop désaccordé
+  if (Math.abs(cents) > 45) return null;
   
   if (octave < 2 || octave > 6) return null;
   
