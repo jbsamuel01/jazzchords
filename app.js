@@ -7,159 +7,15 @@ let selectedQuality = '';
 let selectedSimpleExtension = '';
 let selectedAlteredExtension = '';
 let randomNoteCount = 4;
-let isListening = false;
-let audioContext = null;
-let mediaStream = null;
-let analyser = null;
 let lastSelectedChordName = '';
 let quizMode = false;
 let quizChord = null;
 let chordNotesVisible = true;
-let lastDetectedNote = null;
-let lastDetectionTime = 0;
-const DETECTION_COOLDOWN = 400;
-
-const NOTE_FREQUENCIES = {
-  'C': [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00],
-  'C#': [17.32, 34.65, 69.30, 138.59, 277.18, 554.37, 1108.73, 2217.46],
-  'D': [18.35, 36.71, 73.42, 146.83, 293.66, 587.33, 1174.66, 2349.32],
-  'D#': [19.45, 38.89, 77.78, 155.56, 311.13, 622.25, 1244.51, 2489.02],
-  'E': [20.60, 41.20, 82.41, 164.81, 329.63, 659.25, 1318.51, 2637.02],
-  'F': [21.83, 43.65, 87.31, 174.61, 349.23, 698.46, 1396.91, 2793.83],
-  'F#': [23.12, 46.25, 92.50, 185.00, 369.99, 739.99, 1479.98, 2959.96],
-  'G': [24.50, 49.00, 98.00, 196.00, 392.00, 783.99, 1567.98, 3135.96],
-  'G#': [25.96, 51.91, 103.83, 207.65, 415.30, 830.61, 1661.22, 3322.44],
-  'A': [27.50, 55.00, 110.00, 220.00, 440.00, 880.00, 1760.00, 3520.00],
-  'A#': [29.14, 58.27, 116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31],
-  'B': [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951.07]
-};
 
 document.addEventListener('DOMContentLoaded', () => {
   createKeyboard();
   initializeUI();
 });
-
-function getAudioContext() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return audioContext;
-}
-
-function playNoteSound(note, duration = 1.0, startTime = 0) {
-  const ctx = getAudioContext();
-  const noteName = note.replace(/[0-9]/g, '');
-  const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
-  const frequency = NOTE_FREQUENCIES[noteName]?.[octave];
-  if (!frequency) return;
-  
-  // Oscillateurs pour créer un son de piano plus réaliste
-  const fundamental = ctx.createOscillator();
-  const harmonic2 = ctx.createOscillator();
-  const harmonic3 = ctx.createOscillator();
-  const harmonic4 = ctx.createOscillator();
-  const harmonic5 = ctx.createOscillator();
-  const harmonic6 = ctx.createOscillator();
-  
-  const gainNode = ctx.createGain();
-  const gain2 = ctx.createGain();
-  const gain3 = ctx.createGain();
-  const gain4 = ctx.createGain();
-  const gain5 = ctx.createGain();
-  const gain6 = ctx.createGain();
-  const masterGain = ctx.createGain();
-  
-  // Filtre pour adoucir le son
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
-  filter.Q.setValueAtTime(0.8, ctx.currentTime + startTime);
-  
-  // Types d'oscillateurs pour un son plus naturel
-  fundamental.type = 'sine';
-  harmonic2.type = 'sine';
-  harmonic3.type = 'sine';
-  harmonic4.type = 'sine';
-  harmonic5.type = 'triangle';
-  harmonic6.type = 'triangle';
-  
-  // Fréquences harmoniques
-  fundamental.frequency.setValueAtTime(frequency, ctx.currentTime + startTime);
-  harmonic2.frequency.setValueAtTime(frequency * 2, ctx.currentTime + startTime);
-  harmonic3.frequency.setValueAtTime(frequency * 3, ctx.currentTime + startTime);
-  harmonic4.frequency.setValueAtTime(frequency * 4, ctx.currentTime + startTime);
-  harmonic5.frequency.setValueAtTime(frequency * 5, ctx.currentTime + startTime);
-  harmonic6.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
-  
-  // Enveloppe ADSR plus proche du piano - attaque rapide, decay moyen, release court
-  const attackTime = 0.005;
-  const decayTime = 0.15;
-  const sustainLevel = 0.2;
-  const releaseTime = Math.min(duration * 0.6, 0.8);
-  
-  // Enveloppe fondamentale (la plus forte)
-  gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gainNode.gain.linearRampToValueAtTime(0.6, ctx.currentTime + startTime + attackTime);
-  gainNode.gain.exponentialRampToValueAtTime(sustainLevel, ctx.currentTime + startTime + attackTime + decayTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + releaseTime);
-  
-  // Harmoniques qui s'éteignent plus vite (comme un vrai piano)
-  gain2.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain2.gain.linearRampToValueAtTime(0.3, ctx.currentTime + startTime + attackTime);
-  gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.3);
-  
-  gain3.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain3.gain.linearRampToValueAtTime(0.18, ctx.currentTime + startTime + attackTime);
-  gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.25);
-  
-  gain4.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain4.gain.linearRampToValueAtTime(0.12, ctx.currentTime + startTime + attackTime);
-  gain4.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.2);
-  
-  gain5.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain5.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + attackTime);
-  gain5.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.15);
-  
-  gain6.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain6.gain.linearRampToValueAtTime(0.04, ctx.currentTime + startTime + attackTime);
-  gain6.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.1);
-  
-  masterGain.gain.setValueAtTime(0.5, ctx.currentTime + startTime);
-  
-  // Connexions
-  fundamental.connect(gainNode);
-  harmonic2.connect(gain2);
-  harmonic3.connect(gain3);
-  harmonic4.connect(gain4);
-  harmonic5.connect(gain5);
-  harmonic6.connect(gain6);
-  
-  gainNode.connect(filter);
-  gain2.connect(filter);
-  gain3.connect(filter);
-  gain4.connect(filter);
-  gain5.connect(filter);
-  gain6.connect(filter);
-  
-  filter.connect(masterGain);
-  masterGain.connect(ctx.destination);
-  
-  const startMoment = ctx.currentTime + startTime;
-  fundamental.start(startMoment);
-  harmonic2.start(startMoment);
-  harmonic3.start(startMoment);
-  harmonic4.start(startMoment);
-  harmonic5.start(startMoment);
-  harmonic6.start(startMoment);
-  
-  const stopMoment = ctx.currentTime + startTime + Math.min(duration, 1.2);
-  fundamental.stop(stopMoment);
-  harmonic2.stop(stopMoment);
-  harmonic3.stop(stopMoment);
-  harmonic4.stop(stopMoment);
-  harmonic5.stop(stopMoment);
-  harmonic6.stop(stopMoment);
-}
 
 window.playChord = function() {
   if (quizMode && quizChord) {
@@ -181,6 +37,17 @@ window.playChord = function() {
       playNoteSound(note, 2.5, playedNotes.length * 0.15 + 0.2 + index * 0.05);
     });
   }
+};
+
+window.playNote = function(note) {
+  const index = playedNotes.indexOf(note);
+  if (index > -1) {
+    playedNotes.splice(index, 1);
+  } else {
+    playedNotes.push(note);
+    playNoteSound(note, 1.0);
+  }
+  updateDisplay();
 };
 
 function selectRootNote(note) {
@@ -416,7 +283,6 @@ function toggleChordVisibility() {
   chordNotesVisible = !chordNotesVisible;
   updateChordVisibilityButton();
   
-  // En mode manuel, masquer les notes efface aussi les notes jouées
   if (!quizMode && !chordNotesVisible) {
     playedNotes = [];
   }
@@ -435,17 +301,6 @@ function updateChordVisibilityButton() {
   }
 }
 
-window.playNote = function(note) {
-  const index = playedNotes.indexOf(note);
-  if (index > -1) {
-    playedNotes.splice(index, 1);
-  } else {
-    playedNotes.push(note);
-    playNoteSound(note, 1.0);
-  }
-  updateDisplay();
-};
-
 function resetNotes() {
   playedNotes = [];
   resetManualSelection();
@@ -453,34 +308,27 @@ function resetNotes() {
   updateDisplay();
 }
 
-// Fonction pour convertir une note jouée en nom français selon le contexte de l'accord
 function getPlayedNoteFrenchName(playedNote, chord) {
   if (!chord || !chord.notesWithOctave) {
-    // Pas de contexte d'accord, utiliser la notation par défaut
     const noteName = playedNote.replace(/[0-9]/g, '');
     return NOTE_FR_SHARP[noteName] || noteName;
   }
   
-  // Extraire la note sans octave
   const playedNoteName = playedNote.replace(/[0-9]/g, '');
   
-  // Chercher la correspondance dans les notes de l'accord
   for (let i = 0; i < chord.notesWithOctave.length; i++) {
     const chordNote = chord.notesWithOctave[i];
     if (chordNote.note === playedNoteName) {
-      // Utiliser le displayNote de l'accord (qui respecte les degrés)
       return chord.notesFr[i];
     }
   }
   
-  // Note non trouvée dans l'accord, utiliser la notation par défaut
   return NOTE_FR_SHARP[playedNoteName] || playedNoteName;
 }
 
 function updateDisplay(chordExists = null, forcedChordName = null) {
   const playedNotesDiv = document.getElementById('playedNotes');
   
-  // Récupérer l'accord actuel pour le contexte
   let currentChord = null;
   if (quizMode && quizChord) {
     currentChord = quizChord;
@@ -516,7 +364,6 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
       const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
       const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
       
-      // Ajouter le pouce juste après les notes si réussite (uniquement en mode quiz)
       if (quizMode && perfectMatch) {
         playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
       } else {
@@ -561,7 +408,6 @@ function displayDetectedChord(chord, chordExists = null) {
     chordName.textContent = '-';
     chordName.style.color = '#22c55e';
     chordNotesList.innerHTML = '<span class="empty-state">-</span>';
-    // Œil ouvert par défaut en mode manuel
     toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
       <circle cx="12" cy="12" r="3"></circle>
@@ -579,26 +425,22 @@ function displayDetectedChord(chord, chordExists = null) {
     chordName.style.color = '#22c55e';
     
     if (chordNotesVisible === false) {
-      // Notes masquées
       if (quizMode) {
-        chordNotesList.innerHTML = '<span class="quiz-message">Bouton orange pour voir les notes →</span>';
+        chordNotesList.innerHTML = '<span class="quiz-message">Voir les notes →</span>';
       } else {
         chordNotesList.innerHTML = '<span class="empty-state">-</span>';
       }
-      // Icône œil fermé (orange)
       toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
       </svg>`;
       toggleBtn.classList.add('hidden');
     } else {
-      // Notes visibles
       const notesDisplay = chord.notesFr.map(noteFr => {
         return `<span class="chord-note">${noteFr}</span>`;
       }).join(' ');
       
       chordNotesList.innerHTML = notesDisplay;
-      // Icône œil ouvert (vert)
       toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
         <circle cx="12" cy="12" r="3"></circle>
@@ -606,181 +448,4 @@ function displayDetectedChord(chord, chordExists = null) {
       toggleBtn.classList.remove('hidden');
     }
   }
-}
-
-async function toggleMicrophone() {
-  if (isListening) {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      mediaStream = null;
-    }
-    isListening = false;
-    lastDetectedNote = null;
-    const btn = document.getElementById('micToggle');
-    btn.classList.remove('active');
-  } else {
-    try {
-      const ctx = getAudioContext();
-      
-      mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: true
-        }
-      });
-      
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 4096;
-      analyser.smoothingTimeConstant = 0.3;
-      
-      const source = ctx.createMediaStreamSource(mediaStream);
-      source.connect(analyser);
-      
-      isListening = true;
-      const btn = document.getElementById('micToggle');
-      btn.classList.add('active');
-      
-      detectPitchFromMic();
-    } catch (err) {
-      console.error('Erreur microphone:', err);
-      alert('Impossible d\'accéder au microphone. Erreur : ' + err.message);
-    }
-  }
-}
-
-function detectPitchFromMic() {
-  if (!isListening || !analyser) return;
-  
-  const bufferLength = analyser.fftSize;
-  const buffer = new Float32Array(bufferLength);
-  
-  function analyze() {
-    if (!isListening) return;
-    
-    analyser.getFloatTimeDomainData(buffer);
-    
-    const rms = getRMS(buffer);
-    if (rms < 0.003) {
-      requestAnimationFrame(analyze);
-      return;
-    }
-    
-    const detectedFreq = simpleAutoCorrelate(buffer, audioContext.sampleRate);
-    
-    if (detectedFreq > 0) {
-      const note = frequencyToNote(detectedFreq);
-      const now = Date.now();
-      
-      if (note && (now - lastDetectionTime) > 400) {
-        if (note !== lastDetectedNote) {
-          if (!playedNotes.includes(note)) {
-            playedNotes.push(note);
-            updateDisplay();
-          }
-          lastDetectedNote = note;
-        }
-        lastDetectionTime = now;
-      }
-    }
-    
-    requestAnimationFrame(analyze);
-  }
-  
-  analyze();
-}
-
-function getRMS(buffer) {
-  let sum = 0;
-  for (let i = 0; i < buffer.length; i++) {
-    sum += buffer[i] * buffer[i];
-  }
-  return Math.sqrt(sum / buffer.length);
-}
-
-function simpleAutoCorrelate(buffer, sampleRate) {
-  const size = buffer.length;
-  const halfSize = Math.floor(size / 2);
-  
-  // Vérifier le niveau du signal
-  let rms = 0;
-  for (let i = 0; i < size; i++) {
-    rms += buffer[i] * buffer[i];
-  }
-  rms = Math.sqrt(rms / size);
-  if (rms < 0.003) return -1;
-  
-  // YIN algorithm - plus précis
-  const yinBuffer = new Float32Array(halfSize);
-  
-  // Step 1: Calcul de la fonction de différence
-  yinBuffer[0] = 1;
-  let runningSum = 0;
-  
-  for (let tau = 1; tau < halfSize; tau++) {
-    let sum = 0;
-    for (let i = 0; i < halfSize; i++) {
-      const delta = buffer[i] - buffer[i + tau];
-      sum += delta * delta;
-    }
-    yinBuffer[tau] = sum;
-  }
-  
-  // Step 2: Différence cumulée normalisée
-  for (let tau = 1; tau < halfSize; tau++) {
-    runningSum += yinBuffer[tau];
-    yinBuffer[tau] *= tau / runningSum;
-  }
-  
-  // Step 3: Recherche du minimum absolu
-  const threshold = 0.15;
-  let tau = 2;
-  
-  // Limites de recherche
-  const minTau = Math.floor(sampleRate / 1000); // 1000 Hz max
-  const maxTau = Math.floor(sampleRate / 80);   // 80 Hz min
-  
-  while (tau < maxTau && tau < halfSize) {
-    if (yinBuffer[tau] < threshold) {
-      while (tau + 1 < halfSize && yinBuffer[tau + 1] < yinBuffer[tau]) {
-        tau++;
-      }
-      
-      // Interpolation parabolique
-      let betterTau = tau;
-      if (tau > 0 && tau < halfSize - 1) {
-        const s0 = yinBuffer[tau - 1];
-        const s1 = yinBuffer[tau];
-        const s2 = yinBuffer[tau + 1];
-        betterTau = tau + (s2 - s0) / (2 * (2 * s1 - s2 - s0));
-      }
-      
-      return sampleRate / betterTau;
-    }
-    tau++;
-  }
-  
-  return -1;
-}
-
-function frequencyToNote(frequency) {
-  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const A4 = 440;
-  const C0 = A4 * Math.pow(2, -4.75);
-  
-  if (frequency < 60 || frequency > 2000) return null;
-  
-  const halfSteps = 12 * Math.log2(frequency / C0);
-  const octave = Math.floor(halfSteps / 12);
-  let noteIndex = Math.round(halfSteps % 12);
-  
-  // Vérifier que la note est proche de la fréquence théorique (tolérance augmentée)
-  const theoreticalFreq = C0 * Math.pow(2, (octave * 12 + noteIndex) / 12);
-  const cents = 1200 * Math.log2(frequency / theoreticalFreq);
-  
-  if (Math.abs(cents) > 45) return null;
-  
-  if (octave < 2 || octave > 6) return null;
-  
-  return noteNames[noteIndex] + octave;
 }
