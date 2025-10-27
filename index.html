@@ -46,15 +46,17 @@
       <div class="chord-info-line">
         <h2 id="chordName">-</h2>
         <span class="chord-separator">:</span>
-        <div id="chordNotesList" class="notes-list-inline">
-          <div class="empty-state">-</div>
+        <div class="notes-container-with-btn">
+          <div id="chordNotesList" class="notes-list-inline">
+            <div class="empty-state">-</div>
+          </div>
+          <button id="toggleChordVisibility" class="toggle-visibility-btn" title="Masquer/Afficher">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
         </div>
-        <button id="toggleChordVisibility" class="toggle-visibility-btn" title="Masquer/Afficher">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </button>
       </div>
 
       <div class="played-notes-section">
@@ -94,10 +96,6 @@
       <!-- Ligne 4: Altérations (#5, b5, b9, #9, #11, b13, alt) -->
       <div class="input-row">
         <div id="alteredExtensions" class="btn-group"></div>
-      </div>
-      
-      <!-- Ligne 5: Vide pour l'instant (extension future) -->
-      <div class="input-row" style="min-height: 32px;">
       </div>
     </div>
 
