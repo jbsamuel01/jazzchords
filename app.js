@@ -64,6 +64,12 @@ function selectRootNote(note) {
     btn.classList.toggle('active', btn.textContent === selectedRootNote);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
@@ -81,6 +87,12 @@ function selectAlteration(alt) {
     btn.classList.toggle('active', btn.dataset.value === selectedAlteration);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
@@ -94,6 +106,12 @@ function selectMinor() {
     btn.classList.toggle('active', selectedMinor);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
@@ -111,6 +129,12 @@ function selectQuality(value) {
     btn.classList.toggle('active', btn.dataset.value === selectedQuality);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
@@ -128,6 +152,12 @@ function selectSimpleExtension(ext) {
     btn.classList.toggle('active', btn.textContent === selectedSimpleExtension);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
@@ -145,6 +175,12 @@ function selectAlteredExtension(ext) {
     btn.classList.toggle('active', btn.textContent === selectedAlteredExtension);
     btn.classList.remove('error');
   });
+  
+  // Effacer les notes jouées si l'œil est orange
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  }
+  
   buildManualChordLive();
 }
 
