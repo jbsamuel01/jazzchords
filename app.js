@@ -65,8 +65,9 @@ function selectRootNote(note) {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  // Effacer seulement si l'utilisateur a manuellement caché les notes
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -88,8 +89,8 @@ function selectAlteration(alt) {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -107,8 +108,8 @@ function selectMinor() {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -130,8 +131,8 @@ function selectQuality(value) {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -153,8 +154,8 @@ function selectSimpleExtension(ext) {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -176,8 +177,8 @@ function selectAlteredExtension(ext) {
     btn.classList.remove('error');
   });
   
-  // Effacer les notes jouées si l'œil est orange
-  if (!chordNotesVisible) {
+  // En mode manuel, ne pas effacer automatiquement
+  if (!chordNotesVisible && !quizMode) {
     playedNotes = [];
   }
   
@@ -323,7 +324,18 @@ function toggleChordVisibility() {
   chordNotesVisible = !chordNotesVisible;
   updateChordVisibilityButton();
   
-  // Ne PAS effacer les notes jouées quand on masque
+  // Effacer les notes jouées quand on masque (utilisateur clique sur l'œil)
+  if (!chordNotesVisible) {
+    playedNotes = [];
+  } else {
+    // Quand on affiche à nouveau, restaurer les notes de l'accord si en mode manuel
+    if (!quizMode && lastSelectedChordName) {
+      const chord = ALL_CHORDS[lastSelectedChordName];
+      if (chord) {
+        playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+      }
+    }
+  }
   
   updateDisplay();
 }
@@ -402,7 +414,7 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
       const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
       const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
       
-      if (quizMode && perfectMatch) {
+      if (perfectMatch) {
         playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
       } else {
         playedNotesDiv.innerHTML = notesHTML;
@@ -463,11 +475,7 @@ function displayDetectedChord(chord, chordExists = null) {
     chordName.style.color = '#22c55e';
     
     if (chordNotesVisible === false) {
-      if (quizMode) {
-        chordNotesList.innerHTML = '<span class="quiz-message">Voir les notes →</span>';
-      } else {
-        chordNotesList.innerHTML = '<span class="empty-state">-</span>';
-      }
+      chordNotesList.innerHTML = '<span class="quiz-message">Voir les notes →</span>';
       toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
