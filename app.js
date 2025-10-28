@@ -178,7 +178,11 @@ function buildManualChordLive() {
   
   if (chord) {
     lastSelectedChordName = chordName;
-    playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+    
+    // Ne mettre à jour playedNotes que si les notes sont visibles
+    if (chordNotesVisible) {
+      playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+    }
     
     document.querySelectorAll('.mini-key.error').forEach(btn => {
       btn.classList.remove('error');
@@ -283,9 +287,7 @@ function toggleChordVisibility() {
   chordNotesVisible = !chordNotesVisible;
   updateChordVisibilityButton();
   
-  if (!quizMode && !chordNotesVisible) {
-    playedNotes = [];
-  }
+  // Ne PAS effacer les notes jouées quand on masque
   
   updateDisplay();
 }
