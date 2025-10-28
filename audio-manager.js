@@ -146,6 +146,11 @@ async function toggleMicrophone() {
     lastDetectedNote = null;
     const btn = document.getElementById('micToggle');
     btn.classList.remove('active');
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      <line x1="12" x2="12" y1="19" y2="22"></line>
+    </svg>`;
   } else {
     try {
       const ctx = getAudioContext();
@@ -168,6 +173,15 @@ async function toggleMicrophone() {
       isListening = true;
       const btn = document.getElementById('micToggle');
       btn.classList.add('active');
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      <line x1="12" x2="12" y1="19" y2="22"></line>
+      <path d="M20 8c1 0 2 1 2 2v4c0 1-1 2-2 2" opacity="0.6"></path>
+      <path d="M2 8c-1 0-2 1-2 2v4c0 1 1 2 2 2" opacity="0.6"></path>
+      <path d="M22 6c1.5 0 2.5 2 2.5 4v4c0 2-1 4-2.5 4" opacity="0.3"></path>
+      <path d="M2 6c-1.5 0-2.5 2-2.5 4v4c0 2 1 4 2.5 4" opacity="0.3"></path>
+    </svg>`;
       
       detectPitchFromMic();
     } catch (err) {
