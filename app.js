@@ -11,6 +11,7 @@ let lastSelectedChordName = '';
 let quizMode = false;
 let quizChord = null;
 let chordNotesVisible = true;
+let lastResetTime = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
   createKeyboard();
@@ -18,23 +19,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.playChord = function() {
+  getAudioContext();
+  
+  let notesToPlay = [];
+  
   if (quizMode && quizChord) {
-    getAudioContext();
-    const notesToPlay = quizChord.notesWithOctave.map(n => n.note + (4 + n.octave));
-    
+    notesToPlay = quizChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+  } else if (lastSelectedChordName) {
+    const chord = ALL_CHORDS[lastSelectedChordName];
+    if (chord) {
+      notesToPlay = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+    }
+  } else {
+    // Détecter l'accord depuis les notes jouées au clavier
+    const detectedChord = detectChord(playedNotes);
+    if (detectedChord && detectedChord.name !== 'Inconnu' && detectedChord.notesWithOctave) {
+      notesToPlay = detectedChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+    }
+  }
+  
+  if (notesToPlay.length > 0) {
     notesToPlay.forEach((note, index) => {
       playNoteSound(note, 0.6, index * 0.15);
     });
     notesToPlay.forEach((note, index) => {
       playNoteSound(note, 2.5, notesToPlay.length * 0.15 + 0.2 + index * 0.05);
-    });
-  } else if (playedNotes.length > 0) {
-    getAudioContext();
-    playedNotes.forEach((note, index) => {
-      playNoteSound(note, 0.6, index * 0.15);
-    });
-    playedNotes.forEach((note, index) => {
-      playNoteSound(note, 2.5, playedNotes.length * 0.15 + 0.2 + index * 0.05);
     });
   }
 };
@@ -352,10 +361,25 @@ function updateChordVisibilityButton() {
 }
 
 function resetNotes() {
+  const now = Date.now();
+  const timeSinceLastReset = now - lastResetTime;
+  
+  // Si moins de 1 seconde depuis le dernier reset, sortir du mode quiz
+  if (timeSinceLastReset < 1000 && quizMode) {
+    exitQuizMode();
+    playedNotes = [];
+    lastSelectedChordName = '';
+    deselectNoteCountButtons();
+    updateDisplay();
+    lastResetTime = 0;
+    return;
+  }
+  
   playedNotes = [];
   resetManualSelection();
   document.getElementById('playChordBtn').style.display = 'none';
   updateDisplay();
+  lastResetTime = now;
 }
 
 function getPlayedNoteFrenchName(playedNote, chord) {
@@ -386,6 +410,14 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     currentChord = ALL_CHORDS[lastSelectedChordName];
   }
   
+  // Déterminer si les notes ont été jouées manuellement ou générées automatiquement
+  const manuallyPlayed = !chordNotesVisible || playedNotes.length === 0 || 
+    (currentChord && playedNotes.length > 0 && 
+     !playedNotes.every((note, idx) => {
+       const expectedNotes = currentChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+       return expectedNotes.includes(note);
+     }));
+  
   if ((quizMode && quizChord) || (!quizMode && currentChord)) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
@@ -414,7 +446,8 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
       const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
       const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
       
-      if (perfectMatch) {
+      // Afficher le pouce seulement si les notes ont été jouées manuellement
+      if (perfectMatch && (!chordNotesVisible || quizMode)) {
         playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
       } else {
         playedNotesDiv.innerHTML = notesHTML;
@@ -444,6 +477,14 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     chord = ALL_CHORDS[lastSelectedChordName];
   } else {
     chord = detectChord(playedNotes);
+  }
+  
+  // Afficher le bouton play si un accord est détecté (même depuis le clavier)
+  const playBtn = document.getElementById('playChordBtn');
+  if (chord && chord.name !== 'Inconnu') {
+    playBtn.style.display = 'inline-flex';
+  } else if (!quizMode && !lastSelectedChordName) {
+    playBtn.style.display = 'none';
   }
   
   displayDetectedChord(chord, chordExists);

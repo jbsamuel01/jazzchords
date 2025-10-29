@@ -129,9 +129,13 @@ body {
   color: #16a34a;
 }
 
+.icon-btn.reset-btn {
+  color: #22c55e;
+}
+
 .section-label {
   font-size: 11px;
-  color: #9aa7c7;
+  color: #e8ecf8;
   font-weight: bold;
   flex-shrink: 0;
 }
@@ -198,13 +202,13 @@ body {
 }
 
 .empty-state {
-  color: #6b7280;
+  color: #9ca3af;
   font-size: 13px;
   display: inline-block;
 }
 
 .quiz-message {
-  color: #6b7280;
+  color: #9ca3af;
   font-size: 14px;
   font-style: italic;
   display: inline;
