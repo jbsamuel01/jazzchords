@@ -318,55 +318,55 @@ body {
 
 .input-row {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   justify-content: center;
   align-items: center;
 }
 
 .btn-group {
   display: flex;
-  gap: 1px;
+  gap: 2px;
 }
 
 .btn-group-with-links {
   display: flex;
-  gap: 1px;
+  gap: 2px;
   align-items: center;
 }
 
 .btn-stack-group {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   align-items: center;
 }
 
 .row-spacer {
-  width: 4px;
+  width: 8px;
   height: 1px;
   background: #374151;
 }
 
 /* Boutons de construction manuelle - PADDING HORIZONTAL RÉDUIT */
 .mini-key {
-  padding: 6px 2px;
+  padding: 6px 4px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
   font-weight: bold;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 22px;
+  min-width: 28px;
   text-align: center;
 }
 
 .mini-key.stacked {
-  min-height: 20px;
-  padding: 4px 2px;
-  font-size: 10px;
+  min-height: 22px;
+  padding: 4px 4px;
+  font-size: 11px;
 }
 
 .mini-key.active {
@@ -460,15 +460,15 @@ body {
   }
 
   .mini-key {
-    padding: 5px 2px;
+    padding: 5px 4px;
     font-size: 10px;
-    min-width: 20px;
+    min-width: 26px;
   }
   
   .mini-key.stacked {
-    padding: 3px 2px;
-    font-size: 9px;
-    min-height: 18px;
+    padding: 3px 4px;
+    font-size: 10px;
+    min-height: 20px;
   }
 
   .input-row {
@@ -491,15 +491,15 @@ body {
   }
 
   .mini-key {
-    padding: 4px 2px;
+    padding: 4px 3px;
     font-size: 9px;
-    min-width: 18px;
+    min-width: 24px;
   }
   
   .mini-key.stacked {
-    padding: 3px 2px;
-    font-size: 8px;
-    min-height: 16px;
+    padding: 3px 3px;
+    font-size: 9px;
+    min-height: 18px;
   }
 
   #chordName {
