@@ -261,7 +261,7 @@ body {
   }
 }
 
-/* Clavier virtuel - Hauteur réduite */
+/* Clavier virtuel */
 .keyboard-panel {
   background: #151b2b;
   padding: 10px;
@@ -270,10 +270,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 180px;
 }
 
 .keyboard-container {
   height: 130px;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.keyboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .played-notes-in-keyboard {
@@ -282,18 +292,6 @@ body {
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid #374151;
-}
-
-.keyboard-container {
-  height: 180px;
-  position: relative;
-  width: 100%;
-}
-
-.keyboard {
-  position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .white-keys {
@@ -351,7 +349,7 @@ body {
   border-color: #16a34a;
 }
 
-/* Zone de saisie manuelle - 5 lignes */
+/* Zone de saisie manuelle */
 .input-panel {
   background: #151b2b;
   padding: 10px;
@@ -388,8 +386,9 @@ body {
 }
 
 .mini-key.stacked {
-  min-height: 22px;
-  padding: 4px 11px;
+  min-height: 16px;
+  padding: 2px 2px;
+  font-size: 7px;
 }
 
 .row-spacer {
@@ -399,17 +398,17 @@ body {
 }
 
 .mini-key {
-  padding: 6px 11px;
+  padding: 4px 2px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 8px;
   font-weight: bold;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 36px;
+  min-width: 18px;
   text-align: center;
 }
 
@@ -545,15 +544,33 @@ body {
 }
 
 @media (max-width: 480px) {
+  .keyboard-panel {
+    min-height: 140px;
+  }
+
+  .keyboard-container {
+    height: 80px;
+  }
+
   .mini-key {
-    padding: 4px 7px;
-    font-size: 9px;
-    min-width: 28px;
+    padding: 2px 1px;
+    font-size: 6px;
+    min-width: 14px;
+  }
+  
+  .mini-key.stacked {
+    padding: 1px 1px;
+    font-size: 5px;
+    min-height: 12px;
   }
 
   .note-count-btn {
     padding: 4px 8px;
     font-size: 10px;
+  }
+  
+  #chordName {
+    font-size: 24px;
   }
 
   .display-header h2,
@@ -567,10 +584,6 @@ body {
     padding: 5px 8px;
   }
 
-  .keyboard-panel {
-    height: 80px;
-  }
-
   .black-key {
     width: 14px;
     right: -7px;
@@ -578,15 +591,17 @@ body {
   }
 
   .row-spacer {
-    width: 10px;
+    width: 3px;
   }
 
   .input-row {
-    gap: 6px;
+    gap: 1px;
   }
 
-  .btn-group {
-    gap: 3px;
+  .btn-group,
+  .btn-group-with-links,
+  .btn-stack-group {
+    gap: 1px;
   }
 
   .random-panel {
