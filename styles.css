@@ -498,6 +498,10 @@ body {
     padding: 6px 10px;
   }
 
+  .keyboard-panel {
+    min-height: 200px;
+  }
+
   .keyboard-container {
     height: 140px;
   }
@@ -509,13 +513,13 @@ body {
   }
 
   .mini-key {
-    padding: 3px 4px;
+    padding: 3px 2px;
     font-size: 7px;
-    min-width: 20px;
+    min-width: 18px;
   }
   
   .mini-key.stacked {
-    padding: 2px 4px;
+    padding: 2px 2px;
     font-size: 6px;
     min-height: 14px;
   }
