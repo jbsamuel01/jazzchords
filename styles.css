@@ -47,7 +47,31 @@ body {
   flex: 1;
 }
 
+.notes-played-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  color: #e8ecf8;
+  font-weight: bold;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
 .chord-info-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chord-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chord-notes-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -243,7 +267,27 @@ body {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #22c55e;
-  height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.keyboard-container {
+  height: 130px;
+}
+
+.played-notes-in-keyboard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+.keyboard-container {
+  height: 130px;
+  position: relative;
+  width: 100%;
 }
 
 .keyboard {
@@ -320,19 +364,19 @@ body {
 
 .input-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   align-items: center;
 }
 
 .btn-group {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .btn-group-with-links {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   align-items: center;
 }
 
@@ -349,7 +393,7 @@ body {
 }
 
 .row-spacer {
-  width: 16px;
+  width: 12px;
   height: 1px;
   background: #374151;
 }
@@ -438,6 +482,10 @@ body {
   .chord-info-line {
     flex-wrap: wrap;
   }
+  
+  #chordName {
+    font-size: 28px;
+  }
 
   .display-header h2,
   .chord-separator {
@@ -450,8 +498,8 @@ body {
     padding: 6px 10px;
   }
 
-  .keyboard-panel {
-    height: 100px;
+  .keyboard-container {
+    height: 90px;
   }
 
   .black-key {
@@ -461,9 +509,14 @@ body {
   }
 
   .mini-key {
-    padding: 5px 9px;
-    font-size: 10px;
-    min-width: 32px;
+    padding: 4px 7px;
+    font-size: 9px;
+    min-width: 28px;
+  }
+  
+  .mini-key.stacked {
+    padding: 3px 7px;
+    font-size: 8px;
   }
 
   .note-count-btn {
@@ -472,7 +525,16 @@ body {
   }
 
   .row-spacer {
-    width: 12px;
+    width: 10px;
+  }
+  
+  .input-row {
+    gap: 4px;
+  }
+  
+  .btn-group,
+  .btn-group-with-links {
+    gap: 2px;
   }
 }
 
