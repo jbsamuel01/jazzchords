@@ -285,7 +285,7 @@ body {
 }
 
 .keyboard-container {
-  height: 160px;
+  height: 180px;
   position: relative;
   width: 100%;
 }
@@ -364,26 +364,26 @@ body {
 
 .input-row {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   justify-content: center;
   align-items: center;
 }
 
 .btn-group {
   display: flex;
-  gap: 2px;
+  gap: 1px;
 }
 
 .btn-group-with-links {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   align-items: center;
 }
 
 .btn-stack-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   align-items: center;
 }
 
@@ -393,7 +393,7 @@ body {
 }
 
 .row-spacer {
-  width: 8px;
+  width: 6px;
   height: 1px;
   background: #374151;
 }
@@ -499,7 +499,7 @@ body {
   }
 
   .keyboard-container {
-    height: 120px;
+    height: 140px;
   }
 
   .black-key {
@@ -509,14 +509,15 @@ body {
   }
 
   .mini-key {
-    padding: 4px 7px;
-    font-size: 9px;
-    min-width: 28px;
+    padding: 3px 4px;
+    font-size: 7px;
+    min-width: 20px;
   }
   
   .mini-key.stacked {
-    padding: 3px 7px;
-    font-size: 8px;
+    padding: 2px 4px;
+    font-size: 6px;
+    min-height: 14px;
   }
 
   .note-count-btn {
@@ -525,16 +526,17 @@ body {
   }
 
   .row-spacer {
-    width: 10px;
+    width: 4px;
   }
   
   .input-row {
-    gap: 4px;
+    gap: 2px;
   }
   
   .btn-group,
-  .btn-group-with-links {
-    gap: 2px;
+  .btn-group-with-links,
+  .btn-stack-group {
+    gap: 1px;
   }
 }
 
