@@ -3,6 +3,7 @@ let playedNotes = [];
 let selectedRootNote = '';
 let selectedAlteration = '';
 let selectedMinor = false;
+let selectedBaseQuality = '';
 let selectedQuality = '';
 let selectedSimpleExtension = '';
 let selectedAlteredExtension = '';
@@ -125,6 +126,37 @@ function selectMinor() {
   buildManualChordLive();
 }
 
+function selectBaseQuality(value) {
+  if (quizMode) exitQuizMode();
+  deselectNoteCountButtons();
+  
+  // Si on clique sur la même valeur, on désélectionne
+  if (selectedBaseQuality === value) {
+    selectedBaseQuality = '';
+  } else {
+    selectedBaseQuality = value;
+  }
+  
+  // Désélectionner tous les boutons de base-quality
+  document.querySelectorAll('[data-type="base-quality"]').forEach(btn => {
+    btn.classList.remove('active', 'error');
+  });
+  
+  // Activer seulement le bouton sélectionné
+  if (selectedBaseQuality) {
+    document.querySelectorAll(`[data-type="base-quality"][data-value="${selectedBaseQuality}"]`).forEach(btn => {
+      btn.classList.add('active');
+    });
+  }
+  
+  // Ne pas effacer automatiquement en mode manuel
+  if (!chordNotesVisible && !quizMode) {
+    playedNotes = [];
+  }
+  
+  buildManualChordLive();
+}
+
 function selectQuality(value) {
   if (quizMode) exitQuizMode();
   deselectNoteCountButtons();
@@ -179,6 +211,15 @@ function selectAlteredExtension(ext) {
     selectedAlteredExtension = '';
   } else {
     selectedAlteredExtension = ext;
+    
+    // Allumer automatiquement la touche 7 si ce n'est pas déjà fait
+    if (selectedQuality !== '7') {
+      selectedQuality = '7';
+      document.querySelectorAll('#qualities .mini-key').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === '7');
+        btn.classList.remove('error');
+      });
+    }
   }
   
   document.querySelectorAll('#alteredExtensions .mini-key').forEach(btn => {
@@ -198,6 +239,7 @@ function resetManualSelection() {
   selectedRootNote = '';
   selectedAlteration = '';
   selectedMinor = false;
+  selectedBaseQuality = '';
   selectedQuality = '';
   selectedSimpleExtension = '';
   selectedAlteredExtension = '';
@@ -217,8 +259,18 @@ function buildManualChordLive() {
   }
   
   const fullRoot = selectedRootNote + selectedAlteration;
-  const minorPart = selectedMinor ? 'm' : '';
-  let chordName = fullRoot + minorPart + selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
+  
+  // Construire le nom de l'accord avec baseQuality
+  let chordName = fullRoot;
+  
+  // Ajouter baseQuality (m, aug, sus2, sus4)
+  if (selectedBaseQuality) {
+    chordName += selectedBaseQuality;
+  } else if (selectedMinor) {
+    chordName += 'm';
+  }
+  
+  chordName += selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
   
   const chord = ALL_CHORDS[chordName];
   
@@ -248,6 +300,11 @@ function buildManualChordLive() {
     }
     if (selectedAlteration !== '') {
       document.querySelectorAll('#alterations .mini-key[data-type="alteration"].active').forEach(btn => {
+        btn.classList.add('error');
+      });
+    }
+    if (selectedBaseQuality !== '') {
+      document.querySelectorAll('[data-type="base-quality"].active').forEach(btn => {
         btn.classList.add('error');
       });
     }

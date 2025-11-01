@@ -206,9 +206,18 @@ function generateAllChords() {
         return;
       }
       
-      // Ajouter Cb (Do bémol) qui manquait
+      // Vérifier si c'est Cb pour remonter d'une octave
+      const isCb = (rootNote === 'C' && alt === 'b');
+      
+      // Ajouter l'accord majeur
       const majorIntervals = getIntervals('');
-      const majorNotes = majorIntervals.map(interval => getNoteName(fullRoot, interval)).filter(n => n !== null);
+      const majorNotes = majorIntervals.map(interval => {
+        const note = getNoteName(fullRoot, interval);
+        if (note && isCb) {
+          return { ...note, octave: note.octave + 1 };
+        }
+        return note;
+      }).filter(n => n !== null);
       
       chords[fullRoot] = {
         notation: fullRoot,
@@ -232,7 +241,13 @@ function generateAllChords() {
       allQualities.forEach(quality => {
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
-        const notes = intervals.map(interval => getNoteName(fullRoot, interval)).filter(n => n !== null);
+        const notes = intervals.map(interval => {
+          const note = getNoteName(fullRoot, interval);
+          if (note && isCb) {
+            return { ...note, octave: note.octave + 1 };
+          }
+          return note;
+        }).filter(n => n !== null);
         
         chords[chordName] = {
           notation: chordName,
@@ -244,45 +259,6 @@ function generateAllChords() {
       });
     });
   });
-  
-  // Ajouter spécifiquement Cb (même si C avec b) et remonter d'une octave
-  const cbRoot = 'Cb';
-  const cbIntervals = getIntervals('');
-  const cbNotes = cbIntervals.map(interval => {
-    const note = getNoteName(cbRoot, interval);
-    if (note) {
-      // Remonter d'une octave pour Cb
-      return { ...note, octave: note.octave + 1 };
-    }
-    return note;
-  }).filter(n => n !== null);
-  
-  chords[cbRoot] = {
-    notation: cbRoot,
-    nomFrancais: `${cbRoot} majeur`,
-    notes: cbNotes.map(n => n.note),
-    notesFr: cbNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
-    notesWithOctave: cbNotes
-  };
-  
-  // Ajouter Cbm (Cb mineur) aussi
-  const cbmIntervals = getIntervals('m');
-  const cbmNotes = cbmIntervals.map(interval => {
-    const note = getNoteName(cbRoot, interval);
-    if (note) {
-      // Remonter d'une octave pour Cbm aussi
-      return { ...note, octave: note.octave + 1 };
-    }
-    return note;
-  }).filter(n => n !== null);
-  
-  chords[cbRoot + 'm'] = {
-    notation: cbRoot + 'm',
-    nomFrancais: `${cbRoot} mineur`,
-    notes: cbmNotes.map(n => n.note),
-    notesFr: cbmNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
-    notesWithOctave: cbmNotes
-  };
   
   return chords;
 }
