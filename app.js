@@ -1,4 +1,6 @@
-// app.js - Logique principale
+// app.js v2.1 - Logique principale
+// Correction v2.1 : utilisation de noteForKeyboard pour le clavier
+
 let playedNotes = [];
 let selectedRootNote = '';
 let selectedAlteration = '';
@@ -25,17 +27,17 @@ window.playChord = function() {
   let notesToPlay = [];
   
   if (quizMode && quizChord) {
-    notesToPlay = quizChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+    notesToPlay = quizChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
   } else if (lastSelectedChordName) {
     const chord = ALL_CHORDS[lastSelectedChordName];
     if (chord) {
-      notesToPlay = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+      notesToPlay = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
     }
   } else {
     // Détecter l'accord depuis les notes jouées au clavier
     const detectedChord = detectChord(playedNotes);
     if (detectedChord && detectedChord.name !== 'Inconnu' && detectedChord.notesWithOctave) {
-      notesToPlay = detectedChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+      notesToPlay = detectedChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
     }
   }
   
@@ -277,9 +279,9 @@ function buildManualChordLive() {
   if (chord) {
     lastSelectedChordName = chordName;
     
-    // Ne mettre à jour playedNotes que si les notes sont visibles
+    // CORRECTION v2.1 : utiliser noteForKeyboard pour le clavier
     if (chordNotesVisible) {
-      playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+      playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
     }
     
     document.querySelectorAll('.mini-key.error').forEach(btn => {
@@ -398,7 +400,8 @@ function toggleChordVisibility() {
     if (!quizMode && lastSelectedChordName) {
       const chord = ALL_CHORDS[lastSelectedChordName];
       if (chord) {
-        playedNotes = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+        // CORRECTION v2.1 : utiliser noteForKeyboard
+        playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
       }
     }
   }
@@ -449,7 +452,8 @@ function getPlayedNoteFrenchName(playedNote, chord) {
   
   for (let i = 0; i < chord.notesWithOctave.length; i++) {
     const chordNote = chord.notesWithOctave[i];
-    if (chordNote.note === playedNoteName) {
+    // CORRECTION v2.1 : comparer avec noteForKeyboard
+    if ((chordNote.noteForKeyboard || chordNote.note) === playedNoteName) {
       return chord.notesFr[i];
     }
   }
@@ -471,7 +475,8 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
   const manuallyPlayed = !chordNotesVisible || playedNotes.length === 0 || 
     (currentChord && playedNotes.length > 0 && 
      !playedNotes.every((note, idx) => {
-       const expectedNotes = currentChord.notesWithOctave.map(n => n.note + (4 + n.octave));
+       // CORRECTION v2.1 : utiliser noteForKeyboard
+       const expectedNotes = currentChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
        return expectedNotes.includes(note);
      }));
   
@@ -479,7 +484,10 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      const chordNotes = quizMode ? quizChord.notes : currentChord.notes;
+      // CORRECTION v2.1 : utiliser noteForKeyboard pour la comparaison
+      const chordNotes = quizMode 
+        ? quizChord.notesWithOctave.map(n => n.noteForKeyboard || n.note)
+        : currentChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
       
       let allCorrect = true;
@@ -561,6 +569,7 @@ function displayDetectedChord(chord, chordExists = null) {
       <circle cx="12" cy="12" r="3"></circle>
     </svg>`;
     toggleBtn.classList.remove('hidden');
+    drawMusicalStaff([]);
     return;
   }
   
@@ -568,6 +577,7 @@ function displayDetectedChord(chord, chordExists = null) {
     chordName.textContent = '✗';
     chordName.style.color = '#ef4444';
     chordNotesList.innerHTML = '<span class="empty-state">Accord introuvable</span>';
+    drawMusicalStaff([]);
   } else {
     chordName.textContent = chord.notation;
     chordName.style.color = '#22c55e';
@@ -579,6 +589,7 @@ function displayDetectedChord(chord, chordExists = null) {
         <line x1="1" y1="1" x2="23" y2="23"></line>
       </svg>`;
       toggleBtn.classList.add('hidden');
+      drawMusicalStaff([]);
     } else {
       const notesDisplay = chord.notesFr.map(noteFr => {
         return `<span class="chord-note">${noteFr}</span>`;
@@ -590,6 +601,14 @@ function displayDetectedChord(chord, chordExists = null) {
         <circle cx="12" cy="12" r="3"></circle>
       </svg>`;
       toggleBtn.classList.remove('hidden');
+      
+      // Dessiner la portée musicale
+      if (chord.notesWithOctave) {
+        const notesToDraw = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
+        // Extraire la note fondamentale de la notation de l'accord
+        const rootNote = chord.notation.match(/^[A-G][#b]?/)?.[0] || '';
+        drawMusicalStaff(notesToDraw, rootNote);
+      }
     }
   }
 }

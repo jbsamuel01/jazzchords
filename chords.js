@@ -1,4 +1,6 @@
-// chords.js - Génération de tous les accords
+// chords.js v2.1 - Génération de tous les accords
+// Correction v2.1 : ajout d'une propriété noteForKeyboard pour compatibilité avec le clavier
+
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 const ROOT_NOTES_NATURAL = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -165,13 +167,17 @@ function getNoteName(rootNote, interval) {
   const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
   
   let rootIndex = sharpNotes.indexOf(rootNote);
+  let useFlats = false;
+  
   if (rootIndex === -1) {
     rootIndex = flatNotes.indexOf(rootNote);
+    useFlats = true;
   }
   
   const totalSemitones = rootIndex + interval;
   const octave = Math.floor(totalSemitones / 12);
   
+  // Calculer la note en notation sharp et flat
   let baseNote = noteName.replace(/[#b]/g, '');
   let baseSemitone = sharpNotes.indexOf(baseNote);
   
@@ -181,10 +187,24 @@ function getNoteName(rootNote, interval) {
   else if (noteName.includes('b')) baseSemitone -= 1;
   
   baseSemitone = ((baseSemitone % 12) + 12) % 12;
+  
   const baseNoteSharp = sharpNotes[baseSemitone];
+  const baseNoteFlat = flatNotes[baseSemitone];
+  
+  // Déterminer quelle notation utiliser (# ou b) en fonction de displayNote
+  let finalNote;
+  if (noteName.includes('b')) {
+    finalNote = baseNoteFlat;
+  } else if (noteName.includes('#')) {
+    finalNote = baseNoteSharp;
+  } else {
+    // Note naturelle, utiliser la forme qui correspond au contexte
+    finalNote = useFlats ? baseNoteFlat : baseNoteSharp;
+  }
   
   return { 
-    note: baseNoteSharp, 
+    note: finalNote,           // Pour la portée (avec bémols si nécessaire)
+    noteForKeyboard: baseNoteSharp,  // NOUVEAU v2.1 : toujours en sharp pour le clavier
     displayNote: noteName, 
     octave: octave 
   };

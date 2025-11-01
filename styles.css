@@ -65,6 +65,17 @@ body {
   gap: 8px;
 }
 
+.chord-display-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.chord-name-section {
+  flex-shrink: 0;
+}
+
 .chord-name-row {
   display: flex;
   align-items: center;
@@ -84,6 +95,19 @@ body {
   font-weight: bold;
   margin: 0;
   flex-shrink: 0;
+}
+
+/* Portée musicale */
+.staff-container {
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  border: 2px solid #22c55e;
+  flex-shrink: 0;
+}
+
+#musicalStaff {
+  display: block;
 }
 
 .notes-list-inline {
