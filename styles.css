@@ -347,26 +347,28 @@ body {
   background: #374151;
 }
 
-/* Boutons de construction manuelle - PADDING HORIZONTAL RÉDUIT */
+/* Boutons de construction manuelle - Rectangle serré, lettres grandes */
 .mini-key {
-  padding: 6px 4px;
+  padding: 3px 2px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: bold;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 28px;
+  min-width: 20px;
   text-align: center;
+  line-height: 1;
 }
 
 .mini-key.stacked {
-  min-height: 22px;
-  padding: 4px 4px;
-  font-size: 11px;
+  min-height: 18px;
+  padding: 2px 2px;
+  font-size: 12px;
+  line-height: 1;
 }
 
 .mini-key.active {
@@ -460,15 +462,17 @@ body {
   }
 
   .mini-key {
-    padding: 5px 4px;
-    font-size: 10px;
-    min-width: 26px;
+    padding: 3px 2px;
+    font-size: 12px;
+    min-width: 18px;
+    line-height: 1;
   }
   
   .mini-key.stacked {
-    padding: 3px 4px;
-    font-size: 10px;
-    min-height: 20px;
+    padding: 2px 2px;
+    font-size: 11px;
+    min-height: 16px;
+    line-height: 1;
   }
 
   .input-row {
@@ -487,19 +491,21 @@ body {
   }
 
   .keyboard-container {
-    height: 80px;
+    height: 90px;
   }
 
   .mini-key {
-    padding: 4px 3px;
-    font-size: 9px;
-    min-width: 24px;
+    padding: 2px 2px;
+    font-size: 11px;
+    min-width: 16px;
+    line-height: 1;
   }
   
   .mini-key.stacked {
-    padding: 3px 3px;
-    font-size: 9px;
-    min-height: 18px;
+    padding: 2px 2px;
+    font-size: 10px;
+    min-height: 14px;
+    line-height: 1;
   }
 
   #chordName {
