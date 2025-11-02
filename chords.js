@@ -159,6 +159,58 @@ function getNoteNameByDegree(rootNote, interval) {
   return noteName;
 }
 
+// Fonction pour assurer que les notes sont en ordre ascendant
+// (aucune note ne doit "redescendre" par rapport à la précédente)
+function ensureAscendingOrder(notesWithOctave) {
+  if (!notesWithOctave || notesWithOctave.length === 0) return notesWithOctave;
+  
+  const result = [notesWithOctave[0]]; // La première note reste inchangée
+  
+  for (let i = 1; i < notesWithOctave.length; i++) {
+    const prevNote = result[i - 1];
+    const currentNote = { ...notesWithOctave[i] };
+    
+    // Calculer les positions en semitones (pour comparaison)
+    const noteToSemitone = (displayNote) => {
+      const baseNote = displayNote.replace(/[#b]/g, '');
+      const baseSemitones = {
+        'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11
+      };
+      let semitone = baseSemitones[baseNote] || 0;
+      
+      if (displayNote.includes('##')) semitone += 2;
+      else if (displayNote.includes('#')) semitone += 1;
+      else if (displayNote.includes('bb')) semitone -= 2;
+      else if (displayNote.includes('b')) semitone -= 1;
+      
+      return semitone;
+    };
+    
+    const prevSemitone = noteToSemitone(prevNote.displayNote);
+    const currentSemitone = noteToSemitone(currentNote.displayNote);
+    
+    // Calculer la position absolue (octave * 12 + semitone)
+    const prevAbsolute = prevNote.octave * 12 + prevSemitone;
+    const currentAbsolute = currentNote.octave * 12 + currentSemitone;
+    
+    // Si la note actuelle est plus basse que la précédente, augmenter son octave
+    if (currentAbsolute < prevAbsolute) {
+      // Calculer de combien d'octaves il faut remonter
+      const diff = prevAbsolute - currentAbsolute;
+      const octavesToAdd = Math.ceil(diff / 12);
+      currentNote.octave += octavesToAdd;
+    }
+    // Si la note actuelle est exactement à la même position, la remonter d'une octave
+    else if (currentAbsolute === prevAbsolute) {
+      currentNote.octave += 1;
+    }
+    
+    result.push(currentNote);
+  }
+  
+  return result;
+}
+
 function getNoteName(rootNote, interval) {
   const noteName = getNoteNameByDegree(rootNote, interval);
   if (!noteName) return null;
@@ -230,13 +282,16 @@ function generateAllChords() {
       
       // Ajouter l'accord majeur
       const majorIntervals = getIntervals('');
-      const majorNotes = majorIntervals.map(interval => {
+      let majorNotes = majorIntervals.map(interval => {
         const note = getNoteName(fullRoot, interval);
         if (note && isCb) {
           return { ...note, octave: note.octave + 1 };
         }
         return note;
       }).filter(n => n !== null);
+      
+      // Assurer que les notes sont en ordre ascendant
+      majorNotes = ensureAscendingOrder(majorNotes);
       
       chords[fullRoot] = {
         notation: fullRoot,
@@ -260,13 +315,16 @@ function generateAllChords() {
       allQualities.forEach(quality => {
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
-        const notes = intervals.map(interval => {
+        let notes = intervals.map(interval => {
           const note = getNoteName(fullRoot, interval);
           if (note && isCb) {
             return { ...note, octave: note.octave + 1 };
           }
           return note;
         }).filter(n => n !== null);
+        
+        // Assurer que les notes sont en ordre ascendant
+        notes = ensureAscendingOrder(notes);
         
         chords[chordName] = {
           notation: chordName,

@@ -18,10 +18,10 @@ function drawMusicalStaff(notes, chordNotation = '') {
     return;
   }
   
-  // Paramètres de la portée (encore plus réduits)
+  // Paramètres de la portée (optimisés pour réduire l'espace inutile)
   const staffY = 25;
   const lineSpacing = 7;
-  const staffWidth = 120;
+  const staffWidth = 95; // Réduit de 120 à 95 pour éliminer l'espace blanc à droite
   
   // Dessiner les 5 lignes de la portée
   for (let i = 0; i < 5; i++) {
@@ -49,7 +49,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
   // Si pas d'altérations, partir d'une position minimum après la clé
   const armatureWidth = Math.max(keySignature.sharps, keySignature.flats) * 5;
   const minPositionAfterClef = 48; // Position minimum après la clé de sol
-  const calculatedPosition = armatureStartX + armatureWidth + 12;
+  const calculatedPosition = armatureStartX + armatureWidth + 26; // Augmenté de 20 à 26 pour plus d'espace
   const noteX = Math.max(minPositionAfterClef, calculatedPosition);
   
   // Trier les notes de la plus haute à la plus basse
@@ -200,6 +200,7 @@ function getKeySignature(chordNotation) {
     'A#': 'C#',  // A#m -> C# majeur (7 #)
     
     // Mineures avec bémol
+    'Db': 'Db',  // Dbm -> Db majeur (5 b) - utilise armure homonyme ✓ AJOUTÉ
     'Bb': 'Db',  // Bbm -> Db majeur (5 b)
     'Eb': 'Gb',  // Ebm -> Gb majeur (6 b)
     'Ab': 'Cb',  // Abm -> Cb majeur (7 b)

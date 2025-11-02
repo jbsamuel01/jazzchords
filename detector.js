@@ -1,5 +1,29 @@
-// detector.js v2.2 - Détection des accords
-// Correction v2.2 : Détection basée sur la note la plus basse jouée
+// detector.js v2.3 - Détection des accords
+// Correction v2.3 : Normalisation enharmonique pour détecter correctement les accords mineurs
+
+// Fonction pour normaliser les notes enharmoniques (A# = Bb = semitone 10)
+function noteToSemitone(note) {
+  const semitoneMap = {
+    'C': 0, 'B#': 0,
+    'C#': 1, 'Db': 1,
+    'D': 2,
+    'D#': 3, 'Eb': 3,
+    'E': 4, 'Fb': 4,
+    'E#': 5, 'F': 5,
+    'F#': 6, 'Gb': 6,
+    'G': 7,
+    'G#': 8, 'Ab': 8,
+    'A': 9,
+    'A#': 10, 'Bb': 10,
+    'B': 11, 'Cb': 11
+  };
+  return semitoneMap[note] ?? -1;
+}
+
+// Fonction pour vérifier si deux notes sont enharmoniquement équivalentes
+function areNotesEnharmonic(note1, note2) {
+  return noteToSemitone(note1) === noteToSemitone(note2);
+}
 
 function detectChord(notes) {
   if (notes.length === 0) return null;
@@ -19,7 +43,10 @@ function detectChord(notes) {
   });
   
   const lowestNote = notesWithOctave[0].base;
-  const baseNotes = notesWithOctave.map(n => n.base).sort();
+  const baseNotes = notesWithOctave.map(n => n.base);
+  
+  // Convertir les notes jouées en semitones pour comparaison enharmonique
+  const playedSemitones = baseNotes.map(n => noteToSemitone(n)).sort((a, b) => a - b);
   
   // Fonction pour mapper les notes théoriques de l'accord aux notes jouées (avec leurs octaves réels)
   function mapChordToPlayedNotes(chord) {
@@ -28,8 +55,8 @@ function detectChord(notes) {
       // On compare via noteForKeyboard car c'est ce qui est utilisé pour le clavier
       const noteToMatch = theoreticalNote.noteForKeyboard || theoreticalNote.note;
       
-      // Trouver la note jouée correspondante
-      const playedNote = notesWithOctave.find(pn => pn.base === noteToMatch);
+      // Trouver la note jouée correspondante en utilisant la comparaison enharmonique
+      const playedNote = notesWithOctave.find(pn => areNotesEnharmonic(pn.base, noteToMatch));
       
       if (playedNote) {
         // Calculer l'octave relatif en tenant compte de l'enharmonie
@@ -70,15 +97,17 @@ function detectChord(notes) {
   // Recherche exacte - priorité aux accords dont la fondamentale est la note la plus basse
   const exactMatches = [];
   for (const [name, chord] of Object.entries(ALL_CHORDS)) {
-    const chordNotes = [...chord.notes].sort();
-    if (chordNotes.length === baseNotes.length && 
-        chordNotes.every((note, idx) => note === baseNotes[idx])) {
+    const chordSemitones = chord.notes.map(n => noteToSemitone(n)).sort((a, b) => a - b);
+    
+    // Comparer les semitones au lieu des noms de notes pour gérer l'enharmonie
+    if (chordSemitones.length === playedSemitones.length && 
+        chordSemitones.every((semitone, idx) => semitone === playedSemitones[idx])) {
       
       // Extraire la fondamentale de l'accord
       const rootNote = name.match(/^[A-G][#b]?/)?.[0] || '';
       
-      // Priorité si la fondamentale correspond à la note la plus basse
-      if (rootNote === lowestNote) {
+      // Priorité si la fondamentale correspond à la note la plus basse (enharmoniquement)
+      if (areNotesEnharmonic(rootNote, lowestNote)) {
         return mapChordToPlayedNotes({ name, ...chord });
       }
       
@@ -90,8 +119,8 @@ function detectChord(notes) {
   if (exactMatches.length > 0) {
     // Trier par priorité : ceux dont la basse correspond à la note la plus basse
     exactMatches.sort((a, b) => {
-      const aHasLowest = a.rootNote === lowestNote ? 0 : 1;
-      const bHasLowest = b.rootNote === lowestNote ? 0 : 1;
+      const aHasLowest = areNotesEnharmonic(a.rootNote, lowestNote) ? 0 : 1;
+      const bHasLowest = areNotesEnharmonic(b.rootNote, lowestNote) ? 0 : 1;
       return aHasLowest - bHasLowest;
     });
     return mapChordToPlayedNotes(exactMatches[0]);
@@ -101,9 +130,14 @@ function detectChord(notes) {
   const matches = [];
   for (const [name, chord] of Object.entries(ALL_CHORDS)) {
     const chordNotes = chord.notes;
-    if (baseNotes.every(note => chordNotes.includes(note))) {
+    // Vérifier si toutes les notes jouées sont enharmoniquement présentes dans l'accord
+    const allNotesMatch = baseNotes.every(playedNote => 
+      chordNotes.some(chordNote => areNotesEnharmonic(playedNote, chordNote))
+    );
+    
+    if (allNotesMatch) {
       const rootNote = name.match(/^[A-G][#b]?/)?.[0] || '';
-      const hasLowestAsRoot = rootNote === lowestNote;
+      const hasLowestAsRoot = areNotesEnharmonic(rootNote, lowestNote);
       
       matches.push({ 
         name, 
