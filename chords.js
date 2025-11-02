@@ -217,14 +217,13 @@ function generateAllChords() {
     [''].concat(ALTERATIONS).forEach(alt => {
       const fullRoot = rootNote + alt;
       
-      // Exclure les tonalités non utilisées
+      // Exclure les tonalités non utilisées (enharmoniques redondantes)
       if ((rootNote === 'E' && alt === '#') ||  // Mi# = Fa
           (rootNote === 'F' && alt === 'b') ||  // Fab = Mi
-          (rootNote === 'B' && alt === '#') ||  // Si# = Do
-          (rootNote === 'D' && alt === '#') ||  // Ré# majeur (jamais utilisé)
-          (rootNote === 'A' && alt === '#')) {  // La# majeur (jamais utilisé)
+          (rootNote === 'B' && alt === '#')) {  // Si# = Do
         return;
       }
+      // Note : D# et A# sont conservés car D#m et A#m sont des tonalités valides
       
       // Vérifier si c'est Cb pour remonter d'une octave
       const isCb = (rootNote === 'C' && alt === 'b');

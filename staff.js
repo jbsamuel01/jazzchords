@@ -1,7 +1,13 @@
-// staff.js v2.1 - Dessin de la portée musicale
-// Correction v2.1 : ajout des bécarres pour les notes naturelles quand nécessaire
+// staff.js v2.2 - Dessin de la portée musicale
+// Corrections v2.2 : 
+// - Respect total de l'enharmonie (Cb reste Cb, pas Si)
+// - Position des bémols ajustée et taille augmentée
+// - Altérations accidentelles éloignées des notes
+// - Accord éloigné de l'armure
+// - Taille globale réduite
+// - Décalage horizontal pour notes proches (secondes)
 
-function drawMusicalStaff(notes, rootNote = '') {
+function drawMusicalStaff(notes, chordNotation = '') {
   const svg = document.getElementById('musicalStaff');
   if (!svg) return;
   
@@ -12,15 +18,15 @@ function drawMusicalStaff(notes, rootNote = '') {
     return;
   }
   
-  // Paramètres de la portée
-  const staffY = 40;
-  const lineSpacing = 10;
-  const staffWidth = 160;
+  // Paramètres de la portée (encore plus réduits)
+  const staffY = 25;
+  const lineSpacing = 7;
+  const staffWidth = 120;
   
   // Dessiner les 5 lignes de la portée
   for (let i = 0; i < 5; i++) {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', '10');
+    line.setAttribute('x1', '5');
     line.setAttribute('y1', staffY + i * lineSpacing);
     line.setAttribute('x2', staffWidth);
     line.setAttribute('y2', staffY + i * lineSpacing);
@@ -29,17 +35,22 @@ function drawMusicalStaff(notes, rootNote = '') {
     svg.appendChild(line);
   }
   
-  // Dessiner la clé de sol (centrée sur la 2ème ligne = Sol)
-  drawTrebleClef(svg, 15, staffY + lineSpacing);
+  // Dessiner la clé de sol (encore plus petite)
+  drawTrebleClef(svg, 8, staffY + lineSpacing);
   
-  // Déterminer l'armure basée sur la note fondamentale
-  const keySignature = getKeySignature(rootNote);
+  // Déterminer l'armure basée sur la notation complète de l'accord
+  const keySignature = getKeySignature(chordNotation);
   
-  // Dessiner l'armure
-  drawKeySignature(svg, 45, staffY, lineSpacing, keySignature);
+  // Dessiner l'armure (espacement réduit)
+  const armatureStartX = 30;
+  drawKeySignature(svg, armatureStartX, staffY, lineSpacing, keySignature);
   
-  // Position X pour les notes (après l'armure)
-  const noteX = 90;
+  // Position X pour les notes (après l'armure, bien espacé)
+  // Si pas d'altérations, partir d'une position minimum après la clé
+  const armatureWidth = Math.max(keySignature.sharps, keySignature.flats) * 5;
+  const minPositionAfterClef = 48; // Position minimum après la clé de sol
+  const calculatedPosition = armatureStartX + armatureWidth + 12;
+  const noteX = Math.max(minPositionAfterClef, calculatedPosition);
   
   // Trier les notes de la plus haute à la plus basse
   const sortedNotes = [...notes].sort((a, b) => {
@@ -50,7 +61,7 @@ function drawMusicalStaff(notes, rootNote = '') {
     
     if (octaveA !== octaveB) return octaveB - octaveA;
     
-    const noteOrder = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+    const noteOrder = ['C', 'C#', 'Cb', 'D', 'D#', 'Db', 'E', 'E#', 'Eb', 'F', 'F#', 'Fb', 'G', 'G#', 'Gb', 'A', 'A#', 'Ab', 'B', 'B#', 'Bb'];
     return noteOrder.indexOf(noteB) - noteOrder.indexOf(noteA);
   });
   
@@ -60,109 +71,200 @@ function drawMusicalStaff(notes, rootNote = '') {
     const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
     return {
       note: noteName,
+      fullNote: note,
       octave: octave,
       y: getNoteYPosition(noteName, octave, staffY, lineSpacing)
     };
   });
   
+  // Détecter les notes proches (secondes) pour décalage horizontal
+  const noteShifts = [];
+  for (let i = 0; i < notePositions.length; i++) {
+    let shift = 0;
+    if (i > 0) {
+      const prevY = notePositions[i - 1].y;
+      const currentY = notePositions[i].y;
+      const distance = Math.abs(prevY - currentY);
+      
+      // Si les notes sont à une seconde (distance = lineSpacing/2)
+      if (distance <= lineSpacing * 0.6) {
+        shift = -8; // Décaler la note du bas vers la gauche
+      }
+    }
+    noteShifts.push(shift);
+  }
+  
   // Dessiner toutes les notes verticalement (accord)
-  notePositions.forEach(pos => {
-    // Dessiner les lignes supplémentaires si nécessaire
-    drawLedgerLines(svg, noteX, pos.y, staffY, lineSpacing);
+  notePositions.forEach((pos, idx) => {
+    const xPos = noteX + noteShifts[idx];
     
-    // CORRECTION v2.1 : Gérer les bécarres
+    // Dessiner les lignes supplémentaires si nécessaire (avec décalage si besoin)
+    drawLedgerLines(svg, noteX, pos.y, staffY, lineSpacing, noteShifts[idx]);
+    
+    // Gérer les altérations accidentelles (simples et doubles)
     const baseNoteName = pos.note.replace(/#|b/g, '');
     const isNatural = !pos.note.includes('#') && !pos.note.includes('b');
-    const hasSharp = pos.note.includes('#');
-    const hasFlat = pos.note.includes('b');
+    const hasDoubleSharp = pos.note.includes('##');
+    const hasDoubleFlat = pos.note.includes('bb');
+    const hasSharp = pos.note.includes('#') && !hasDoubleSharp;
+    const hasFlat = pos.note.includes('b') && !hasDoubleFlat;
     
     // Vérifier si la note naturelle est altérée à l'armure
     const naturalNoteInKey = isNoteLetterInKeySignature(baseNoteName, keySignature);
     
     if (isNatural && naturalNoteInKey) {
-      // CORRECTION v2.1 : La note est naturelle mais elle est altérée à l'armure
+      // La note est naturelle mais elle est altérée à l'armure
       // Il faut dessiner un bécarre
-      drawNatural(svg, noteX - 10, pos.y);
+      drawNatural(svg, xPos - 14, pos.y);
     } else if (!isInKeySignature(pos.note, keySignature)) {
       // La note a une altération accidentelle (pas à l'armure)
-      if (hasSharp) {
-        drawSharp(svg, noteX - 10, pos.y);
+      if (hasDoubleSharp) {
+        // Dessiner deux dièses côte à côte pour un double dièse
+        drawSharp(svg, xPos - 20, pos.y);
+        drawSharp(svg, xPos - 12, pos.y);
+      } else if (hasDoubleFlat) {
+        // Dessiner deux bémols côte à côte pour un double bémol
+        drawFlat(svg, xPos - 20, pos.y);
+        drawFlat(svg, xPos - 12, pos.y);
+      } else if (hasSharp) {
+        drawSharp(svg, xPos - 14, pos.y);
       } else if (hasFlat) {
-        drawFlat(svg, noteX - 10, pos.y);
+        drawFlat(svg, xPos - 14, pos.y);
       }
     }
     
     // Dessiner la tête de note
-    drawNoteHead(svg, noteX, pos.y);
+    drawNoteHead(svg, xPos, pos.y);
   });
 }
 
-function getKeySignature(rootNote) {
-  if (!rootNote) return { sharps: 0, flats: 0, notes: [] };
+function getKeySignature(chordNotation) {
+  if (!chordNotation) return { sharps: 0, flats: 0, notes: [] };
   
-  const baseNote = rootNote.replace(/[0-9]/g, '');
+  // Extraire la note fondamentale
+  const baseNote = chordNotation.match(/^[A-G][#b]?/)?.[0] || '';
+  if (!baseNote) return { sharps: 0, flats: 0, notes: [] };
   
-  // Armures avec dièses (ordre: Fa Do Sol Ré La Mi Si)
-  const sharpKeys = {
-    'G': { sharps: 1, notes: ['F#'] },
-    'D': { sharps: 2, notes: ['F#', 'C#'] },
-    'A': { sharps: 3, notes: ['F#', 'C#', 'G#'] },
-    'E': { sharps: 4, notes: ['F#', 'C#', 'G#', 'D#'] },
-    'B': { sharps: 5, notes: ['F#', 'C#', 'G#', 'D#', 'A#'] },
-    'F#': { sharps: 6, notes: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'] },
-    'C#': { sharps: 7, notes: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'] }
+  // Détecter si c'est une tonalité mineure
+  const quality = chordNotation.substring(baseNote.length);
+  let isMinor = false;
+  
+  if (quality) {
+    // C'est mineur si on a m, -, dim, ø SANS maj/M7/M
+    if (quality.match(/^(-|m(?!aj)|dim|ø)/)) {
+      isMinor = true;
+    }
+  }
+  
+  // Dictionnaire complet des armures pour TOUTES les tonalités MAJEURES
+  const keySignatures = {
+    // MAJEURES avec dièses (ordre: Fa Do Sol Ré La Mi Si)
+    'G': { sharps: 1, flats: 0, notes: ['F#'] },
+    'D': { sharps: 2, flats: 0, notes: ['F#', 'C#'] },
+    'A': { sharps: 3, flats: 0, notes: ['F#', 'C#', 'G#'] },
+    'E': { sharps: 4, flats: 0, notes: ['F#', 'C#', 'G#', 'D#'] },
+    'B': { sharps: 5, flats: 0, notes: ['F#', 'C#', 'G#', 'D#', 'A#'] },
+    'F#': { sharps: 6, flats: 0, notes: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'] },
+    'C#': { sharps: 7, flats: 0, notes: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'] },
+    
+    // MAJEURES avec bémols (ordre: Si Mi La Ré Sol Do Fa)
+    'F': { sharps: 0, flats: 1, notes: ['Bb'] },
+    'Bb': { sharps: 0, flats: 2, notes: ['Bb', 'Eb'] },
+    'Eb': { sharps: 0, flats: 3, notes: ['Bb', 'Eb', 'Ab'] },
+    'Ab': { sharps: 0, flats: 4, notes: ['Bb', 'Eb', 'Ab', 'Db'] },
+    'Db': { sharps: 0, flats: 5, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
+    'Gb': { sharps: 0, flats: 6, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'] },
+    'Cb': { sharps: 0, flats: 7, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'] },
+    
+    // MAJEURES sans altération
+    'C': { sharps: 0, flats: 0, notes: [] }
   };
   
-  // Armures avec bémols (ordre: Si Mi La Ré Sol Do Fa)
-  const flatKeys = {
-    'F': { flats: 1, notes: ['Bb'] },
-    'Bb': { flats: 2, notes: ['Bb', 'Eb'] },
-    'Eb': { flats: 3, notes: ['Bb', 'Eb', 'Ab'] },
-    'Ab': { flats: 4, notes: ['Bb', 'Eb', 'Ab', 'Db'] },
-    'Db': { flats: 5, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
-    'Gb': { flats: 6, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'] },
-    'Cb': { flats: 7, notes: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'] }
+  // Mapping CORRECT des tonalités mineures vers leur relative majeure
+  // Une tonalité mineure a la MÊME armure que sa relative majeure (3 demi-tons au-dessus)
+  const minorToRelativeMajor = {
+    // Mineures naturelles (sans altération à la fondamentale)
+    'A': 'C',    // Am -> C majeur (0 altérations)
+    'E': 'G',    // Em -> G majeur (1 #)
+    'B': 'D',    // Bm -> D majeur (2 #)
+    'D': 'F',    // Dm -> F majeur (1 b)
+    'G': 'Bb',   // Gm -> Bb majeur (2 b)
+    'C': 'Eb',   // Cm -> Eb majeur (3 b) ← CORRECTION PRINCIPALE
+    'F': 'Ab',   // Fm -> Ab majeur (4 b)
+    
+    // Mineures avec dièse
+    'F#': 'A',   // F#m -> A majeur (3 #)
+    'C#': 'E',   // C#m -> E majeur (4 #)
+    'G#': 'B',   // G#m -> B majeur (5 #)
+    'D#': 'F#',  // D#m -> F# majeur (6 #)
+    'A#': 'C#',  // A#m -> C# majeur (7 #)
+    
+    // Mineures avec bémol
+    'Bb': 'Db',  // Bbm -> Db majeur (5 b)
+    'Eb': 'Gb',  // Ebm -> Gb majeur (6 b)
+    'Ab': 'Cb',  // Abm -> Cb majeur (7 b)
+    
+    // Cas rares/enharmoniques
+    'E#': 'G#',  // E#m -> G# majeur (rare)
+    'B#': 'D#'   // B#m -> D# majeur (très rare)
   };
   
-  if (sharpKeys[baseNote]) return sharpKeys[baseNote];
-  if (flatKeys[baseNote]) return flatKeys[baseNote];
+  // Déterminer la tonalité à utiliser pour l'armure
+  let keyForArmure = baseNote;
   
+  if (isMinor) {
+    // Trouver la relative majeure
+    const relativeMajor = minorToRelativeMajor[baseNote];
+    if (relativeMajor) {
+      keyForArmure = relativeMajor;
+    } else {
+      // Si la tonalité mineure n'est pas reconnue, pas d'armure
+      console.warn(`Tonalité mineure non reconnue: ${baseNote}m`);
+      return { sharps: 0, flats: 0, notes: [] };
+    }
+  }
+  
+  // Retourner l'armure de la tonalité
+  const signature = keySignatures[keyForArmure];
+  if (signature) {
+    return signature;
+  }
+  
+  // Si la tonalité n'est pas trouvée, pas d'armure
+  console.warn(`Tonalité non reconnue: ${keyForArmure}`);
   return { sharps: 0, flats: 0, notes: [] };
 }
 
 function drawKeySignature(svg, x, staffY, lineSpacing, keySignature) {
   if (keySignature.sharps > 0) {
     // Positions exactes des dièses sur la portée en clé de sol
-    // Ordre : FA♯ DO♯ SOL♯ RÉ♯ LA♯ MI♯ SI♯
-    // staffY = ligne 5 (haut), staffY + 4*lineSpacing = ligne 1 (bas)
     const sharpPositions = [
-      staffY + 0 * lineSpacing,     // FA# sur ligne 5 (Fa5)
-      staffY + 1.5 * lineSpacing,   // DO# sur interligne 3 (Do5)
-      staffY - 0.5 * lineSpacing,   // SOL# au-dessus ligne 5 (Sol5)
-      staffY + 1 * lineSpacing,     // RÉ# sur ligne 4 (Ré5)
-      staffY + 2.5 * lineSpacing,   // LA# sur interligne 2 (La4)
-      staffY + 0.5 * lineSpacing,   // MI# sur interligne 4 (Mi5)
-      staffY + 2 * lineSpacing      // SI# sur ligne 3 (Si4)
+      staffY + 0 * lineSpacing,     // FA#
+      staffY + 1.5 * lineSpacing,   // DO#
+      staffY - 0.5 * lineSpacing,   // SOL#
+      staffY + 1 * lineSpacing,     // RÉ#
+      staffY + 2.5 * lineSpacing,   // LA#
+      staffY + 0.5 * lineSpacing,   // MI#
+      staffY + 2 * lineSpacing      // SI#
     ];
     
     for (let i = 0; i < keySignature.sharps; i++) {
-      drawSharp(svg, x + i * 8, sharpPositions[i]);
+      drawSharp(svg, x + i * 5, sharpPositions[i]);
     }
   } else if (keySignature.flats > 0) {
     // Positions exactes des bémols sur la portée en clé de sol
-    // Ordre : SI♭ MI♭ LA♭ RÉ♭ SOL♭ DO♭ FA♭
     const flatPositions = [
-      staffY + 2 * lineSpacing,     // SIb sur ligne 3 (Si4)
-      staffY + 0.5 * lineSpacing,   // MIb sur interligne 4 (Mi5)
-      staffY + 2.5 * lineSpacing,   // LAb sur interligne 2 (La4)
-      staffY + 1 * lineSpacing,     // RÉb sur ligne 4 (Ré5)
-      staffY + 3 * lineSpacing,     // SOLb sur ligne 2 (Sol4)
-      staffY + 1.5 * lineSpacing,   // DOb sur interligne 3 (Do5)
-      staffY + 4 * lineSpacing      // FAb sur ligne 1 (Fa4)
+      staffY + 2 * lineSpacing,     // SIb
+      staffY + 0.5 * lineSpacing,   // MIb
+      staffY + 2.5 * lineSpacing,   // LAb
+      staffY + 1 * lineSpacing,     // RÉb
+      staffY + 3 * lineSpacing,     // SOLb
+      staffY + 1.5 * lineSpacing,   // DOb
+      staffY + 4 * lineSpacing      // FAb
     ];
     
     for (let i = 0; i < keySignature.flats; i++) {
-      drawFlat(svg, x + i * 8, flatPositions[i]);
+      drawFlat(svg, x + i * 5, flatPositions[i]);
     }
   }
 }
@@ -171,7 +273,6 @@ function isInKeySignature(noteName, keySignature) {
   return keySignature.notes && keySignature.notes.includes(noteName);
 }
 
-// NOUVEAU v2.1 : fonction pour vérifier si la lettre de la note est dans l'armure
 function isNoteLetterInKeySignature(noteLetter, keySignature) {
   if (!keySignature.notes) return false;
   
@@ -185,31 +286,10 @@ function isNoteLetterInKeySignature(noteLetter, keySignature) {
 }
 
 function getNoteYPosition(noteName, octave, staffY, lineSpacing) {
-  // En clé de sol, la 2ème ligne = Sol4
-  // staffY = ligne 5 (haut de la portée)
-  // staffY + 4*lineSpacing = ligne 1 (bas de la portée)
-  // 
-  // LIGNES (de bas en haut):
-  // Ligne 1 (staffY + 4*lineSpacing) = Mi4
-  // Ligne 2 (staffY + 3*lineSpacing) = Sol4
-  // Ligne 3 (staffY + 2*lineSpacing) = Si4
-  // Ligne 4 (staffY + 1*lineSpacing) = Ré5
-  // Ligne 5 (staffY + 0*lineSpacing) = Fa5
-  //
-  // INTERLIGNES (de bas en haut):
-  // Interligne 1 (staffY + 3.5*lineSpacing) = Fa4
-  // Interligne 2 (staffY + 2.5*lineSpacing) = La4
-  // Interligne 3 (staffY + 1.5*lineSpacing) = Do5
-  // Interligne 4 (staffY + 0.5*lineSpacing) = Mi5
-  //
-  // LIGNES SUPPLEMENTAIRES:
-  // En dessous ligne 1:
-  //   (staffY + 4.5*lineSpacing) = Ré4
-  //   (staffY + 5*lineSpacing)   = Do4 (Do central)
+  // Extraire la lettre de base (C, D, E, F, G, A, B)
+  const baseLetter = noteName.charAt(0);
   
-  const baseNote = noteName.replace(/#|b/g, '');
-  
-  // Table de correspondance pour chaque note et octave
+  // Calculer la position pour la lettre de base
   const notePositions = {
     // Octave 3
     'C3': staffY + 9 * lineSpacing,
@@ -220,26 +300,26 @@ function getNoteYPosition(noteName, octave, staffY, lineSpacing) {
     'A3': staffY + 6.5 * lineSpacing,
     'B3': staffY + 6 * lineSpacing,
     
-    // Octave 4 (Do central)
-    'C4': staffY + 5 * lineSpacing,      // Do central - 1 ligne supplémentaire
-    'D4': staffY + 4.5 * lineSpacing,    // Interligne sous la ligne 1
-    'E4': staffY + 4 * lineSpacing,      // Ligne 1
-    'F4': staffY + 3.5 * lineSpacing,    // Interligne 1
-    'G4': staffY + 3 * lineSpacing,      // Ligne 2
-    'A4': staffY + 2.5 * lineSpacing,    // Interligne 2
-    'B4': staffY + 2 * lineSpacing,      // Ligne 3
+    // Octave 4
+    'C4': staffY + 5 * lineSpacing,
+    'D4': staffY + 4.5 * lineSpacing,
+    'E4': staffY + 4 * lineSpacing,
+    'F4': staffY + 3.5 * lineSpacing,
+    'G4': staffY + 3 * lineSpacing,
+    'A4': staffY + 2.5 * lineSpacing,
+    'B4': staffY + 2 * lineSpacing,
     
     // Octave 5
-    'C5': staffY + 1.5 * lineSpacing,    // Interligne 3
-    'D5': staffY + 1 * lineSpacing,      // Ligne 4
-    'E5': staffY + 0.5 * lineSpacing,    // Interligne 4
-    'F5': staffY + 0 * lineSpacing,      // Ligne 5
-    'G5': staffY - 0.5 * lineSpacing,    // Interligne au-dessus ligne 5
-    'A5': staffY - 1 * lineSpacing,      // 1 ligne supplémentaire
-    'B5': staffY - 1.5 * lineSpacing,    // Interligne
+    'C5': staffY + 1.5 * lineSpacing,
+    'D5': staffY + 1 * lineSpacing,
+    'E5': staffY + 0.5 * lineSpacing,
+    'F5': staffY + 0 * lineSpacing,
+    'G5': staffY - 0.5 * lineSpacing,
+    'A5': staffY - 1 * lineSpacing,
+    'B5': staffY - 1.5 * lineSpacing,
     
     // Octave 6
-    'C6': staffY - 2 * lineSpacing,      // 2 lignes supplémentaires
+    'C6': staffY - 2 * lineSpacing,
     'D6': staffY - 2.5 * lineSpacing,
     'E6': staffY - 3 * lineSpacing,
     'F6': staffY - 3.5 * lineSpacing,
@@ -248,29 +328,31 @@ function getNoteYPosition(noteName, octave, staffY, lineSpacing) {
     'B6': staffY - 5 * lineSpacing,
   };
   
-  const key = baseNote + octave;
+  const key = baseLetter + octave;
   const position = notePositions[key];
   
   if (position === undefined) {
     console.warn(`Position non définie pour ${key}`);
-    // Par défaut, retourner une position au milieu
     return staffY + 2 * lineSpacing;
   }
   
   return position;
 }
 
-function drawLedgerLines(svg, x, y, staffY, lineSpacing) {
+function drawLedgerLines(svg, x, y, staffY, lineSpacing, shift = 0) {
   const topStaffLine = staffY;
   const bottomStaffLine = staffY + 4 * lineSpacing;
+  
+  // Si la note est décalée à gauche, étendre la ligne vers la gauche
+  const leftExtension = shift < 0 ? Math.abs(shift) : 0;
   
   // Lignes au-dessus de la portée
   if (y < topStaffLine) {
     for (let lineY = topStaffLine - lineSpacing; lineY >= y - lineSpacing/4; lineY -= lineSpacing) {
       const ledgerLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      ledgerLine.setAttribute('x1', x - 8);
+      ledgerLine.setAttribute('x1', x - 7 - leftExtension);
       ledgerLine.setAttribute('y1', lineY);
-      ledgerLine.setAttribute('x2', x + 8);
+      ledgerLine.setAttribute('x2', x + 7);
       ledgerLine.setAttribute('y2', lineY);
       ledgerLine.setAttribute('stroke', 'black');
       ledgerLine.setAttribute('stroke-width', '1.5');
@@ -282,9 +364,9 @@ function drawLedgerLines(svg, x, y, staffY, lineSpacing) {
   if (y > bottomStaffLine) {
     for (let lineY = bottomStaffLine + lineSpacing; lineY <= y + lineSpacing/4; lineY += lineSpacing) {
       const ledgerLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      ledgerLine.setAttribute('x1', x - 8);
+      ledgerLine.setAttribute('x1', x - 7 - leftExtension);
       ledgerLine.setAttribute('y1', lineY);
-      ledgerLine.setAttribute('x2', x + 8);
+      ledgerLine.setAttribute('x2', x + 7);
       ledgerLine.setAttribute('y2', lineY);
       ledgerLine.setAttribute('stroke', 'black');
       ledgerLine.setAttribute('stroke-width', '1.5');
@@ -294,12 +376,12 @@ function drawLedgerLines(svg, x, y, staffY, lineSpacing) {
 }
 
 function drawNoteHead(svg, x, y) {
-  // Tête de note ronde (blanche pour un accord)
+  // Tête de note ronde (légèrement plus grosse)
   const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
   noteHead.setAttribute('cx', x);
   noteHead.setAttribute('cy', y);
-  noteHead.setAttribute('rx', '5');
-  noteHead.setAttribute('ry', '4');
+  noteHead.setAttribute('rx', '5.5'); // Augmenté de 4.5 à 5.5
+  noteHead.setAttribute('ry', '4.2'); // Augmenté de 3.5 à 4.2
   noteHead.setAttribute('fill', 'black');
   noteHead.setAttribute('transform', `rotate(-20 ${x} ${y})`);
   svg.appendChild(noteHead);
@@ -308,7 +390,7 @@ function drawNoteHead(svg, x, y) {
 function drawSharp(svg, x, y) {
   const sharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   sharp.setAttribute('x', x);
-  sharp.setAttribute('y', y + 4);
+  sharp.setAttribute('y', y + 5); // Redescendu de 3 à 5
   sharp.setAttribute('font-size', '16');
   sharp.setAttribute('fill', 'black');
   sharp.setAttribute('font-family', 'serif');
@@ -320,8 +402,8 @@ function drawSharp(svg, x, y) {
 function drawFlat(svg, x, y) {
   const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   flat.setAttribute('x', x);
-  flat.setAttribute('y', y + 4);
-  flat.setAttribute('font-size', '16');
+  flat.setAttribute('y', y + 4); // Redescendu de 1 à 4
+  flat.setAttribute('font-size', '20');
   flat.setAttribute('fill', 'black');
   flat.setAttribute('font-family', 'serif');
   flat.setAttribute('font-weight', 'bold');
@@ -329,11 +411,10 @@ function drawFlat(svg, x, y) {
   svg.appendChild(flat);
 }
 
-// NOUVEAU v2.1 : Fonction pour dessiner un bécarre
 function drawNatural(svg, x, y) {
   const natural = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   natural.setAttribute('x', x);
-  natural.setAttribute('y', y + 4);
+  natural.setAttribute('y', y + 5); // Redescendu de 3 à 5
   natural.setAttribute('font-size', '16');
   natural.setAttribute('fill', 'black');
   natural.setAttribute('font-family', 'serif');
@@ -343,11 +424,11 @@ function drawNatural(svg, x, y) {
 }
 
 function drawTrebleClef(svg, x, y) {
-  // Clé de sol centrée sur la 2ème ligne (Sol)
+  // Clé de sol encore plus petite
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
-  clef.setAttribute('y', y + 25);
-  clef.setAttribute('font-size', '50');
+  clef.setAttribute('y', y + 18);
+  clef.setAttribute('font-size', '32'); // Réduit de 38 à 32
   clef.setAttribute('fill', 'black');
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';

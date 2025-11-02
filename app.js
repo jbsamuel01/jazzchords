@@ -214,8 +214,12 @@ function selectAlteredExtension(ext) {
   } else {
     selectedAlteredExtension = ext;
     
-    // Allumer automatiquement la touche 7 si ce n'est pas déjà fait
-    if (selectedQuality !== '7') {
+    
+    // Allumer automatiquement la touche 7 si aucune qualité 7 n'est sélectionnée
+    // Exception: ne pas allumer 7 si maj7 ou maj7#5 est déjà sélectionné
+    // Ne pas allumer 7 pour #5 et #11 qui peuvent être utilisés avec maj7
+    if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && 
+        ext !== '#5' && ext !== '#11') {
       selectedQuality = '7';
       document.querySelectorAll('#qualities .mini-key').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.value === '7');
@@ -602,12 +606,12 @@ function displayDetectedChord(chord, chordExists = null) {
       </svg>`;
       toggleBtn.classList.remove('hidden');
       
-      // Dessiner la portée musicale
+      // Dessiner la portée musicale avec les VRAIES notes théoriques de l'accord
       if (chord.notesWithOctave) {
-        const notesToDraw = chord.notesWithOctave.map(n => n.note + (4 + n.octave));
-        // Extraire la note fondamentale de la notation de l'accord
-        const rootNote = chord.notation.match(/^[A-G][#b]?/)?.[0] || '';
-        drawMusicalStaff(notesToDraw, rootNote);
+        // Utiliser displayNote (ex: B#) et non note (ex: C) pour respecter l'enharmonie
+        const notesToDraw = chord.notesWithOctave.map(n => n.displayNote + (4 + n.octave));
+        // Passer la notation complète de l'accord pour détecter le mode
+        drawMusicalStaff(notesToDraw, chord.notation);
       }
     }
   }
