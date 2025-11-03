@@ -27,17 +27,17 @@ window.playChord = function() {
   let notesToPlay = [];
   
   if (quizMode && quizChord) {
-    notesToPlay = quizChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+    notesToPlay = quizChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
   } else if (lastSelectedChordName) {
     const chord = ALL_CHORDS[lastSelectedChordName];
     if (chord) {
-      notesToPlay = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+      notesToPlay = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
     }
   } else {
     // Détecter l'accord depuis les notes jouées au clavier
     const detectedChord = detectChord(playedNotes);
     if (detectedChord && detectedChord.name !== 'Inconnu' && detectedChord.notesWithOctave) {
-      notesToPlay = detectedChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+      notesToPlay = detectedChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
     }
   }
   
@@ -285,7 +285,7 @@ function buildManualChordLive() {
     
     // CORRECTION v2.1 : utiliser noteForKeyboard pour le clavier
     if (chordNotesVisible) {
-      playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+      playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
     }
     
     document.querySelectorAll('.mini-key.error').forEach(btn => {
@@ -405,7 +405,7 @@ function toggleChordVisibility() {
       const chord = ALL_CHORDS[lastSelectedChordName];
       if (chord) {
         // CORRECTION v2.1 : utiliser noteForKeyboard
-        playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+        playedNotes = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
       }
     }
   }
@@ -480,7 +480,7 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     (currentChord && playedNotes.length > 0 && 
      !playedNotes.every((note, idx) => {
        // CORRECTION v2.1 : utiliser noteForKeyboard
-       const expectedNotes = currentChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + n.octave));
+       const expectedNotes = currentChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
        return expectedNotes.includes(note);
      }));
   

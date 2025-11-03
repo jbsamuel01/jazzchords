@@ -1,5 +1,8 @@
-// chords.js v2.1 - Génération de tous les accords
-// Correction v2.1 : ajout d'une propriété noteForKeyboard pour compatibilité avec le clavier
+// chords.js v2.3 - Génération de tous les accords
+// Correction v2.3 : 
+// - Ajout d'une propriété noteForKeyboard pour compatibilité avec le clavier
+// - Correction du mapping de degré pour dim7 (Bbb au lieu de A)
+// - Correction COMPLÈTE de l'octave pour gérer B# et E# correctement
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -48,7 +51,7 @@ const DEGREE_INTERVALS = {
   7: 4,   // V (quinte juste)
   6: 4,   // V (quinte diminuée)
   8: 4,   // V (quinte augmentée)
-  9: 5,   // VI (sixte)
+  9: 5,   // VI (sixte) - MAIS pour dim7, c'est le degré VII
   11: 6,  // VII (septième majeure)
   10: 6,  // VII (septième mineure)
   14: 1,  // IX (neuvième = 2 + octave)
@@ -60,6 +63,14 @@ const DEGREE_INTERVALS = {
   19: 4,  // add11 contexte
   21: 5,  // XIII (treizième = 6 + octave)
   20: 5   // XIII (treizième bémol)
+};
+
+// Mappings spéciaux pour certaines qualités d'accords
+// Pour dim7, l'intervalle 9 doit être traité comme degré VII (septième diminuée = Bbb) et non VI (sixte = A)
+const SPECIAL_DEGREE_MAPPINGS = {
+  'dim7': {
+    9: 6  // Pour dim7, l'intervalle 9 est une septième diminuée (degré VII, pas VI)
+  }
 };
 
 function getIntervals(quality) {
@@ -120,12 +131,17 @@ function getRootNoteLetter(rootNote) {
 }
 
 // Calculer le nom correct de la note selon le degré
-function getNoteNameByDegree(rootNote, interval) {
+function getNoteNameByDegree(rootNote, interval, quality = null) {
   const naturalNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
   const rootLetter = getRootNoteLetter(rootNote);
   const rootIndex = naturalNotes.indexOf(rootLetter);
   
-  const degree = DEGREE_INTERVALS[interval];
+  // Utiliser le mapping spécial si disponible pour cette qualité
+  let degree = DEGREE_INTERVALS[interval];
+  if (quality && SPECIAL_DEGREE_MAPPINGS[quality] && SPECIAL_DEGREE_MAPPINGS[quality][interval] !== undefined) {
+    degree = SPECIAL_DEGREE_MAPPINGS[quality][interval];
+  }
+  
   if (degree === undefined) {
     console.warn(`Degré non défini pour l'intervalle ${interval}`);
     return null;
@@ -159,8 +175,34 @@ function getNoteNameByDegree(rootNote, interval) {
   return noteName;
 }
 
-// Fonction pour assurer que les notes sont en ordre ascendant
+// Fonction pour calculer la position chromatique réelle (en tenant compte des enharmoniques)
+function getChromaticPosition(note, octave) {
+  const baseNote = note.replace(/[#b]/g, '');
+  const chromaticMap = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+  let position = chromaticMap[baseNote];
+  
+  if (note.includes('##')) position += 2;
+  else if (note.includes('#')) position += 1;
+  else if (note.includes('bb')) position -= 2;
+  else if (note.includes('b')) position -= 1;
+  
+  // Normaliser la position (gérer les dépassements comme B# = C de l'octave suivante)
+  if (position >= 12) {
+    octave += Math.floor(position / 12);
+    position = position % 12;
+  } else if (position < 0) {
+    const octavesDown = Math.ceil(-position / 12);
+    octave -= octavesDown;
+    position = (position + octavesDown * 12) % 12;
+  }
+  
+  return octave * 12 + position;
+}
+
+// Fonction pour assurer que les notes sont en ordre ascendant SUR LA PORTÉE
 // (aucune note ne doit "redescendre" par rapport à la précédente)
+// CORRECTION v2.2 : utiliser la position chromatique réelle au lieu de la lettre seule
+// CORRECTION v2.3 : recalculer noteForKeyboardOctave après ajustement de l'octave
 function ensureAscendingOrder(notesWithOctave) {
   if (!notesWithOctave || notesWithOctave.length === 0) return notesWithOctave;
   
@@ -170,43 +212,34 @@ function ensureAscendingOrder(notesWithOctave) {
     const prevNote = result[i - 1];
     const currentNote = { ...notesWithOctave[i] };
     
-    // Calculer les positions en semitones (pour comparaison)
-    const noteToSemitone = (displayNote) => {
-      const baseNote = displayNote.replace(/[#b]/g, '');
-      const baseSemitones = {
-        'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11
-      };
-      let semitone = baseSemitones[baseNote] || 0;
-      
-      if (displayNote.includes('##')) semitone += 2;
-      else if (displayNote.includes('#')) semitone += 1;
-      else if (displayNote.includes('bb')) semitone -= 2;
-      else if (displayNote.includes('b')) semitone -= 1;
-      
-      return semitone;
-      
-      // Normaliser entre 0-11
-      while (semitone < 0) semitone += 12;
-      while (semitone >= 12) semitone -= 12;
-    };
+    // Calculer les positions chromatiques réelles (en tenant compte des enharmoniques)
+    const prevChromatic = getChromaticPosition(prevNote.displayNote, prevNote.octave);
+    const currentChromatic = getChromaticPosition(currentNote.displayNote, currentNote.octave);
     
-    const prevSemitone = noteToSemitone(prevNote.displayNote);
-    const currentSemitone = noteToSemitone(currentNote.displayNote);
-    
-    // Calculer la position absolue (octave * 12 + semitone)
-    const prevAbsolute = prevNote.octave * 12 + prevSemitone;
-    const currentAbsolute = currentNote.octave * 12 + currentSemitone;
-    
-    // Si la note actuelle est plus basse que la précédente, augmenter son octave
-    if (currentAbsolute < prevAbsolute) {
-      // Calculer de combien d'octaves il faut remonter
-      const diff = prevAbsolute - currentAbsolute;
-      const octavesToAdd = Math.ceil(diff / 12);
-      currentNote.octave += octavesToAdd;
-    }
-    // Si la note actuelle est exactement à la même position, la remonter d'une octave
-    else if (currentAbsolute === prevAbsolute) {
-      currentNote.octave += 1;
+    // Si la note actuelle est <= à la précédente chromatiquement, la remonter
+    if (currentChromatic <= prevChromatic) {
+      // Remonter d'une octave à la fois jusqu'à ce que la note soit au-dessus
+      while (getChromaticPosition(currentNote.displayNote, currentNote.octave) <= prevChromatic) {
+        currentNote.octave += 1;
+      }
+      
+      // CORRECTION v2.3 : Recalculer noteForKeyboardOctave après ajustement de l'octave
+      const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const baseNote = currentNote.displayNote.replace(/[#b]/g, '');
+      const naturalBaseSemitone = sharpNotes.indexOf(baseNote);
+      let keyboardOctave = currentNote.octave;
+      
+      if (currentNote.displayNote.includes('##')) {
+        if (naturalBaseSemitone + 2 >= 12) keyboardOctave += 1;
+      } else if (currentNote.displayNote.includes('#')) {
+        if (naturalBaseSemitone + 1 >= 12) keyboardOctave += 1;
+      } else if (currentNote.displayNote.includes('bb')) {
+        if (naturalBaseSemitone - 2 < 0) keyboardOctave -= 1;
+      } else if (currentNote.displayNote.includes('b')) {
+        if (naturalBaseSemitone - 1 < 0) keyboardOctave -= 1;
+      }
+      
+      currentNote.noteForKeyboardOctave = keyboardOctave;
     }
     
     result.push(currentNote);
@@ -215,8 +248,8 @@ function ensureAscendingOrder(notesWithOctave) {
   return result;
 }
 
-function getNoteName(rootNote, interval) {
-  const noteName = getNoteNameByDegree(rootNote, interval);
+function getNoteName(rootNote, interval, quality = null) {
+  const noteName = getNoteNameByDegree(rootNote, interval, quality);
   if (!noteName) return null;
   
   const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -230,8 +263,15 @@ function getNoteName(rootNote, interval) {
     useFlats = true;
   }
   
-  const totalSemitones = rootIndex + interval;
-  const octave = Math.floor(totalSemitones / 12);
+  // CORRECTION v2.3: Calculer l'octave basé sur le degré, pas les demi-tons
+  // L'octave ne change que si on dépasse le 7ème degré
+  const degree = quality && SPECIAL_DEGREE_MAPPINGS[quality] && SPECIAL_DEGREE_MAPPINGS[quality][interval] !== undefined
+    ? SPECIAL_DEGREE_MAPPINGS[quality][interval]
+    : DEGREE_INTERVALS[interval];
+  
+  // Les degrés 0-6 sont dans la même octave que la fondamentale
+  // Les degrés 7-13 sont dans l'octave suivante (extensions)
+  const octave = Math.floor(interval / 12);  // Utiliser l'intervalle brut pour les extensions
   
   // Calculer la note en notation sharp et flat
   let baseNote = noteName.replace(/[#b]/g, '');
@@ -249,7 +289,17 @@ function getNoteName(rootNote, interval) {
   
   // Déterminer quelle notation utiliser (# ou b) en fonction de displayNote
   let finalNote;
-  if (noteName.includes('b')) {
+  
+  // CORRECTION v2.3: Pour les doubles altérations OU quand l'enharmonie change la lettre de base,
+  // utiliser displayNote pour la portée car elle doit afficher l'enharmonie exacte
+  // (G## pas A, E# pas F, B# pas C, Cb pas B, Fb pas E, Bbb pas A)
+  const displayBaseLetter = noteName.charAt(0);
+  const finalBaseLetter = baseNoteSharp.charAt(0);
+  const enharmonyChangesLetter = displayBaseLetter !== finalBaseLetter;
+  
+  if (noteName.includes('##') || noteName.includes('bb') || enharmonyChangesLetter) {
+    finalNote = noteName;  // Garder la forme théorique pour préserver l'enharmonie
+  } else if (noteName.includes('b')) {
     finalNote = baseNoteFlat;
   } else if (noteName.includes('#')) {
     finalNote = baseNoteSharp;
@@ -258,9 +308,30 @@ function getNoteName(rootNote, interval) {
     finalNote = useFlats ? baseNoteFlat : baseNoteSharp;
   }
   
+  // CORRECTION v2.3: Ajuster l'octave pour noteForKeyboard quand l'enharmonie change d'octave
+  // Ex: B#4 = C5 sur le clavier, E#4 = F4 (pas de changement d'octave)
+  let keyboardOctave = octave;
+  const naturalBaseSemitone = sharpNotes.indexOf(baseNote);
+  
+  // Calculer si l'altération fait passer à l'octave suivante ou précédente
+  if (noteName.includes('##')) {
+    // Double dièse : si note naturelle + 2 >= 12, on passe à l'octave suivante
+    if (naturalBaseSemitone + 2 >= 12) keyboardOctave += 1;
+  } else if (noteName.includes('#')) {
+    // Dièse simple : si note naturelle + 1 >= 12, on passe à l'octave suivante
+    if (naturalBaseSemitone + 1 >= 12) keyboardOctave += 1;
+  } else if (noteName.includes('bb')) {
+    // Double bémol : si note naturelle - 2 < 0, on descend à l'octave précédente
+    if (naturalBaseSemitone - 2 < 0) keyboardOctave -= 1;
+  } else if (noteName.includes('b')) {
+    // Bémol simple : si note naturelle - 1 < 0, on descend à l'octave précédente
+    if (naturalBaseSemitone - 1 < 0) keyboardOctave -= 1;
+  }
+  
   return { 
-    note: finalNote,           // Pour la portée (avec bémols si nécessaire)
-    noteForKeyboard: baseNoteSharp,  // NOUVEAU v2.1 : toujours en sharp pour le clavier
+    note: finalNote,           // Pour la portée (avec notation théorique exacte)
+    noteForKeyboard: baseNoteSharp,  // v2.1 : toujours en sharp pour le clavier
+    noteForKeyboardOctave: keyboardOctave,  // v2.3 : octave ajustée pour le clavier
     displayNote: noteName, 
     octave: octave 
   };
@@ -286,25 +357,25 @@ function generateAllChords() {
       
       // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
       if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
-      const majorIntervals = getIntervals('');
-      let majorNotes = majorIntervals.map(interval => {
-        const note = getNoteName(fullRoot, interval);
-        if (note && isCb) {
-          return { ...note, octave: note.octave + 1 };
-        }
-        return note;
-      }).filter(n => n !== null);
-      
-      // Assurer que les notes sont en ordre ascendant
-      majorNotes = ensureAscendingOrder(majorNotes);
-      
-      chords[fullRoot] = {
-        notation: fullRoot,
-        nomFrancais: `${fullRoot} majeur`,
-        notes: majorNotes.map(n => n.note),
-        notesFr: majorNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
-        notesWithOctave: majorNotes
-      };
+        const majorIntervals = getIntervals('');
+        let majorNotes = majorIntervals.map(interval => {
+          const note = getNoteName(fullRoot, interval, '');
+          if (note && isCb) {
+            return { ...note, octave: note.octave + 1 };
+          }
+          return note;
+        }).filter(n => n !== null);
+        
+        // Assurer que les notes sont en ordre ascendant
+        majorNotes = ensureAscendingOrder(majorNotes);
+        
+        chords[fullRoot] = {
+          notation: fullRoot,
+          nomFrancais: `${fullRoot} majeur`,
+          notes: majorNotes.map(n => n.note),
+          notesFr: majorNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
+          notesWithOctave: majorNotes
+        };
       }
       
       // Toutes les qualités
@@ -322,7 +393,7 @@ function generateAllChords() {
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
         let notes = intervals.map(interval => {
-          const note = getNoteName(fullRoot, interval);
+          const note = getNoteName(fullRoot, interval, quality);
           if (note && isCb) {
             return { ...note, octave: note.octave + 1 };
           }
