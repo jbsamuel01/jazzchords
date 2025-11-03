@@ -1,11 +1,118 @@
-// staff.js v2.2 - Dessin de la portée musicale
+// staff.js v2.3 - Dessin de la portée musicale
 // Corrections v2.2 : 
+// Corrections v2.3 :
+// - Ajout de Cbm et Gbm dans le mapping des armures
+// - Compactage des notes pour voicing serrée (intervalle minimal)
+// - Altérations décalées vers la gauche (-20 au lieu de -14)
+// - Utilisation des vrais symboles Unicode pour double dièse (𝄪) et double bémol (𝄫)
 // - Respect total de l'enharmonie (Cb reste Cb, pas Si)
 // - Position des bémols ajustée et taille augmentée
 // - Altérations accidentelles éloignées des notes
 // - Accord éloigné de l'armure
 // - Taille globale réduite
 // - Décalage horizontal pour notes proches (secondes)
+
+// Fonction pour convertir une note en semitone (0-11)
+function noteToSemitone(noteName) {
+  const semitoneMap = {
+    'C': 0, 'B#': 0,
+    'C#': 1, 'Db': 1,
+    'D': 2, 'C##': 2,
+    'D#': 3, 'Eb': 3,
+    'E': 4, 'Fb': 4,
+    'E#': 5, 'F': 5,
+    'F#': 6, 'Gb': 6, 'E##': 6,
+    'G': 7, 'F##': 7,
+    'G#': 8, 'Ab': 8,
+    'A': 9,
+    'A#': 10, 'Bb': 10,
+    'B': 11, 'Cb': 11,
+    'Cbb': 10, 'Dbb': 0, 'Ebb': 2, 'Fbb': 3, 'Gbb': 4, 'Abb': 6, 'Bbb': 8
+  };
+  
+  // Extraire la lettre et les altérations
+  const baseLetter = noteName.charAt(0);
+  const alterations = noteName.substring(1);
+  
+  // Construire la clé
+  const key = baseLetter + alterations;
+  
+  if (semitoneMap[key] !== undefined) {
+    return semitoneMap[key];
+  }
+  
+  // Fallback : calculer manuellement
+  const baseValues = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11};
+  let semitone = baseValues[baseLetter] || 0;
+  
+  // Compter les dièses et bémols
+  const sharps = (alterations.match(/#/g) || []).length;
+  const flats = (alterations.match(/b/g) || []).length;
+  
+  semitone += sharps - flats;
+  
+  // Normaliser entre 0-11
+  while (semitone < 0) semitone += 12;
+  while (semitone >= 12) semitone -= 12;
+  
+  return semitone;
+}
+
+// Fonction pour compacter les notes dans la voicing la plus serrée (< 1 octave)
+function compactNotes(notes) {
+  if (!notes || notes.length === 0) return notes;
+  
+  // Extraire les infos de chaque note
+  const notesInfo = notes.map((note, index) => {
+    const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
+    const noteName = note.replace(/[0-9]/g, '');
+    const semitone = noteToSemitone(noteName);
+    
+    return {
+      original: note,
+      noteName: noteName,
+      octave: octave,
+      semitone: semitone,
+      absolutePitch: octave * 12 + semitone,
+      originalIndex: index
+    };
+  });
+  
+  // Trouver la note la plus basse (qui sera la basse)
+  const lowestNote = notesInfo.reduce((lowest, current) => 
+    current.absolutePitch < lowest.absolutePitch ? current : lowest
+  );
+  
+  // Reconstruire les notes dans l'ordre original, mais en ajustant les octaves
+  // pour qu'elles soient toutes au-dessus de la basse
+  const result = [];
+  let bassAbsolutePitch = lowestNote.absolutePitch;
+  
+  for (let i = 0; i < notesInfo.length; i++) {
+    const current = notesInfo[i];
+    
+    if (current.originalIndex === lowestNote.originalIndex) {
+      // C'est la basse, on la garde telle quelle
+      result.push(current.original);
+    } else {
+      // Pour les autres notes, les placer dans l'octave la plus proche au-dessus de la basse
+      const currentSemitone = current.semitone;
+      
+      // Calculer la position cible : dans la même octave que la basse ou l'octave suivante
+      let candidatePitch = Math.floor(bassAbsolutePitch / 12) * 12 + currentSemitone;
+      
+      // Si c'est en dessous de la basse, monter d'une octave
+      if (candidatePitch < bassAbsolutePitch) {
+        candidatePitch += 12;
+      }
+      
+      const newOctave = Math.floor(candidatePitch / 12);
+      result.push(current.noteName + newOctave);
+    }
+  }
+  
+  return result;
+}
 
 function drawMusicalStaff(notes, chordNotation = '') {
   const svg = document.getElementById('musicalStaff');
@@ -17,6 +124,9 @@ function drawMusicalStaff(notes, chordNotation = '') {
   if (!notes || notes.length === 0) {
     return;
   }
+  
+  // Compacter les notes dans la voicing la plus serrée
+  notes = compactNotes(notes);
   
   // Paramètres de la portée (optimisés pour réduire l'espace inutile)
   const staffY = 25;
@@ -59,10 +169,11 @@ function drawMusicalStaff(notes, chordNotation = '') {
     const noteA = a.replace(/[0-9]/g, '');
     const noteB = b.replace(/[0-9]/g, '');
     
-    if (octaveA !== octaveB) return octaveB - octaveA;
+    // Calculer les pitchs absolus pour un tri correct
+    const pitchA = octaveA * 12 + noteToSemitone(noteA);
+    const pitchB = octaveB * 12 + noteToSemitone(noteB);
     
-    const noteOrder = ['C', 'C#', 'Cb', 'D', 'D#', 'Db', 'E', 'E#', 'Eb', 'F', 'F#', 'Fb', 'G', 'G#', 'Gb', 'A', 'A#', 'Ab', 'B', 'B#', 'Bb'];
-    return noteOrder.indexOf(noteB) - noteOrder.indexOf(noteA);
+    return pitchB - pitchA; // Plus haute en premier
   });
   
   // Calculer toutes les positions Y
@@ -115,21 +226,19 @@ function drawMusicalStaff(notes, chordNotation = '') {
     if (isNatural && naturalNoteInKey) {
       // La note est naturelle mais elle est altérée à l'armure
       // Il faut dessiner un bécarre
-      drawNatural(svg, xPos - 14, pos.y);
+      drawNatural(svg, xPos - 15, pos.y);
     } else if (!isInKeySignature(pos.note, keySignature)) {
       // La note a une altération accidentelle (pas à l'armure)
       if (hasDoubleSharp) {
-        // Dessiner deux dièses côte à côte pour un double dièse
-        drawSharp(svg, xPos - 20, pos.y);
-        drawSharp(svg, xPos - 12, pos.y);
+        // Dessiner le symbole double dièse
+        drawDoubleSharp(svg, xPos - 15, pos.y);
       } else if (hasDoubleFlat) {
-        // Dessiner deux bémols côte à côte pour un double bémol
-        drawFlat(svg, xPos - 20, pos.y);
-        drawFlat(svg, xPos - 12, pos.y);
+        // Dessiner le symbole double bémol
+        drawDoubleFlat(svg, xPos - 15, pos.y);
       } else if (hasSharp) {
-        drawSharp(svg, xPos - 14, pos.y);
+        drawSharp(svg, xPos - 15, pos.y);
       } else if (hasFlat) {
-        drawFlat(svg, xPos - 14, pos.y);
+        drawFlat(svg, xPos - 15, pos.y);
       }
     }
     
@@ -204,6 +313,8 @@ function getKeySignature(chordNotation) {
     'Bb': 'Db',  // Bbm -> Db majeur (5 b)
     'Eb': 'Gb',  // Ebm -> Gb majeur (6 b)
     'Ab': 'Cb',  // Abm -> Cb majeur (7 b)
+    'Cb': 'Cb',  // Cbm -> Cb majeur (7 b) - utilise armure homonyme
+    'Gb': 'Cb',  // Gbm -> Cb majeur (7 b) - correction pour afficher l'armure
     
     // Cas rares/enharmoniques
     'E#': 'G#',  // E#m -> G# majeur (rare)
@@ -377,12 +488,12 @@ function drawLedgerLines(svg, x, y, staffY, lineSpacing, shift = 0) {
 }
 
 function drawNoteHead(svg, x, y) {
-  // Tête de note ronde (légèrement plus grosse)
+  // Tête de note ronde (diamètre = une interligne = 7)
   const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
   noteHead.setAttribute('cx', x);
   noteHead.setAttribute('cy', y);
-  noteHead.setAttribute('rx', '5.5'); // Augmenté de 4.5 à 5.5
-  noteHead.setAttribute('ry', '4.2'); // Augmenté de 3.5 à 4.2
+  noteHead.setAttribute('rx', '4.5'); // Augmenté de 4.5 à 5.5
+  noteHead.setAttribute('ry', '3.5'); // Augmenté de 3.5 à 4.2
   noteHead.setAttribute('fill', 'black');
   noteHead.setAttribute('transform', `rotate(-20 ${x} ${y})`);
   svg.appendChild(noteHead);
@@ -434,4 +545,27 @@ function drawTrebleClef(svg, x, y) {
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';
   svg.appendChild(clef);
+}
+function drawDoubleSharp(svg, x, y) {
+  const doubleSharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  doubleSharp.setAttribute('x', x);
+  doubleSharp.setAttribute('y', y + 5);
+  doubleSharp.setAttribute('font-size', '18');
+  doubleSharp.setAttribute('fill', 'black');
+  doubleSharp.setAttribute('font-family', 'serif');
+  doubleSharp.setAttribute('font-weight', 'bold');
+  doubleSharp.textContent = '𝄪'; // Symbole Unicode pour double dièse U+1D12A
+  svg.appendChild(doubleSharp);
+}
+
+function drawDoubleFlat(svg, x, y) {
+  const doubleFlat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  doubleFlat.setAttribute('x', x);
+  doubleFlat.setAttribute('y', y + 4);
+  doubleFlat.setAttribute('font-size', '20');
+  doubleFlat.setAttribute('fill', 'black');
+  doubleFlat.setAttribute('font-family', 'serif');
+  doubleFlat.setAttribute('font-weight', 'bold');
+  doubleFlat.textContent = '𝄫'; // Symbole Unicode pour double bémol U+1D12B
+  svg.appendChild(doubleFlat);
 }

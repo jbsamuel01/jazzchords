@@ -184,6 +184,10 @@ function ensureAscendingOrder(notesWithOctave) {
       else if (displayNote.includes('b')) semitone -= 1;
       
       return semitone;
+      
+      // Normaliser entre 0-11
+      while (semitone < 0) semitone += 12;
+      while (semitone >= 12) semitone -= 12;
     };
     
     const prevSemitone = noteToSemitone(prevNote.displayNote);
@@ -280,7 +284,8 @@ function generateAllChords() {
       // Vérifier si c'est Cb pour remonter d'une octave
       const isCb = (rootNote === 'C' && alt === 'b');
       
-      // Ajouter l'accord majeur
+      // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
+      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
       const majorIntervals = getIntervals('');
       let majorNotes = majorIntervals.map(interval => {
         const note = getNoteName(fullRoot, interval);
@@ -300,6 +305,7 @@ function generateAllChords() {
         notesFr: majorNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
         notesWithOctave: majorNotes
       };
+      }
       
       // Toutes les qualités
       const allQualities = [
