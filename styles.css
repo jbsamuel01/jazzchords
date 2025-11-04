@@ -1,0 +1,782 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background: #0a0e1a;
+  color: #e8ecf8;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 6px;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Affichage principal */
+.main-display {
+  background: #151b2b;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-buttons-row {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #374151;
+}
+
+.app-description {
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.notes-played-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  color: #e8ecf8;
+  font-weight: bold;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
+.chord-info-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chord-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.chord-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.chord-name-section {
+  flex-shrink: 0;
+}
+
+.chord-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chord-notes-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#chordName {
+  color: #22c55e;
+  font-size: 56px;
+  font-weight: bold;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Portée musicale */
+.staff-container {
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  border: 2px solid #22c55e;
+  flex-shrink: 0;
+}
+
+#musicalStaff {
+  display: block;
+}
+
+.notes-list-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.notes-container-with-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.played-notes-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  color: #22c55e;
+  transition: all 0.2s;
+  min-width: 32px;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.icon-btn.active {
+  color: #16a34a;
+}
+
+.toggle-visibility-btn {
+  background: #22c55e;
+  border: 1px solid #22c55e;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  color: #0a0e1a;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.toggle-visibility-btn:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.toggle-visibility-btn.hidden {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+
+.chord-note,
+.note-badge {
+  background: #22c55e;
+  color: #0a0e1a;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.chord-note {
+  background: #1e2638;
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.note-badge.correct {
+  background: #22c55e;
+  color: #0a0e1a;
+}
+
+.note-badge.incorrect {
+  background: #ef4444;
+  color: #fff;
+}
+
+.empty-state {
+  color: #9ca3af;
+  font-size: 13px;
+  display: inline-block;
+}
+
+.quiz-message {
+  color: #9ca3af;
+  font-size: 14px;
+  font-style: italic;
+  display: inline;
+  margin-right: 2px;
+}
+
+.success-indicator {
+  font-size: 28px;
+  animation: thumbsUp 0.3s ease-out;
+  display: inline;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+@keyframes thumbsUp {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Clavier virtuel */
+.keyboard-panel {
+  background: #151b2b;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 180px;
+}
+
+.keyboard-container {
+  height: 130px;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.keyboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.played-notes-in-keyboard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+.white-keys {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  gap: 1px;
+}
+
+.white-key {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #000;
+  border-radius: 0 0 3px 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s;
+}
+
+.white-key.active {
+  background: #22c55e;
+}
+
+.black-keys {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  display: flex;
+  pointer-events: none;
+  width: 100%;
+}
+
+.black-key-container {
+  flex: 1;
+  position: relative;
+}
+
+.black-key {
+  position: absolute;
+  right: -12px;
+  width: 24px;
+  height: 100%;
+  background: #000;
+  border: 2px solid #333;
+  border-radius: 0 0 2px 2px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.1s;
+}
+
+.black-key.active {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+/* Zone de saisie manuelle */
+.input-panel {
+  background: #151b2b;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-row {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Forcer l'alignement pour baseQualities spécifiquement */
+#baseQualities {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.btn-group {
+  display: flex;
+  gap: 2px;
+}
+
+.btn-group-with-links {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.row-spacer {
+  width: 8px;
+  height: 1px;
+  background: #374151;
+}
+
+/* Boutons de construction manuelle - Rectangle serré, lettres grandes */
+.mini-key {
+  padding: 3px 2px;
+  background: #1e2638;
+  color: #e8ecf8;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1;
+  height: auto;
+}
+
+.mini-key-compact {
+  padding: 3px 2px !important;
+  min-height: auto !important;
+  max-height: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.mini-key.stacked {
+  min-height: 18px;
+  padding: 2px 2px;
+  font-size: 12px;
+  line-height: 1;
+  border: none;
+  border-radius: 0;
+  height: auto;
+}
+
+.mini-key.active {
+  background: #22c55e;
+  color: #0a0e1a;
+  border-color: #22c55e;
+}
+
+.mini-key.error {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+/* Groupe vertical avec cadre englobant */
+.btn-stack-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  padding: 0;
+  background: #1e2638;
+  overflow: hidden;
+}
+
+.btn-stack-group .mini-key.stacked {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #374151;
+}
+
+.btn-stack-group .mini-key.stacked:last-child {
+  border-bottom: none;
+}
+
+.btn-stack-group .mini-key.stacked.active {
+  background: #22c55e;
+  color: #0a0e1a;
+}
+
+.btn-stack-group .mini-key.stacked.error {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Groupe carré 2x2 avec cadre englobant */
+.btn-grid-group {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 0 !important;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  padding: 0;
+  background: #1e2638;
+  overflow: hidden;
+  width: auto !important;
+}
+
+.btn-grid-group .mini-key.stacked {
+  border: none;
+  border-right: 1px solid #374151;
+  border-bottom: 1px solid #374151;
+  min-width: 40px !important;
+  width: auto !important;
+  display: block !important;
+}
+
+.btn-grid-group .mini-key.stacked:nth-child(2),
+.btn-grid-group .mini-key.stacked:nth-child(4) {
+  border-right: none;
+}
+
+.btn-grid-group .mini-key.stacked:nth-child(3),
+.btn-grid-group .mini-key.stacked:nth-child(4) {
+  border-bottom: none;
+}
+
+.btn-grid-group .mini-key.stacked.active {
+  background: #22c55e;
+  color: #0a0e1a;
+}
+
+.btn-grid-group .mini-key.stacked.error {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Zone quiz */
+.random-panel {
+  background: #151b2b;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  font-size: 12px;
+  color: #e8ecf8;
+  font-weight: bold;
+}
+
+.note-count-grid {
+  display: flex;
+  gap: 6px;
+}
+
+.note-count-btn {
+  padding: 6px 12px;
+  background: #1e2638;
+  color: #e8ecf8;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.note-count-btn.active {
+  background: #22c55e;
+  color: #0a0e1a;
+  border-color: #22c55e;
+}
+
+.notes-label {
+  font-size: 12px;
+  color: #9aa7c7;
+  font-weight: bold;
+}
+
+/* Responsive Tablet */
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+  
+  #chordName {
+    font-size: 28px;
+  }
+
+  .chord-note,
+  .note-badge {
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+
+  .keyboard-panel {
+    min-height: 160px;
+  }
+
+  .keyboard-container {
+    height: 100px;
+  }
+
+  .black-key {
+    width: 18px;
+    right: -9px;
+    border-width: 1.5px;
+  }
+
+  .mini-key {
+    padding: 3px 2px;
+    font-size: 12px;
+    min-width: 18px;
+    line-height: 1;
+  }
+  
+  .mini-key.stacked {
+    padding: 2px 2px;
+    font-size: 11px;
+    min-height: 16px;
+    line-height: 1;
+  }
+
+  .input-row {
+    gap: 2px;
+  }
+  
+  .row-spacer {
+    width: 6px;
+  }
+}
+
+/* Responsive Mobile */
+@media (max-width: 480px) {
+  .keyboard-panel {
+    min-height: 140px;
+  }
+
+  .keyboard-container {
+    height: 90px;
+  }
+
+  .mini-key {
+    padding: 2px 2px;
+    font-size: 11px;
+    min-width: 16px;
+    line-height: 1;
+  }
+  
+  .mini-key.stacked {
+    padding: 2px 2px;
+    font-size: 10px;
+    min-height: 14px;
+    line-height: 1;
+  }
+
+  #chordName {
+    font-size: 24px;
+  }
+
+  .chord-note,
+  .note-badge {
+    font-size: 14px;
+    padding: 5px 8px;
+  }
+
+  .black-key {
+    width: 14px;
+    right: -7px;
+    border-width: 1px;
+  }
+
+  .input-row {
+    gap: 1px;
+  }
+  
+  .row-spacer {
+    width: 6px;
+  }
+
+  .random-panel {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .notes-label,
+  .generate-label {
+    font-size: 11px;
+  }
+}
+
+/* Modale d'aide */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 14, 26, 0.9);
+  overflow-y: auto;
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #151b2b;
+  border: 2px solid #22c55e;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-content h3 {
+  color: #22c55e;
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+.modal-content h4 {
+  color: #22c55e;
+  margin: 16px 0 8px 0;
+  font-size: 16px;
+}
+
+.help-section {
+  margin-bottom: 20px;
+}
+
+.help-section p {
+  color: #e8ecf8;
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.help-section ul {
+  color: #e8ecf8;
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.help-section li {
+  margin: 6px 0;
+}
+
+.help-section strong {
+  color: #22c55e;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #e8ecf8;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-modal:hover {
+  color: #22c55e;
+  transform: scale(1.1);
+}
+/* Degrés d'accord */
+.chord-degrees {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.degree-badge {
+  background: #1e2638;
+  color: #22c55e;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  border: 1px solid #22c55e;
+  flex-shrink: 0;
+}
