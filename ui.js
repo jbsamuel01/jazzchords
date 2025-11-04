@@ -89,7 +89,7 @@ function initializeUI() {
     [{ label: '-7', value: 'm7' }, { label: 'm(in)7', value: 'm7' }],
     [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }],
     [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }],
-    [{ label: 'M7', value: 'maj7' }, { label: 'maj7', value: 'maj7' }]
+    [{ label: 'M7 - Δ', value: 'maj7' }, { label: 'maj7', value: 'maj7' }]
   ];
   
   qualityGroups.forEach((group) => {

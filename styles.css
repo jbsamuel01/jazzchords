@@ -9,7 +9,7 @@ body {
   background: #0a0e1a;
   color: #e8ecf8;
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 10px;
+  padding: 6px;
 }
 
 #app {
@@ -68,8 +68,17 @@ body {
 .chord-display-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   width: 100%;
+}
+
+.chord-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .chord-name-section {
@@ -244,7 +253,7 @@ body {
 /* Clavier virtuel */
 .keyboard-panel {
   background: #151b2b;
-  padding: 10px;
+  padding: 6px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -332,7 +341,7 @@ body {
 /* Zone de saisie manuelle */
 .input-panel {
   background: #151b2b;
-  padding: 10px;
+  padding: 6px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -500,7 +509,7 @@ body {
 /* Zone quiz */
 .random-panel {
   background: #151b2b;
-  padding: 10px;
+  padding: 6px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -750,4 +759,24 @@ body {
 .close-modal:hover {
   color: #22c55e;
   transform: scale(1.1);
+}
+/* Degrés d'accord */
+.chord-degrees {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.degree-badge {
+  background: #1e2638;
+  color: #22c55e;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  border: 1px solid #22c55e;
+  flex-shrink: 0;
 }

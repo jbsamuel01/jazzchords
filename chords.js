@@ -390,6 +390,17 @@ function generateAllChords() {
       ];
       
       allQualities.forEach(quality => {
+        // Exclure D# et A# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
+        const isMinorQuality = quality === 'm' || quality.startsWith('m7') || quality.startsWith('m6') || 
+                               quality.startsWith('m9') || quality.startsWith('m11') || quality.startsWith('m13') ||
+                               quality === 'm7b5' || quality === 'm6/9' || quality === 'm9b5' || quality === 'dim' || 
+                               quality === 'dim7' || quality === 'ø7';
+        const isDSharpOrASharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#');
+        
+        if (isDSharpOrASharp && !isMinorQuality) {
+          return; // Skip this chord
+        }
+        
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
         let notes = intervals.map(interval => {
@@ -418,3 +429,70 @@ function generateAllChords() {
 }
 
 const ALL_CHORDS = generateAllChords();
+
+// Fonction pour calculer les degrés d'un accord
+function getChordDegrees(chordName) {
+  const chord = ALL_CHORDS[chordName];
+  if (!chord || !chord.notesWithOctave) return [];
+  
+  // Extraire la fondamentale
+  const root = chordName.match(/^[A-G][#b]?/)?.[0];
+  if (!root) return [];
+  
+  const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  
+  let rootSemitone = sharpNotes.indexOf(root);
+  if (rootSemitone === -1) {
+    rootSemitone = flatNotes.indexOf(root);
+  }
+  
+  const degrees = chord.notesWithOctave.map((noteObj, index) => {
+    // Calculer l'intervalle en demi-tons
+    const noteForCalc = noteObj.noteForKeyboard || noteObj.note;
+    let noteSemitone = sharpNotes.indexOf(noteForCalc);
+    if (noteSemitone === -1) {
+      noteSemitone = flatNotes.indexOf(noteForCalc);
+    }
+    
+    let interval = (noteSemitone - rootSemitone + 12) % 12;
+    
+    // Degrés de base (pour les 4 premières notes de l'accord : 1, 3, 5, 7)
+    const intervalToDegree = {
+      0: '1',
+      1: 'b2',
+      2: '2',
+      3: 'b3',
+      4: '3',
+      5: '4',
+      6: 'b5',
+      7: '5',
+      8: '#5',
+      9: '6',
+      10: 'b7',
+      11: '7'
+    };
+    
+    // Degrés d'extension (pour les notes au-delà des 4 premières : 9, 11, 13)
+    const intervalToExtension = {
+      0: '8',    // Octave
+      1: 'b9',
+      2: '9',
+      3: '#9',
+      5: '11',
+      6: '#11',
+      8: 'b13',
+      9: '13'
+    };
+    
+    // Les 4 premières notes sont les notes de base (1, 3, 5, 7)
+    // Les notes suivantes sont des extensions (9, 11, 13)
+    if (index < 4) {
+      return intervalToDegree[interval] || interval.toString();
+    } else {
+      return intervalToExtension[interval] || intervalToDegree[interval] || interval.toString();
+    }
+  });
+  
+  return degrees;
+}

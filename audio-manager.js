@@ -25,6 +25,18 @@ let lastDetectionTime = 0;
 function getAudioContext() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // iOS nécessite une interaction utilisateur pour débloquer l'audio
+    if (audioContext.state === 'suspended') {
+      const resume = () => {
+        audioContext.resume();
+        document.removeEventListener('touchstart', resume);
+        document.removeEventListener('touchend', resume);
+        document.removeEventListener('click', resume);
+      };
+      document.addEventListener('touchstart', resume, { once: true });
+      document.addEventListener('touchend', resume, { once: true });
+      document.addEventListener('click', resume, { once: true });
+    }
   }
   return audioContext;
 }

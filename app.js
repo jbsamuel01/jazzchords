@@ -358,6 +358,11 @@ function startQuizMode() {
   resetManualSelection();
   
   const availableChords = Object.entries(ALL_CHORDS).filter(([name, chord]) => {
+    // Exclure D# et A# non-mineurs du quiz
+    if (name.startsWith('D#') || name.startsWith('A#')) {
+      const isMinor = name.includes('m') || name.includes('dim') || name.includes('ø');
+      if (!isMinor) return false;
+    }
     return chord.notes.length === randomNoteCount;
   });
   
@@ -599,7 +604,18 @@ function displayDetectedChord(chord, chordExists = null) {
         return `<span class="chord-note">${noteFr}</span>`;
       }).join(' ');
       
-      chordNotesList.innerHTML = notesDisplay;
+      // Afficher les degrés sous les notes si la fonction existe
+      let degreesDisplay = '';
+      if (typeof getChordDegrees !== 'undefined' && chord.notation) {
+        const degrees = getChordDegrees(chord.notation);
+        if (degrees && degrees.length > 0) {
+          degreesDisplay = '<div class="chord-degrees">' + 
+            degrees.map(deg => `<span class="degree-badge">${deg}</span>`).join(' ') + 
+            '</div>';
+        }
+      }
+      
+      chordNotesList.innerHTML = notesDisplay + degreesDisplay;
       toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
         <circle cx="12" cy="12" r="3"></circle>

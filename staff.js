@@ -19,9 +19,9 @@ function drawMusicalStaff(notes, chordNotation = '') {
   }
   
   // Paramètres de la portée (optimisés pour réduire l'espace inutile)
-  const staffY = 25;
+  const staffY = 35;
   const lineSpacing = 7;
-  const staffWidth = 95; // Réduit de 120 à 95 pour éliminer l'espace blanc à droite
+  const staffWidth = 120; // Réduit de 120 à 95 pour éliminer l'espace blanc à droite
   
   // Dessiner les 5 lignes de la portée
   for (let i = 0; i < 5; i++) {
@@ -123,7 +123,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
         drawDoubleSharp(svg, xPos - 15, pos.y);
       } else if (hasDoubleFlat) {
         // Dessiner le symbole double bémol
-        drawDoubleFlat(svg, xPos - 15, pos.y);
+        drawDoubleFlat(svg, xPos - 18, pos.y);
       } else if (hasSharp) {
         drawSharp(svg, xPos - 15, pos.y);
       } else if (hasFlat) {
@@ -131,9 +131,11 @@ function drawMusicalStaff(notes, chordNotation = '') {
       }
     }
     
+    
     // Dessiner la tête de note
     drawNoteHead(svg, xPos, pos.y);
   });
+  
 }
 
 function getKeySignature(chordNotation) {
@@ -381,8 +383,8 @@ function drawNoteHead(svg, x, y) {
   const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
   noteHead.setAttribute('cx', x);
   noteHead.setAttribute('cy', y);
-  noteHead.setAttribute('rx', '5.5'); // Augmenté de 4.5 à 5.5
-  noteHead.setAttribute('ry', '4.2'); // Augmenté de 3.5 à 4.2
+  noteHead.setAttribute('rx', '4.5'); // Augmenté de 4.5 à 5.5
+  noteHead.setAttribute('ry', '3.5'); // Augmenté de 3.5 à 4.2
   noteHead.setAttribute('fill', 'black');
   noteHead.setAttribute('transform', `rotate(-20 ${x} ${y})`);
   svg.appendChild(noteHead);
