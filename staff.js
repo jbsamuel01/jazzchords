@@ -19,7 +19,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
   }
   
   // Paramètres de la portée (optimisés pour réduire l'espace inutile)
-  const staffY = 30;
+  const staffY = 35;
   const lineSpacing = 9;
   const staffWidth = 120; // Réduit de 120 à 95 pour éliminer l'espace blanc à droite
   
@@ -257,13 +257,13 @@ function drawKeySignature(svg, x, staffY, lineSpacing, keySignature) {
   } else if (keySignature.flats > 0) {
     // Positions exactes des bémols sur la portée en clé de sol
     const flatPositions = [
-      staffY + 2 * lineSpacing,     // SIb
-      staffY + 0.5 * lineSpacing,   // MIb
-      staffY + 2.5 * lineSpacing,   // LAb
-      staffY + 1 * lineSpacing,     // RÉb
-      staffY + 3 * lineSpacing,     // SOLb
-      staffY + 1.5 * lineSpacing,   // DOb
-      staffY + 4 * lineSpacing      // FAb
+      staffY + 1.8 * lineSpacing,     // SIb
+      staffY + 0.3 * lineSpacing,     // MIb
+      staffY + 2.3 * lineSpacing,     // LAb
+      staffY + 0.8 * lineSpacing,     // RÉb
+      staffY + 2.8 * lineSpacing,     // SOLb
+      staffY + 1.3 * lineSpacing,     // DOb
+      staffY + 3.5 * lineSpacing      // FAb
     ];
     
     for (let i = 0; i < keySignature.flats; i++) {
@@ -383,8 +383,8 @@ function drawNoteHead(svg, x, y) {
   const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
   noteHead.setAttribute('cx', x);
   noteHead.setAttribute('cy', y);
-  noteHead.setAttribute('rx', '3.5'); // Augmenté de 4.5 à 5.5
-  noteHead.setAttribute('ry', '2.7'); // Augmenté de 3.5 à 4.2
+  noteHead.setAttribute('rx', '4.5'); // Augmenté de 4.5 à 5.5
+  noteHead.setAttribute('ry', '4.5'); // Augmenté de 3.5 à 4.2
   noteHead.setAttribute('fill', 'black');
   noteHead.setAttribute('transform', `rotate(-20 ${x} ${y})`);
   svg.appendChild(noteHead);
@@ -394,7 +394,7 @@ function drawSharp(svg, x, y) {
   const sharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   sharp.setAttribute('x', x);
   sharp.setAttribute('y', y + 5); // Redescendu de 3 à 5
-  sharp.setAttribute('font-size', '14');
+  sharp.setAttribute('font-size', '16');
   sharp.setAttribute('fill', 'black');
   sharp.setAttribute('font-family', 'serif');
   sharp.setAttribute('font-weight', 'bold');
@@ -406,7 +406,7 @@ function drawFlat(svg, x, y) {
   const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   flat.setAttribute('x', x);
   flat.setAttribute('y', y + 4); // Redescendu de 1 à 4
-  flat.setAttribute('font-size', '18');
+  flat.setAttribute('font-size', '20');
   flat.setAttribute('fill', 'black');
   flat.setAttribute('font-family', 'serif');
   flat.setAttribute('font-weight', 'bold');
@@ -418,7 +418,7 @@ function drawNatural(svg, x, y) {
   const natural = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   natural.setAttribute('x', x);
   natural.setAttribute('y', y + 5); // Redescendu de 3 à 5
-  natural.setAttribute('font-size', '14');
+  natural.setAttribute('font-size', '16');
   natural.setAttribute('fill', 'black');
   natural.setAttribute('font-family', 'serif');
   natural.setAttribute('font-weight', 'bold');
@@ -430,42 +430,31 @@ function drawTrebleClef(svg, x, y) {
   // Clé de sol encore plus petite
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
-  clef.setAttribute('y', y + 18);
-  clef.setAttribute('font-size', '32'); // Réduit de 38 à 32
+  clef.setAttribute('y', y + 14);
+  clef.setAttribute('font-size', '38');
+  clef.setAttribute('y', y + 14);
+  clef.setAttribute('font-size', '38');
   clef.setAttribute('fill', 'black');
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';
   svg.appendChild(clef);
 }
 function drawDoubleSharp(svg, x, y) {
-  // Dessiner le premier dièse
-  const sharp1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  sharp1.setAttribute('x', x);
-  sharp1.setAttribute('y', y + 5);
-  sharp1.setAttribute('font-size', '14');
-  sharp1.setAttribute('fill', 'black');
-  sharp1.setAttribute('font-family', 'serif');
-  sharp1.setAttribute('font-weight', 'bold');
-  sharp1.textContent = '♯';
-  svg.appendChild(sharp1);
-  
-  // Dessiner le deuxième dièse légèrement décalé
-  const sharp2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  sharp2.setAttribute('x', x + 6);
-  sharp2.setAttribute('y', y + 5);
-  sharp2.setAttribute('font-size', '14');
-  sharp2.setAttribute('fill', 'black');
-  sharp2.setAttribute('font-family', 'serif');
-  sharp2.setAttribute('font-weight', 'bold');
-  sharp2.textContent = '♯';
-  svg.appendChild(sharp2);
+  const doubleSharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  doubleSharp.setAttribute('x', x);
+  doubleSharp.setAttribute('y', y + 5);
+  doubleSharp.setAttribute('font-size', '14');
+  doubleSharp.setAttribute('fill', 'black');
+  doubleSharp.setAttribute('font-family', 'serif');
+  doubleSharp.setAttribute('font-weight', 'bold');
+  doubleSharp.textContent = '𝄪';
+  svg.appendChild(doubleSharp);
 }
-
 function drawDoubleFlat(svg, x, y) {
   const doubleFlat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   doubleFlat.setAttribute('x', x);
   doubleFlat.setAttribute('y', y + 4);
-  doubleFlat.setAttribute('font-size', '18');
+  doubleFlat.setAttribute('font-size', '20');
   doubleFlat.setAttribute('fill', 'black');
   doubleFlat.setAttribute('font-family', 'serif');
   doubleFlat.setAttribute('font-weight', 'bold');

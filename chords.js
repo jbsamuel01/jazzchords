@@ -355,8 +355,8 @@ function generateAllChords() {
       // Vérifier si c'est Cb pour remonter d'une octave
       const isCb = (rootNote === 'C' && alt === 'b');
       
-      // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
-      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
+      // Ajouter l'accord majeur (sauf pour D#, A# et G# qui n'existent pas en majeur)
+      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#') || (rootNote === 'G' && alt === '#'))) {
         const majorIntervals = getIntervals('');
         let majorNotes = majorIntervals.map(interval => {
           const note = getNoteName(fullRoot, interval, '');
@@ -390,14 +390,14 @@ function generateAllChords() {
       ];
       
       allQualities.forEach(quality => {
-        // Exclure D# et A# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
+        // Exclure D#, A# et G# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
         const isMinorQuality = quality === 'm' || quality.startsWith('m7') || quality.startsWith('m6') || 
                                quality.startsWith('m9') || quality.startsWith('m11') || quality.startsWith('m13') ||
                                quality === 'm7b5' || quality === 'm6/9' || quality === 'm9b5' || quality === 'dim' || 
                                quality === 'dim7' || quality === 'ø7';
-        const isDSharpOrASharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#');
+        const isDSharpOrASharpOrGSharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#') || (rootNote === 'G' && alt === '#');
         
-        if (isDSharpOrASharp && !isMinorQuality) {
+        if (isDSharpOrASharpOrGSharp && !isMinorQuality) {
           return; // Skip this chord
         }
         
@@ -457,7 +457,7 @@ function getChordDegrees(chordName) {
     
     let interval = (noteSemitone - rootSemitone + 12) % 12;
     
-    // Degrés de base (pour les 4 premières notes de l'accord : 1, 3, 5, 7)
+    // Mapper les intervalles aux degrés
     const intervalToDegree = {
       0: '1',
       1: 'b2',
@@ -473,25 +473,19 @@ function getChordDegrees(chordName) {
       11: '7'
     };
     
-    // Degrés d'extension (pour les notes au-delà des 4 premières : 9, 11, 13)
-    const intervalToExtension = {
-      0: '8',    // Octave
-      1: 'b9',
-      2: '9',
-      3: '#9',
-      5: '11',
-      6: '#11',
-      8: 'b13',
-      9: '13'
-    };
-    
-    // Les 4 premières notes sont les notes de base (1, 3, 5, 7)
-    // Les notes suivantes sont des extensions (9, 11, 13)
-    if (index < 4) {
-      return intervalToDegree[interval] || interval.toString();
-    } else {
-      return intervalToExtension[interval] || intervalToDegree[interval] || interval.toString();
+    // Pour les extensions (9, 11, 13), regarder l'octave
+    if (noteObj.octave > 0 || (noteObj.displayNote.length > 1 && noteObj.octave === 0)) {
+      if (interval === 0) return '8'; // Octave
+      if (interval === 1) return 'b9';
+      if (interval === 2) return '9';
+      if (interval === 3) return '#9';
+      if (interval === 5) return '11';
+      if (interval === 6) return '#11';
+      if (interval === 8) return 'b13';
+      if (interval === 9) return '13';
     }
+    
+    return intervalToDegree[interval] || interval.toString();
   });
   
   return degrees;
