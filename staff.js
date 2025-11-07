@@ -36,21 +36,16 @@ function drawMusicalStaff(notes, chordNotation = '') {
   }
   
   // Dessiner la clé de sol (encore plus petite)
-  drawTrebleClef(svg, 8, staffY + lineSpacing);
+  drawTrebleClef(svg, 8, staffY + 3 * lineSpacing);
   
   // Déterminer l'armure basée sur la notation complète de l'accord
   const keySignature = getKeySignature(chordNotation);
   
   // Dessiner l'armure (espacement réduit)
   const armatureStartX = 30;
-  drawKeySignature(svg, armatureStartX, staffY, lineSpacing, keySignature);
+//   drawKeySignature(svg, armatureStartX, staffY, lineSpacing, keySignature);
   
-  // Position X pour les notes (après l'armure, bien espacé)
-  // Si pas d'altérations, partir d'une position minimum après la clé
-  const armatureWidth = Math.max(keySignature.sharps, keySignature.flats) * 5;
-  const minPositionAfterClef = 48; // Position minimum après la clé de sol
-  const calculatedPosition = armatureStartX + armatureWidth + 26; // Augmenté de 20 à 26 pour plus d'espace
-  const noteX = Math.max(minPositionAfterClef, calculatedPosition);
+  const noteX = 48; // Position après la clé de sol
   
   // Trier les notes de la plus haute à la plus basse
   const sortedNotes = [...notes].sort((a, b) => {
@@ -109,26 +104,15 @@ function drawMusicalStaff(notes, chordNotation = '') {
     const hasSharp = pos.note.includes('#') && !hasDoubleSharp;
     const hasFlat = pos.note.includes('b') && !hasDoubleFlat;
     
-    // Vérifier si la note naturelle est altérée à l'armure
-    const naturalNoteInKey = isNoteLetterInKeySignature(baseNoteName, keySignature);
-    
-    if (isNatural && naturalNoteInKey) {
-      // La note est naturelle mais elle est altérée à l'armure
-      // Il faut dessiner un bécarre
-      drawNatural(svg, xPos - 15, pos.y);
-    } else if (!isInKeySignature(pos.note, keySignature)) {
-      // La note a une altération accidentelle (pas à l'armure)
-      if (hasDoubleSharp) {
-        // Dessiner le symbole double dièse
-        drawDoubleSharp(svg, xPos - 15, pos.y);
-      } else if (hasDoubleFlat) {
-        // Dessiner le symbole double bémol
-        drawDoubleFlat(svg, xPos - 18, pos.y);
-      } else if (hasSharp) {
-        drawSharp(svg, xPos - 15, pos.y);
-      } else if (hasFlat) {
-        drawFlat(svg, xPos - 15, pos.y);
-      }
+    // Afficher toutes les altérations directement (pas d'armure)
+    if (hasDoubleSharp) {
+      drawDoubleSharp(svg, xPos - 15, pos.y);
+    } else if (hasDoubleFlat) {
+      drawDoubleFlat(svg, xPos - 18, pos.y);
+    } else if (hasSharp) {
+      drawSharp(svg, xPos - 15, pos.y);
+    } else if (hasFlat) {
+      drawFlat(svg, xPos - 15, pos.y);
     }
     
     
@@ -257,13 +241,13 @@ function drawKeySignature(svg, x, staffY, lineSpacing, keySignature) {
   } else if (keySignature.flats > 0) {
     // Positions exactes des bémols sur la portée en clé de sol
     const flatPositions = [
-      staffY + 1.8 * lineSpacing,     // SIb
-      staffY + 0.3 * lineSpacing,     // MIb
-      staffY + 2.3 * lineSpacing,     // LAb
-      staffY + 0.8 * lineSpacing,     // RÉb
-      staffY + 2.8 * lineSpacing,     // SOLb
-      staffY + 1.3 * lineSpacing,     // DOb
-      staffY + 3.5 * lineSpacing      // FAb
+      staffY + 2 * lineSpacing,     // SIb
+      staffY + 0.5 * lineSpacing,   // MIb
+      staffY + 2.5 * lineSpacing,   // LAb
+      staffY + 1 * lineSpacing,     // RÉb
+      staffY + 3 * lineSpacing,     // SOLb
+      staffY + 1.5 * lineSpacing,   // DOb
+      staffY + 4 * lineSpacing      // FAb
     ];
     
     for (let i = 0; i < keySignature.flats; i++) {
@@ -294,14 +278,23 @@ function getNoteYPosition(noteName, octave, staffY, lineSpacing) {
   
   // Calculer la position pour la lettre de base
   const notePositions = {
+    // Octave 2
+    'C2': staffY + 12.5 * lineSpacing,
+    'D2': staffY + 12 * lineSpacing,
+    'E2': staffY + 11.5 * lineSpacing,
+    'F2': staffY + 11 * lineSpacing,
+    'G2': staffY + 10.5 * lineSpacing,
+    'A2': staffY + 10 * lineSpacing,
+    'B2': staffY + 9.5 * lineSpacing,
+
     // Octave 3
-    'C3': staffY + 9 * lineSpacing,
-    'D3': staffY + 8.5 * lineSpacing,
-    'E3': staffY + 8 * lineSpacing,
-    'F3': staffY + 7.5 * lineSpacing,
-    'G3': staffY + 7 * lineSpacing,
-    'A3': staffY + 6.5 * lineSpacing,
-    'B3': staffY + 6 * lineSpacing,
+    'C3': staffY + 8.5 * lineSpacing,
+    'D3': staffY + 8 * lineSpacing,
+    'E3': staffY + 7.5 * lineSpacing,
+    'F3': staffY + 7 * lineSpacing,
+    'G3': staffY + 6.5 * lineSpacing,
+    'A3': staffY + 6 * lineSpacing,
+    'B3': staffY + 5.5 * lineSpacing,
     
     // Octave 4
     'C4': staffY + 5 * lineSpacing,
@@ -430,26 +423,37 @@ function drawTrebleClef(svg, x, y) {
   // Clé de sol encore plus petite
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
-  clef.setAttribute('y', y + 14);
-  clef.setAttribute('font-size', '38');
-  clef.setAttribute('y', y + 14);
-  clef.setAttribute('font-size', '38');
+  clef.setAttribute('y', y + 2);
+  clef.setAttribute('font-size', '38'); // Réduit de 38 à 32
   clef.setAttribute('fill', 'black');
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';
   svg.appendChild(clef);
 }
 function drawDoubleSharp(svg, x, y) {
-  const doubleSharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  doubleSharp.setAttribute('x', x);
-  doubleSharp.setAttribute('y', y + 5);
-  doubleSharp.setAttribute('font-size', '14');
-  doubleSharp.setAttribute('fill', 'black');
-  doubleSharp.setAttribute('font-family', 'serif');
-  doubleSharp.setAttribute('font-weight', 'bold');
-  doubleSharp.textContent = '𝄪';
-  svg.appendChild(doubleSharp);
+  // Dessiner le premier dièse
+  const sharp1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sharp1.setAttribute('x', x);
+  sharp1.setAttribute('y', y + 5);
+  sharp1.setAttribute('font-size', '14');
+  sharp1.setAttribute('fill', 'black');
+  sharp1.setAttribute('font-family', 'serif');
+  sharp1.setAttribute('font-weight', 'bold');
+  sharp1.textContent = '♯';
+  svg.appendChild(sharp1);
+  
+  // Dessiner le deuxième dièse légèrement décalé
+  const sharp2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sharp2.setAttribute('x', x + 6);
+  sharp2.setAttribute('y', y + 5);
+  sharp2.setAttribute('font-size', '14');
+  sharp2.setAttribute('fill', 'black');
+  sharp2.setAttribute('font-family', 'serif');
+  sharp2.setAttribute('font-weight', 'bold');
+  sharp2.textContent = '♯';
+  svg.appendChild(sharp2);
 }
+
 function drawDoubleFlat(svg, x, y) {
   const doubleFlat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   doubleFlat.setAttribute('x', x);

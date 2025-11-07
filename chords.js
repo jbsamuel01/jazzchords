@@ -119,6 +119,7 @@ function getIntervals(quality) {
     '7b9#11': [0, 4, 7, 10, 13, 18],
     '7#9#11': [0, 4, 7, 10, 15, 18],
     'maj7#5': [0, 4, 8, 11],
+    'maj7b5': [0, 4, 6, 11],
     'maj7#11': [0, 4, 7, 11, 18],
     'm9b5': [0, 3, 6, 10, 14],
   };
@@ -355,8 +356,8 @@ function generateAllChords() {
       // Vérifier si c'est Cb pour remonter d'une octave
       const isCb = (rootNote === 'C' && alt === 'b');
       
-      // Ajouter l'accord majeur (sauf pour D#, A# et G# qui n'existent pas en majeur)
-      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#') || (rootNote === 'G' && alt === '#'))) {
+      // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
+      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
         const majorIntervals = getIntervals('');
         let majorNotes = majorIntervals.map(interval => {
           const note = getNoteName(fullRoot, interval, '');
@@ -386,18 +387,18 @@ function generateAllChords() {
         '7b5', '7#5', '7b9', '7#9', '7#11', '7b13',
         '7b5b9', '7#5b9', '7b5#9', '7#5#9',
         '7b9b13', '7#9b13', '7b9#11', '7#9#11',
-        'maj7#5', 'maj7#11', 'm9b5'
+        'maj7#5', 'maj7b5', 'maj7#11', 'm9b5'
       ];
       
       allQualities.forEach(quality => {
-        // Exclure D#, A# et G# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
+        // Exclure D# et A# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
         const isMinorQuality = quality === 'm' || quality.startsWith('m7') || quality.startsWith('m6') || 
                                quality.startsWith('m9') || quality.startsWith('m11') || quality.startsWith('m13') ||
                                quality === 'm7b5' || quality === 'm6/9' || quality === 'm9b5' || quality === 'dim' || 
                                quality === 'dim7' || quality === 'ø7';
-        const isDSharpOrASharpOrGSharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#') || (rootNote === 'G' && alt === '#');
+        const isDSharpOrASharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#');
         
-        if (isDSharpOrASharpOrGSharp && !isMinorQuality) {
+        if (isDSharpOrASharp && !isMinorQuality) {
           return; // Skip this chord
         }
         

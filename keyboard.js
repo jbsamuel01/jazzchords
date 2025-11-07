@@ -9,11 +9,17 @@ function createKeyboard() {
   const whiteKeysDiv = document.createElement('div');
   whiteKeysDiv.className = 'white-keys';
   
-  // 19 touches blanches (C4 à G6)
-  for (let i = 0; i < 19; i++) {
-    const octave = Math.floor(i / 7);
-    const noteIndex = i % 7;
-    const fullNote = WHITE_KEYS[noteIndex] + (4 + octave);
+  // 20 touches blanches (G3 à E6)
+  // G3, A3, B3 (octave 3) puis C4-B4, C5-B5, C6-E6
+  const startOctave = 3;
+  const startNoteIndex = 4; // G = index 4 dans WHITE_KEYS ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+  const totalKeys = 20;
+  
+  for (let i = 0; i < totalKeys; i++) {
+    const absoluteNoteIndex = startNoteIndex + i;
+    const octave = startOctave + Math.floor(absoluteNoteIndex / 7);
+    const noteIndex = absoluteNoteIndex % 7;
+    const fullNote = WHITE_KEYS[noteIndex] + octave;
     
     const key = document.createElement('button');
     key.className = 'white-key';
@@ -29,16 +35,17 @@ function createKeyboard() {
   const blackKeysDiv = document.createElement('div');
   blackKeysDiv.className = 'black-keys';
   
-  for (let i = 0; i < 19; i++) {
-    const octave = Math.floor(i / 7);
-    const noteIndex = i % 7;
+  for (let i = 0; i < totalKeys; i++) {
+    const absoluteNoteIndex = startNoteIndex + i;
+    const octave = startOctave + Math.floor(absoluteNoteIndex / 7);
+    const noteIndex = absoluteNoteIndex % 7;
     const blackKey = BLACK_KEYS[noteIndex];
     
     const container = document.createElement('div');
     container.className = 'black-key-container';
     
     if (blackKey) {
-      const fullNote = blackKey + (4 + octave);
+      const fullNote = blackKey + octave;
       const key = document.createElement('button');
       key.className = 'black-key';
       key.dataset.note = fullNote;

@@ -83,6 +83,9 @@ body {
 
 .chord-name-section {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .chord-name-row {
@@ -124,6 +127,28 @@ body {
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+.chord-notes-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.chord-note-vertical {
+  background: #1e2638;
+  color: #22c55e;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: block;
+  margin: 0;
+  border: 1px solid #22c55e;
+  text-align: center;
 }
 
 .notes-container-with-btn {
@@ -382,17 +407,17 @@ body {
 
 /* Boutons de construction manuelle - Rectangle serré, lettres grandes */
 .mini-key {
-  padding: 3px 2px;
+  padding: 6px 4px;
   background: #1e2638;
   color: #e8ecf8;
   border: 1px solid #374151;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: bold;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 20px;
+  min-width: 28px;
   text-align: center;
   line-height: 1;
   height: auto;
@@ -761,22 +786,3 @@ body {
   transform: scale(1.1);
 }
 /* Degrés d'accord */
-.chord-degrees {
-  display: flex;
-  gap: 6px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-  flex-basis: 100%;
-  width: 100%;
-}
-
-.degree-badge {
-  background: #1e2638;
-  color: #22c55e;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: bold;
-  border: 1px solid #22c55e;
-  flex-shrink: 0;
-}

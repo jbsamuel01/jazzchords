@@ -8,7 +8,7 @@ let selectedMinor = false;
 let selectedBaseQuality = '';
 let selectedQuality = '';
 let selectedSimpleExtension = '';
-let selectedAlteredExtension = '';
+let selectedAlteredExtensions = [];
 let randomNoteCount = 4;
 let lastSelectedChordName = '';
 let quizMode = false;
@@ -209,16 +209,24 @@ function selectAlteredExtension(ext) {
   if (quizMode) exitQuizMode();
   deselectNoteCountButtons();
   
-  if (selectedAlteredExtension === ext) {
-    selectedAlteredExtension = '';
+  const index = selectedAlteredExtensions.indexOf(ext);
+  if (index > -1) {
+    // Déselectionner
+    selectedAlteredExtensions.splice(index, 1);
   } else {
-    selectedAlteredExtension = ext;
-    
+    // Sélectionner (max 2)
+    if (selectedAlteredExtensions.length < 2) {
+      selectedAlteredExtensions.push(ext);
+    } else {
+      // Remplacer la première altération
+      selectedAlteredExtensions.shift();
+      selectedAlteredExtensions.push(ext);
+    }
     
     // Allumer automatiquement la touche 7 si aucune qualité 7 n'est sélectionnée
-    // Exception: ne pas allumer 7 si maj7 ou maj7#5 est déjà sélectionné
+    // Exception: ne pas allumer 7 si maj7 ou maj7#5 ou maj7b5 est déjà sélectionné
     // Ne pas allumer 7 pour #5 et #11 qui peuvent être utilisés avec maj7
-    if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && 
+    if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && selectedQuality !== 'maj7b5' && 
         ext !== '#5' && ext !== '#11') {
       selectedQuality = '7';
       document.querySelectorAll('#qualities .mini-key').forEach(btn => {
@@ -229,9 +237,10 @@ function selectAlteredExtension(ext) {
   }
   
   document.querySelectorAll('#alteredExtensions .mini-key').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === selectedAlteredExtension);
+    btn.classList.toggle('active', selectedAlteredExtensions.includes(btn.textContent));
     btn.classList.remove('error');
   });
+  
   
   // En mode manuel, ne pas effacer automatiquement
   if (!chordNotesVisible && !quizMode) {
@@ -248,7 +257,7 @@ function resetManualSelection() {
   selectedBaseQuality = '';
   selectedQuality = '';
   selectedSimpleExtension = '';
-  selectedAlteredExtension = '';
+  selectedAlteredExtensions = [];
   lastSelectedChordName = '';
   
   document.querySelectorAll('.mini-key').forEach(btn => {
@@ -276,7 +285,7 @@ function buildManualChordLive() {
     chordName += 'm';
   }
   
-  chordName += selectedQuality + selectedSimpleExtension + selectedAlteredExtension;
+  chordName += selectedQuality + selectedSimpleExtension + selectedAlteredExtensions.join('');
   
   const chord = ALL_CHORDS[chordName];
   
@@ -329,7 +338,7 @@ function buildManualChordLive() {
         btn.classList.add('error');
       });
     }
-    if (selectedAlteredExtension !== '') {
+    if (selectedAlteredExtensions.length > 0) {
       document.querySelectorAll('#alteredExtensions .mini-key.active').forEach(btn => {
         btn.classList.add('error');
       });
@@ -600,22 +609,12 @@ function displayDetectedChord(chord, chordExists = null) {
       toggleBtn.classList.add('hidden');
       drawMusicalStaff([]);
     } else {
-      const notesDisplay = chord.notesFr.map(noteFr => {
-        return `<span class="chord-note">${noteFr}</span>`;
-      }).join(' ');
+      // Afficher les notes en colonne verticale, de haut en bas (dernière note en haut)
+      const notesDisplay = chord.notesFr.slice().reverse().map(noteFr => {
+        return `<div class="chord-note-vertical">${noteFr}</div>`;
+      }).join('');
       
-      // Afficher les degrés sous les notes si la fonction existe
-      let degreesDisplay = '';
-      if (typeof getChordDegrees !== 'undefined' && chord.notation) {
-        const degrees = getChordDegrees(chord.notation);
-        if (degrees && degrees.length > 0) {
-          degreesDisplay = '<div class="chord-degrees">' + 
-            degrees.map(deg => `<span class="degree-badge">${deg}</span>`).join(' ') + 
-            '</div>';
-        }
-      }
-      
-      chordNotesList.innerHTML = notesDisplay + degreesDisplay;
+      chordNotesList.innerHTML = notesDisplay;
       toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
         <circle cx="12" cy="12" r="3"></circle>
