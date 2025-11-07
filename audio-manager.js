@@ -22,6 +22,58 @@ let isListening = false;
 let lastDetectedNote = null;
 let lastDetectionTime = 0;
 
+// Piano échantillonné avec Tone.js
+let piano = null;
+let pianoLoaded = false;
+
+function initializePiano() {
+  if (piano) return Promise.resolve();
+  
+  // Créer le sampler avec les échantillons Salamander Grand Piano
+  piano = new Tone.Sampler({
+    urls: {
+      A0: "A0.mp3",
+      C1: "C1.mp3",
+      "D#1": "Ds1.mp3",
+      "F#1": "Fs1.mp3",
+      A1: "A1.mp3",
+      C2: "C2.mp3",
+      "D#2": "Ds2.mp3",
+      "F#2": "Fs2.mp3",
+      A2: "A2.mp3",
+      C3: "C3.mp3",
+      "D#3": "Ds3.mp3",
+      "F#3": "Fs3.mp3",
+      A3: "A3.mp3",
+      C4: "C4.mp3",
+      "D#4": "Ds4.mp3",
+      "F#4": "Fs4.mp3",
+      A4: "A4.mp3",
+      C5: "C5.mp3",
+      "D#5": "Ds5.mp3",
+      "F#5": "Fs5.mp3",
+      A5: "A5.mp3",
+      C6: "C6.mp3",
+      "D#6": "Ds6.mp3",
+      "F#6": "Fs6.mp3",
+      A6: "A6.mp3",
+      C7: "C7.mp3",
+      "D#7": "Ds7.mp3",
+      "F#7": "Fs7.mp3",
+      A7: "A7.mp3",
+      C8: "C8.mp3"
+    },
+    release: 1,
+    baseUrl: "https://tonejs.github.io/audio/salamander/"
+  }).toDestination();
+  
+  return Tone.loaded().then(() => {
+    pianoLoaded = true;
+    console.log('Piano échantillonné chargé');
+  });
+}
+
+
 function getAudioContext() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -42,110 +94,22 @@ function getAudioContext() {
 }
 
 function playNoteSound(note, duration = 1.0, startTime = 0) {
-  const ctx = getAudioContext();
-  const noteName = note.replace(/[0-9]/g, '');
-  const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
-  const frequency = NOTE_FREQUENCIES[noteName]?.[octave];
-  if (!frequency) return;
+  // Initialiser le piano si ce n'est pas déjà fait
+  if (!piano) {
+    initializePiano().then(() => {
+      playNoteSound(note, duration, startTime);
+    });
+    return;
+  }
   
-  const fundamental = ctx.createOscillator();
-  const harmonic2 = ctx.createOscillator();
-  const harmonic3 = ctx.createOscillator();
-  const harmonic4 = ctx.createOscillator();
-  const harmonic5 = ctx.createOscillator();
-  const harmonic6 = ctx.createOscillator();
+  // Démarrer Tone.js au premier clic si nécessaire
+  if (Tone.context.state !== 'running') {
+    Tone.start();
+  }
   
-  const gainNode = ctx.createGain();
-  const gain2 = ctx.createGain();
-  const gain3 = ctx.createGain();
-  const gain4 = ctx.createGain();
-  const gain5 = ctx.createGain();
-  const gain6 = ctx.createGain();
-  const masterGain = ctx.createGain();
-  
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
-  filter.Q.setValueAtTime(0.8, ctx.currentTime + startTime);
-  
-  fundamental.type = 'sine';
-  harmonic2.type = 'sine';
-  harmonic3.type = 'sine';
-  harmonic4.type = 'sine';
-  harmonic5.type = 'triangle';
-  harmonic6.type = 'triangle';
-  
-  fundamental.frequency.setValueAtTime(frequency, ctx.currentTime + startTime);
-  harmonic2.frequency.setValueAtTime(frequency * 2, ctx.currentTime + startTime);
-  harmonic3.frequency.setValueAtTime(frequency * 3, ctx.currentTime + startTime);
-  harmonic4.frequency.setValueAtTime(frequency * 4, ctx.currentTime + startTime);
-  harmonic5.frequency.setValueAtTime(frequency * 5, ctx.currentTime + startTime);
-  harmonic6.frequency.setValueAtTime(frequency * 6, ctx.currentTime + startTime);
-  
-  const attackTime = 0.005;
-  const decayTime = 0.15;
-  const sustainLevel = 0.2;
-  const releaseTime = Math.min(duration * 0.6, 0.8);
-  
-  gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gainNode.gain.linearRampToValueAtTime(0.6, ctx.currentTime + startTime + attackTime);
-  gainNode.gain.exponentialRampToValueAtTime(sustainLevel, ctx.currentTime + startTime + attackTime + decayTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + releaseTime);
-  
-  gain2.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain2.gain.linearRampToValueAtTime(0.3, ctx.currentTime + startTime + attackTime);
-  gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.3);
-  
-  gain3.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain3.gain.linearRampToValueAtTime(0.18, ctx.currentTime + startTime + attackTime);
-  gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.25);
-  
-  gain4.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain4.gain.linearRampToValueAtTime(0.12, ctx.currentTime + startTime + attackTime);
-  gain4.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.2);
-  
-  gain5.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain5.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + attackTime);
-  gain5.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.15);
-  
-  gain6.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gain6.gain.linearRampToValueAtTime(0.04, ctx.currentTime + startTime + attackTime);
-  gain6.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration * 0.1);
-  
-  masterGain.gain.setValueAtTime(0.5, ctx.currentTime + startTime);
-  
-  fundamental.connect(gainNode);
-  harmonic2.connect(gain2);
-  harmonic3.connect(gain3);
-  harmonic4.connect(gain4);
-  harmonic5.connect(gain5);
-  harmonic6.connect(gain6);
-  
-  gainNode.connect(filter);
-  gain2.connect(filter);
-  gain3.connect(filter);
-  gain4.connect(filter);
-  gain5.connect(filter);
-  gain6.connect(filter);
-  
-  filter.connect(masterGain);
-  masterGain.connect(ctx.destination);
-  
-  const startMoment = ctx.currentTime + startTime;
-  fundamental.start(startMoment);
-  harmonic2.start(startMoment);
-  harmonic3.start(startMoment);
-  harmonic4.start(startMoment);
-  harmonic5.start(startMoment);
-  harmonic6.start(startMoment);
-  
-  const stopMoment = ctx.currentTime + startTime + Math.min(duration, 1.2);
-  fundamental.stop(stopMoment);
-  harmonic2.stop(stopMoment);
-  harmonic3.stop(stopMoment);
-  harmonic4.stop(stopMoment);
-  harmonic5.stop(stopMoment);
-  harmonic6.stop(stopMoment);
+  // Jouer la note avec le piano échantillonné
+  const now = Tone.now();
+  piano.triggerAttackRelease(note, duration, now + startTime);
 }
 
 async function toggleMicrophone() {

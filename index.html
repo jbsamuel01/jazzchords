@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jazz Chords</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
 <body>
   <div id="app">
@@ -144,10 +145,11 @@
         <h4>🎹 Saisie manuelle</h4>
         <p>Construisez votre accord en cliquant au moins sur le bouton d'une note fondamentale :</p>
         <ul>
-          <li><strong>Ligne 1 :</strong> Note fondamentale (A-G) + altération (♯/♭) + mineur (-/min)</li>
-          <li><strong>Ligne 2 :</strong> Qualité (7, M7, m7b5 ...)</li>
-          <li><strong>Ligne 3 :</strong> Extensions (6, 9, 11...)</li>
-          <li><strong>Ligne 4 :</strong> Altérations (♭5, ♯5, ♭9, ♯9...)</li>
+          <li><strong>Ligne 1 :</strong> Note fondamentale (A-G) + altération (♯/♭)</li>
+          <li><strong>Ligne 2 :</strong> Qualités de base (mineur, diminué, augmenté, sus2, sus4)</li>
+          <li><strong>Ligne 3 :</strong> Qualités (7, M7, m7, m7b5, dim7...)</li>
+          <li><strong>Ligne 4 :</strong> Extensions (6, 9, 11, 13, 6/9, add9...)</li>
+          <li><strong>Ligne 5 :</strong> Altérations (♭5, ♯5, ♭9, ♯9, ♯11...)</li>
         </ul>
         <p>Accord inexistant = boutons rouges.</p>
       </div>
@@ -170,12 +172,11 @@
         <p>Cliquez sur les touches pour jouer les notes. Les notes jouées apparaissent en <strong style="color: #22c55e;">vert</strong> si elles font partie de l'accord, en <strong style="color: #ef4444;">rouge</strong> sinon. Le pouce 👍 s'affiche quand toutes les bonnes notes sont trouvées.</p>
         <p>Si vous jouez des notes librement sur le clavier et qu'elles correspondent à un accord connu, celui-ci s'affichera automatiquement dans la zone d'affichage en haut.</p>
       </div>
-      </div>
       
       <div class="help-section">
         <h4>🎵 Portée musicale</h4>
         <p>Les notes de l'accord s'affichent sur une portée musicale en notation classique avec la clé de sol. La liste des notes à droite du nom de l'accord s'affiche verticalement, de haut en bas (comme sur la portée).</p>
-      
+      </div>
       <div class="help-section">
         <h4>⚙️ Boutons</h4>
         <ul>

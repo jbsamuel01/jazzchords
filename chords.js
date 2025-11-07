@@ -355,6 +355,8 @@ function generateAllChords() {
       
       // Vérifier si c'est Cb pour remonter d'une octave
       const isCb = (rootNote === 'C' && alt === 'b');
+      // Vérifier si c'est A ou B (ou Ab, A#, Bb, B#) pour descendre d'une octave
+      const isAorB = (rootNote === 'A' || rootNote === 'B');
       
       // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
       if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
@@ -363,6 +365,9 @@ function generateAllChords() {
           const note = getNoteName(fullRoot, interval, '');
           if (note && isCb) {
             return { ...note, octave: note.octave + 1 };
+          }
+          if (note && isAorB) {
+            return { ...note, octave: note.octave - 1 };
           }
           return note;
         }).filter(n => n !== null);
@@ -408,6 +413,9 @@ function generateAllChords() {
           const note = getNoteName(fullRoot, interval, quality);
           if (note && isCb) {
             return { ...note, octave: note.octave + 1 };
+          }
+          if (note && isAorB) {
+            return { ...note, octave: note.octave - 1 };
           }
           return note;
         }).filter(n => n !== null);

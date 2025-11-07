@@ -20,8 +20,8 @@ function drawMusicalStaff(notes, chordNotation = '') {
   
   // Paramètres de la portée (optimisés pour réduire l'espace inutile)
   const staffY = 35;
-  const lineSpacing = 9;
-  const staffWidth = 120; // Réduit de 120 à 95 pour éliminer l'espace blanc à droite
+  const lineSpacing = 10.5;
+  const staffWidth = 105; // Réduit pour une portée plus compacte
   
   // Dessiner les 5 lignes de la portée
   for (let i = 0; i < 5; i++) {
@@ -35,8 +35,8 @@ function drawMusicalStaff(notes, chordNotation = '') {
     svg.appendChild(line);
   }
   
-  // Dessiner la clé de sol (encore plus petite)
-  drawTrebleClef(svg, 8, staffY + 3 * lineSpacing);
+  // Dessiner la clé de sol
+  drawTrebleClef(svg, 8, staffY + 3.5 * lineSpacing);
   
   // Déterminer l'armure basée sur la notation complète de l'accord
   const keySignature = getKeySignature(chordNotation);
@@ -45,7 +45,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
   const armatureStartX = 30;
 //   drawKeySignature(svg, armatureStartX, staffY, lineSpacing, keySignature);
   
-  const noteX = 48; // Position après la clé de sol
+  const noteX = 62; // Position après la clé de sol (décalé vers la droite)
   
   // Trier les notes de la plus haute à la plus basse
   const sortedNotes = [...notes].sort((a, b) => {
@@ -106,7 +106,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
     
     // Afficher toutes les altérations directement (pas d'armure)
     if (hasDoubleSharp) {
-      drawDoubleSharp(svg, xPos - 15, pos.y);
+      drawDoubleSharp(svg, xPos - 18, pos.y); // Rapproché de -22 à -18
     } else if (hasDoubleFlat) {
       drawDoubleFlat(svg, xPos - 18, pos.y);
     } else if (hasSharp) {
@@ -117,7 +117,10 @@ function drawMusicalStaff(notes, chordNotation = '') {
     
     
     // Dessiner la tête de note
-    drawNoteHead(svg, xPos, pos.y);
+    // Déterminer si la note est sur une ligne (pas dans un interligne)
+    const relativeY = (pos.y - staffY) / lineSpacing;
+    const isOnLine = Math.abs(relativeY - Math.round(relativeY)) < 0.01;
+    drawNoteHead(svg, xPos, pos.y, isOnLine);
   });
   
 }
@@ -371,13 +374,16 @@ function drawLedgerLines(svg, x, y, staffY, lineSpacing, shift = 0) {
   }
 }
 
-function drawNoteHead(svg, x, y) {
-  // Tête de note ronde (légèrement plus grosse)
+function drawNoteHead(svg, x, y, isOnLine = false) {
+  // Tête de note ronde - plus grosse si sur une ligne
   const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
   noteHead.setAttribute('cx', x);
   noteHead.setAttribute('cy', y);
-  noteHead.setAttribute('rx', '4.5'); // Augmenté de 4.5 à 5.5
-  noteHead.setAttribute('ry', '4.5'); // Augmenté de 3.5 à 4.2
+  // Augmenter légèrement la taille des notes sur les lignes
+  const rx = isOnLine ? '5' : '4.5';
+  const ry = isOnLine ? '5' : '4.5';
+  noteHead.setAttribute('rx', rx);
+  noteHead.setAttribute('ry', ry);
   noteHead.setAttribute('fill', 'black');
   noteHead.setAttribute('transform', `rotate(-20 ${x} ${y})`);
   svg.appendChild(noteHead);
@@ -386,8 +392,8 @@ function drawNoteHead(svg, x, y) {
 function drawSharp(svg, x, y) {
   const sharp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   sharp.setAttribute('x', x);
-  sharp.setAttribute('y', y + 5); // Redescendu de 3 à 5
-  sharp.setAttribute('font-size', '16');
+  sharp.setAttribute('y', y + 5);
+  sharp.setAttribute('font-size', '15'); // Réduit de 16 à 15
   sharp.setAttribute('fill', 'black');
   sharp.setAttribute('font-family', 'serif');
   sharp.setAttribute('font-weight', 'bold');
@@ -398,11 +404,11 @@ function drawSharp(svg, x, y) {
 function drawFlat(svg, x, y) {
   const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   flat.setAttribute('x', x);
-  flat.setAttribute('y', y + 4); // Redescendu de 1 à 4
+  flat.setAttribute('y', y + 4);
   flat.setAttribute('font-size', '20');
   flat.setAttribute('fill', 'black');
   flat.setAttribute('font-family', 'serif');
-  flat.setAttribute('font-weight', 'bold');
+  flat.setAttribute('font-weight', 'normal'); // Affiné de bold à normal
   flat.textContent = '♭';
   svg.appendChild(flat);
 }
@@ -431,11 +437,11 @@ function drawTrebleClef(svg, x, y) {
   svg.appendChild(clef);
 }
 function drawDoubleSharp(svg, x, y) {
-  // Dessiner le premier dièse
+  // Dessiner le premier dièse (décalé vers la gauche)
   const sharp1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  sharp1.setAttribute('x', x);
+  sharp1.setAttribute('x', x - 3);
   sharp1.setAttribute('y', y + 5);
-  sharp1.setAttribute('font-size', '14');
+  sharp1.setAttribute('font-size', '13'); // Réduit de 14 à 13
   sharp1.setAttribute('fill', 'black');
   sharp1.setAttribute('font-family', 'serif');
   sharp1.setAttribute('font-weight', 'bold');
@@ -444,9 +450,9 @@ function drawDoubleSharp(svg, x, y) {
   
   // Dessiner le deuxième dièse légèrement décalé
   const sharp2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  sharp2.setAttribute('x', x + 6);
+  sharp2.setAttribute('x', x + 3);
   sharp2.setAttribute('y', y + 5);
-  sharp2.setAttribute('font-size', '14');
+  sharp2.setAttribute('font-size', '13'); // Réduit de 14 à 13
   sharp2.setAttribute('fill', 'black');
   sharp2.setAttribute('font-family', 'serif');
   sharp2.setAttribute('font-weight', 'bold');
