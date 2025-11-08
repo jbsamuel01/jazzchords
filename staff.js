@@ -1,4 +1,8 @@
-// staff.js v2.6 - Dessin de la portée musicale [BUILD 20241108]
+// staff.js v2.7 - Dessin de la portée musicale [BUILD 20241108-3]
+// Corrections v2.7 :
+// - Clé de sol agrandie sur PC (font-size: 58) pour que la boucle passe au-dessus de la 5ème ligne et la queue sous la 1ère ligne
+// - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
+// - Taille maintenue à 38 sur mobile/tablette
 // Corrections v2.6 :
 // - Portée descendue à staffY=50 (au lieu de 35) pour plus d'espace en haut (notes hautes comme Mi# dans G#13)
 // Corrections v2.5 : 
@@ -41,8 +45,8 @@ function drawMusicalStaff(notes, chordNotation = '') {
     svg.appendChild(line);
   }
   
-  // Dessiner la clé de sol
-  drawTrebleClef(svg, 8, staffY + 3.5 * lineSpacing);
+  // Dessiner la clé de sol (centrée sur la 2ème ligne en partant du bas, Sol)
+  drawTrebleClef(svg, 8, staffY + 3 * lineSpacing);
   
   // Déterminer l'armure basée sur la notation complète de l'accord
   const keySignature = getKeySignature(chordNotation);
@@ -457,11 +461,23 @@ function drawNatural(svg, x, y) {
 }
 
 function drawTrebleClef(svg, x, y) {
-  // Clé de sol encore plus petite
+  // Clé de sol responsive : plus grande sur PC, taille normale sur mobile
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
-  clef.setAttribute('y', y + 2);
-  clef.setAttribute('font-size', '38'); // Réduit de 38 à 32
+  
+  // Détection mobile/tablet pour ajuster la taille
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // Mobile/Tablette : taille 38, ajustée pour centrer la spirale sur la ligne du Sol
+    clef.setAttribute('y', y + 5);
+    clef.setAttribute('font-size', '38');
+  } else {
+    // PC : taille 58, baissée de quelques pixels pour bien centrer la spirale sur la ligne du Sol
+    clef.setAttribute('y', y + 9);
+    clef.setAttribute('font-size', '58');
+  }
+  
   clef.setAttribute('fill', 'black');
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';
