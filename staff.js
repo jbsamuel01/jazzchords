@@ -1,4 +1,8 @@
-// staff.js v2.2 - Dessin de la portée musicale
+// staff.js v2.4 - Dessin de la portée musicale
+// Corrections v2.4 : 
+// - Bémols et double bémols : taille réduite de 20 à 18, position y+3 pour alignement optimal
+// Corrections v2.3 : 
+// - Position des bémols éloignée de -15 à -18 pour éviter le chevauchement sur mobile
 // Corrections v2.2 : 
 // - Respect total de l'enharmonie (Cb reste Cb, pas Si)
 // - Position des bémols ajustée et taille augmentée
@@ -404,8 +408,8 @@ function drawSharp(svg, x, y) {
 function drawFlat(svg, x, y) {
   const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   flat.setAttribute('x', x);
-  flat.setAttribute('y', y + 4);
-  flat.setAttribute('font-size', '20');
+  flat.setAttribute('y', y + 3); // Descendu de 2 à 3
+  flat.setAttribute('font-size', '18'); // Réduit de 20 à 18
   flat.setAttribute('fill', 'black');
   flat.setAttribute('font-family', 'serif');
   flat.setAttribute('font-weight', 'normal'); // Affiné de bold à normal
@@ -463,8 +467,8 @@ function drawDoubleSharp(svg, x, y) {
 function drawDoubleFlat(svg, x, y) {
   const doubleFlat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   doubleFlat.setAttribute('x', x);
-  doubleFlat.setAttribute('y', y + 4);
-  doubleFlat.setAttribute('font-size', '20');
+  doubleFlat.setAttribute('y', y + 3); // Descendu de 2 à 3
+  doubleFlat.setAttribute('font-size', '18'); // Réduit de 20 à 18
   doubleFlat.setAttribute('fill', 'black');
   doubleFlat.setAttribute('font-family', 'serif');
   doubleFlat.setAttribute('font-weight', 'bold');
