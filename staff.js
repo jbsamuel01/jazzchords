@@ -1,6 +1,7 @@
 // staff.js v2.4 - Dessin de la portée musicale
 // Corrections v2.4 : 
-// - Bémols et double bémols : taille réduite de 20 à 18, position y+3 pour alignement optimal
+// - Bémols et double bémols : taille réduite de 20 à 18, position y+3 pour alignement vertical
+// - Bémols et double bémols : décalage horizontal à -20 (2 pixels plus à gauche)
 // Corrections v2.3 : 
 // - Position des bémols éloignée de -15 à -18 pour éviter le chevauchement sur mobile
 // Corrections v2.2 : 
@@ -112,11 +113,11 @@ function drawMusicalStaff(notes, chordNotation = '') {
     if (hasDoubleSharp) {
       drawDoubleSharp(svg, xPos - 18, pos.y); // Rapproché de -22 à -18
     } else if (hasDoubleFlat) {
-      drawDoubleFlat(svg, xPos - 18, pos.y);
+      drawDoubleFlat(svg, xPos - 20, pos.y); // Décalé de -18 à -20 (2 pixels vers la gauche)
     } else if (hasSharp) {
       drawSharp(svg, xPos - 15, pos.y);
     } else if (hasFlat) {
-      drawFlat(svg, xPos - 18, pos.y); // Augmenté de -15 à -18 pour éviter le chevauchement sur mobile
+      drawFlat(svg, xPos - 20, pos.y); // Décalé de -18 à -20 (2 pixels vers la gauche)
     }
     
     
