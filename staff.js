@@ -1,11 +1,8 @@
 // staff.js v2.5 - Dessin de la portée musicale
 // Corrections v2.5 : 
-// - Ajustement des bémols sur mobile : 1 pixel plus bas et 1 pixel plus à gauche (PC inchangé)
-// Corrections v2.4 : 
-// - Bémols et double bémols : taille réduite de 20 à 18, position y+3 pour alignement vertical
-// - Bémols et double bémols : décalage horizontal à -20 (2 pixels plus à gauche)
-// Corrections v2.3 : 
-// - Position des bémols éloignée de -15 à -18 pour éviter le chevauchement sur mobile
+// - Bémols simples sur mobile : 1 pixel plus bas (y+4) et 1 pixel plus à gauche (-21)
+// - Double bémols sur mobile : alignés sur y+3 et 2 pixels plus à droite (-19)
+// - PC inchangé pour tous (y+3, x-20)
 // Corrections v2.2 : 
 // - Respect total de l'enharmonie (Cb reste Cb, pas Si)
 // - Position des bémols ajustée et taille augmentée
@@ -113,14 +110,16 @@ function drawMusicalStaff(notes, chordNotation = '') {
     
     // Détecter si on est sur mobile pour ajuster la position des bémols
     const isMobile = window.innerWidth <= 768;
-    const flatXOffset = isMobile ? -21 : -20; // 1 pixel plus à gauche sur mobile
-    const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile
+    const flatXOffset = isMobile ? -21 : -20; // 1 pixel plus à gauche sur mobile (bémols simples)
+    const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile (bémols simples)
+    const doubleFlatXOffset = isMobile ? -19 : -20; // 2 pixels plus à droite sur mobile (double bémols)
+    const doubleFlatYOffset = isMobile ? 0 : 0; // Aligné sur y+3 (1 pixel plus haut que bémols simples)
     
     // Afficher toutes les altérations directement (pas d'armure)
     if (hasDoubleSharp) {
       drawDoubleSharp(svg, xPos - 18, pos.y); // Rapproché de -22 à -18
     } else if (hasDoubleFlat) {
-      drawDoubleFlat(svg, xPos + flatXOffset, pos.y, flatYOffset);
+      drawDoubleFlat(svg, xPos + doubleFlatXOffset, pos.y, doubleFlatYOffset);
     } else if (hasSharp) {
       drawSharp(svg, xPos - 15, pos.y);
     } else if (hasFlat) {
