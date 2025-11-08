@@ -81,15 +81,14 @@ function initializeUI() {
     baseQualitiesDiv.appendChild(btn);
   });
 
-  // Qualités (LIGNE 3 maintenant) : 7, -7/m(in)7, °7/dim7, ø7/m7b5, M7/maj7, [M7#5/maj7#5 + +M7/+maj7]
+  // Qualités (LIGNE 3 maintenant) : 7, -7/m(in)7, °7/dim7, ø7/m7b5, [M7 Δ / maj7], [M7#5/maj7#5 + +M7/+maj7]
   const qualitiesDiv = document.getElementById('qualities');
   
   const qualityGroups = [
     [{ label: '7', value: '7' }],
     [{ label: '-7', value: 'm7' }, { label: 'm(in)7', value: 'm7' }],
     [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }],
-    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }],
-    [{ label: 'M7 - Δ', value: 'maj7' }, { label: 'maj7', value: 'maj7' }]
+    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }]
   ];
   
   qualityGroups.forEach((group) => {
@@ -116,6 +115,47 @@ function initializeUI() {
       qualitiesDiv.appendChild(btn);
     }
   });
+  
+  // Groupe spécial pour M7/Δ/maj7 : M7 et Δ côte à côte en haut, maj7 en dessous
+  const maj7Container = document.createElement('div');
+  maj7Container.style.display = 'grid';
+  maj7Container.style.gridTemplateColumns = '1fr 1fr';
+  maj7Container.style.gridTemplateRows = 'auto auto';
+  maj7Container.style.border = '1px solid #374151';
+  maj7Container.style.borderRadius = '4px';
+  maj7Container.style.overflow = 'hidden';
+  maj7Container.style.background = '#1e2638';
+  
+  // M7 (en haut à gauche)
+  const m7Btn = document.createElement('button');
+  m7Btn.className = 'mini-key stacked';
+  m7Btn.textContent = 'M7';
+  m7Btn.dataset.value = 'maj7';
+  m7Btn.style.borderRight = '1px solid #374151';
+  m7Btn.style.borderBottom = '1px solid #374151';
+  m7Btn.onclick = () => selectQuality('maj7');
+  maj7Container.appendChild(m7Btn);
+  
+  // Δ (en haut à droite)
+  const deltaBtn = document.createElement('button');
+  deltaBtn.className = 'mini-key stacked';
+  deltaBtn.textContent = 'Δ';
+  deltaBtn.dataset.value = 'maj7';
+  deltaBtn.style.borderBottom = '1px solid #374151';
+  deltaBtn.onclick = () => selectQuality('maj7');
+  maj7Container.appendChild(deltaBtn);
+  
+  // maj7 (en bas, s'étend sur les 2 colonnes)
+  const maj7Btn = document.createElement('button');
+  maj7Btn.className = 'mini-key stacked';
+  maj7Btn.textContent = 'maj7';
+  maj7Btn.dataset.value = 'maj7';
+  maj7Btn.style.gridColumn = '1 / 3';
+  maj7Btn.onclick = () => selectQuality('maj7');
+  maj7Container.appendChild(maj7Btn);
+  
+  qualitiesDiv.appendChild(maj7Container);
+  
   
   // Grand groupe CARRÉ pour M7#5/maj7#5 + +M7/+maj7 (2x2 grid)
   const maj7Sharp5Container = document.createElement('div');

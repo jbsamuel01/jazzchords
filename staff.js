@@ -1,4 +1,6 @@
-// staff.js v2.4 - Dessin de la portée musicale
+// staff.js v2.5 - Dessin de la portée musicale
+// Corrections v2.5 : 
+// - Ajustement des bémols sur mobile : 1 pixel plus bas et 1 pixel plus à gauche (PC inchangé)
 // Corrections v2.4 : 
 // - Bémols et double bémols : taille réduite de 20 à 18, position y+3 pour alignement vertical
 // - Bémols et double bémols : décalage horizontal à -20 (2 pixels plus à gauche)
@@ -109,15 +111,20 @@ function drawMusicalStaff(notes, chordNotation = '') {
     const hasSharp = pos.note.includes('#') && !hasDoubleSharp;
     const hasFlat = pos.note.includes('b') && !hasDoubleFlat;
     
+    // Détecter si on est sur mobile pour ajuster la position des bémols
+    const isMobile = window.innerWidth <= 768;
+    const flatXOffset = isMobile ? -21 : -20; // 1 pixel plus à gauche sur mobile
+    const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile
+    
     // Afficher toutes les altérations directement (pas d'armure)
     if (hasDoubleSharp) {
       drawDoubleSharp(svg, xPos - 18, pos.y); // Rapproché de -22 à -18
     } else if (hasDoubleFlat) {
-      drawDoubleFlat(svg, xPos - 20, pos.y); // Décalé de -18 à -20 (2 pixels vers la gauche)
+      drawDoubleFlat(svg, xPos + flatXOffset, pos.y, flatYOffset);
     } else if (hasSharp) {
       drawSharp(svg, xPos - 15, pos.y);
     } else if (hasFlat) {
-      drawFlat(svg, xPos - 20, pos.y); // Décalé de -18 à -20 (2 pixels vers la gauche)
+      drawFlat(svg, xPos + flatXOffset, pos.y, flatYOffset);
     }
     
     
@@ -406,10 +413,10 @@ function drawSharp(svg, x, y) {
   svg.appendChild(sharp);
 }
 
-function drawFlat(svg, x, y) {
+function drawFlat(svg, x, y, yOffset = 0) {
   const flat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   flat.setAttribute('x', x);
-  flat.setAttribute('y', y + 3); // Descendu de 2 à 3
+  flat.setAttribute('y', y + 3 + yOffset); // Ajout de yOffset pour ajustement mobile
   flat.setAttribute('font-size', '18'); // Réduit de 20 à 18
   flat.setAttribute('fill', 'black');
   flat.setAttribute('font-family', 'serif');
@@ -465,10 +472,10 @@ function drawDoubleSharp(svg, x, y) {
   svg.appendChild(sharp2);
 }
 
-function drawDoubleFlat(svg, x, y) {
+function drawDoubleFlat(svg, x, y, yOffset = 0) {
   const doubleFlat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   doubleFlat.setAttribute('x', x);
-  doubleFlat.setAttribute('y', y + 3); // Descendu de 2 à 3
+  doubleFlat.setAttribute('y', y + 3 + yOffset); // Ajout de yOffset pour ajustement mobile
   doubleFlat.setAttribute('font-size', '18'); // Réduit de 20 à 18
   doubleFlat.setAttribute('fill', 'black');
   doubleFlat.setAttribute('font-family', 'serif');
