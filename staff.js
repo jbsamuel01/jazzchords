@@ -1,4 +1,4 @@
-// staff.js v2.5 - Dessin de la portée musicale
+// staff.js v2.5.1 - Dessin de la portée musicale [BUILD 20241108]
 // Corrections v2.5 : 
 // - Bémols simples sur mobile : x=-21 (1px à gauche), y=y+4 (1px plus bas)
 // - Double bémols sur mobile : x=-18 (2px à droite de la position PC), y=y+2 (1px plus haut que PC)
@@ -110,10 +110,12 @@ function drawMusicalStaff(notes, chordNotation = '') {
     
     // Détecter si on est sur mobile pour ajuster la position des bémols
     const isMobile = window.innerWidth <= 768;
+    console.log('staff.js: isMobile =', isMobile, 'width =', window.innerWidth); // DEBUG
     const flatXOffset = isMobile ? -21 : -20; // 1 pixel plus à gauche sur mobile (bémols simples)
     const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile (bémols simples)
     const doubleFlatXOffset = isMobile ? -18 : -20; // 2 pixels plus à droite (-20 + 2 = -18) sur mobile
     const doubleFlatYOffset = isMobile ? -1 : 0; // 1 pixel plus haut (y+3 - 1 = y+2) sur mobile
+    console.log('staff.js: doubleFlatXOffset =', doubleFlatXOffset, 'doubleFlatYOffset =', doubleFlatYOffset); // DEBUG
     
     // Afficher toutes les altérations directement (pas d'armure)
     if (hasDoubleSharp) {
