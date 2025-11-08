@@ -1,6 +1,6 @@
-// staff.js v2.7 - Dessin de la portée musicale [BUILD 20241108-4-REFRESH]
+// staff.js v2.7 - Dessin de la portée musicale [BUILD 20241108-5-MOBILE-FIX]
 // Corrections v2.7 :
-// - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+5)
+// - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+8)
 // - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
 // Corrections v2.6 :
 // - Portée descendue à staffY=50 (au lieu de 35) pour plus d'espace en haut (notes hautes comme Mi# dans G#13)
@@ -469,10 +469,10 @@ function drawTrebleClef(svg, x, y) {
   console.log('DrawTrebleClef - isMobile:', isMobile, 'width:', window.innerWidth);
   
   if (isMobile) {
-    // Mobile/Tablette : taille 38, ajustée pour centrer la spirale sur la ligne du Sol
-    clef.setAttribute('y', y + 5);
+    // Mobile/Tablette : taille 38, baissée pour centrer la spirale sur la ligne du Sol
+    clef.setAttribute('y', y + 8);
     clef.setAttribute('font-size', '38');
-    console.log('Mobile: y+5, size 38');
+    console.log('Mobile: y+8, size 38');
   } else {
     // PC : taille 58, baissée de quelques pixels pour bien centrer la spirale sur la ligne du Sol
     clef.setAttribute('y', y + 9);
