@@ -84,6 +84,7 @@ body {
 .chord-name-section {
   flex-shrink: 0;
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
 }
@@ -98,6 +99,12 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.chord-notes-message {
+  display: inline;
+}
   flex-wrap: wrap;
 }
 
@@ -245,6 +252,13 @@ body {
   display: inline-block;
 }
 
+.chord-notes-message {
+  display: inline;
+  color: #9ca3af;
+  font-size: 14px;
+  font-style: italic;
+}
+
 .quiz-message {
   color: #9ca3af;
   font-size: 14px;
@@ -388,6 +402,12 @@ body {
   align-items: center;
 }
 
+#alterations {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
+}
+
 .btn-group {
   display: flex;
   gap: 2px;
@@ -421,6 +441,24 @@ body {
   text-align: center;
   line-height: 1;
   height: auto;
+}
+
+.mini-key-root {
+  font-size: 20px;
+  min-width: 34px;
+  padding: 8px 6px;
+}
+
+.mini-key-alteration {
+  font-size: 20px;
+  min-width: 34px;
+  padding: 8px 6px;
+}
+
+.mini-key-sus {
+  font-size: 13px;
+  min-width: 24px;
+  padding: 5px 3px;
 }
 
 .mini-key-compact {
@@ -616,6 +654,18 @@ body {
     line-height: 1;
   }
   
+  .mini-key-root {
+    font-size: 16px;
+    min-width: 26px;
+    padding: 5px 4px;
+  }
+  
+  .mini-key-alteration {
+    font-size: 16px;
+    min-width: 26px;
+    padding: 5px 4px;
+  }
+  
   .mini-key.stacked {
     padding: 2px 2px;
     font-size: 11px;
@@ -647,6 +697,18 @@ body {
     font-size: 11px;
     min-width: 16px;
     line-height: 1;
+  }
+  
+  .mini-key-root {
+    font-size: 14px;
+    min-width: 22px;
+    padding: 4px 3px;
+  }
+  
+  .mini-key-alteration {
+    font-size: 14px;
+    min-width: 22px;
+    padding: 4px 3px;
   }
   
   .mini-key.stacked {

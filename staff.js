@@ -79,19 +79,37 @@ function drawMusicalStaff(notes, chordNotation = '') {
   });
   
   // Détecter les notes proches (secondes) pour décalage horizontal
+  // Règle : quand 3 notes se suivent, seule la note du MILIEU est décalée à gauche
+  // Les notes sont triées du HAUT vers le BAS
   const noteShifts = [];
   for (let i = 0; i < notePositions.length; i++) {
     let shift = 0;
-    if (i > 0) {
-      const prevY = notePositions[i - 1].y;
-      const currentY = notePositions[i].y;
-      const distance = Math.abs(prevY - currentY);
-      
-      // Si les notes sont à une seconde (distance = lineSpacing/2)
-      if (distance <= lineSpacing * 0.6) {
-        shift = -8; // Décaler la note du bas vers la gauche
+    
+    const hasPrevClose = i > 0 && Math.abs(notePositions[i - 1].y - notePositions[i].y) <= lineSpacing * 0.6;
+    const hasNextClose = i < notePositions.length - 1 && Math.abs(notePositions[i].y - notePositions[i + 1].y) <= lineSpacing * 0.6;
+    
+    // Si la note a une note proche avant ET après : c'est la note du MILIEU d'un groupe de 3+
+    if (hasPrevClose && hasNextClose) {
+      shift = -8; // Décaler uniquement la note du milieu vers la gauche
+    }
+    // Si la note a seulement une note proche avant (pas après) : c'est potentiellement la note du BAS
+    else if (hasPrevClose && !hasNextClose) {
+      // Vérifier si la note précédente a elle-même une note proche avant elle
+      // Si oui, alors on est dans un groupe de 3+ et cette note est la DERNIÈRE (bas)
+      const prevHasPrevClose = i > 1 && Math.abs(notePositions[i - 2].y - notePositions[i - 1].y) <= lineSpacing * 0.6;
+      if (prevHasPrevClose) {
+        // C'est la note du BAS d'un groupe de 3+ : pas de décalage
+        shift = 0;
+      } else {
+        // C'est juste une paire de 2 notes : décaler la note du bas
+        shift = -8;
       }
     }
+    // Sinon (note du haut ou isolée) : pas de décalage
+    else {
+      shift = 0;
+    }
+    
     noteShifts.push(shift);
   }
   

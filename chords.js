@@ -93,6 +93,10 @@ function getIntervals(quality) {
     'sus2': [0, 2, 7],
     'sus4': [0, 5, 7],
     '7sus4': [0, 5, 7, 10],
+    'add2': [0, 2, 4, 7],
+    'add4': [0, 4, 5, 7],
+    'madd2': [0, 2, 3, 7],
+    'madd4': [0, 3, 5, 7],
     'add9': [0, 4, 7, 14],
     'add11': [0, 4, 7, 17],
     'add13': [0, 4, 7, 21],
@@ -393,7 +397,7 @@ function generateAllChords() {
       // Toutes les qualités
       const allQualities = [
         'm', 'dim', 'ø7', 'aug', '7', 'maj7', 'm7', 'dim7', 'm7b5',
-        '6', 'm6', 'sus2', 'sus4', '7sus4', 'add9', 'add11', 'add13', '6/9', 'm6/9',
+        '6', 'm6', 'sus2', 'sus4', '7sus4', 'add2', 'add4', 'madd2', 'madd4', 'add9', 'add11', 'add13', '6/9', 'm6/9',
         '9', 'maj9', 'm9', '11', 'maj11', 'm11', '13', 'maj13', 'm13',
         '7b5', '7#5', '7b9', '7#9', '7#11', '7b13',
         '7b5b9', '7#5b9', '7b5#9', '7#5#9',

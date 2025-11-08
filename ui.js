@@ -6,7 +6,7 @@ function initializeUI() {
   const orderedNotes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   orderedNotes.forEach(note => {
     const btn = document.createElement('button');
-    btn.className = 'mini-key';
+    btn.className = 'mini-key mini-key-root';
     btn.textContent = note;
     btn.onclick = () => selectRootNote(note);
     rootNotesDiv.appendChild(btn);
@@ -15,9 +15,9 @@ function initializeUI() {
   // Altérations # b (ligne 1)
   const alterationsDiv = document.getElementById('alterations');
   
-  [{ label: '#', value: '#' }, { label: 'b', value: 'b' }].forEach(alt => {
+  [{ label: '♯', value: '#' }, { label: '♭', value: 'b' }].forEach(alt => {
     const btn = document.createElement('button');
-    btn.className = 'mini-key';
+    btn.className = 'mini-key mini-key-alteration';
     btn.textContent = alt.label;
     btn.dataset.value = alt.value;
     btn.dataset.type = 'alteration';
@@ -25,7 +25,7 @@ function initializeUI() {
     alterationsDiv.appendChild(btn);
   });
 
-  // NOUVELLE LIGNE 2 : Mineur, Diminué, Augmenté, Sus2, Sus4 (mutuellement exclusifs)
+  // NOUVELLE LIGNE 2 : Mineur, Diminué, Augmenté, Sus2, Sus4, Add2, Add4 (mutuellement exclusifs)
   const baseQualitiesDiv = document.getElementById('baseQualities');
   
   // Groupe -/m(in) (superposés)
@@ -70,14 +70,25 @@ function initializeUI() {
   });
   baseQualitiesDiv.appendChild(augContainer);
   
-  // Sus2 et Sus4 (boutons simples)
+  // Sus2 et Sus4 (boutons simples, plus petits)
   [{ label: 'sus2', value: 'sus2' }, { label: 'sus4', value: 'sus4' }].forEach(item => {
     const btn = document.createElement('button');
-    btn.className = 'mini-key';
+    btn.className = 'mini-key mini-key-sus';
     btn.textContent = item.label;
     btn.dataset.value = item.value;
     btn.dataset.type = 'base-quality';
     btn.onclick = () => selectBaseQuality(item.value);
+    baseQualitiesDiv.appendChild(btn);
+  });
+  
+  // Add2 et Add4 (boutons simples, même taille que sus, mais traités comme extensions)
+  [{ label: 'add2', value: 'add2' }, { label: 'add4', value: 'add4' }].forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'mini-key mini-key-sus';
+    btn.textContent = item.label;
+    btn.dataset.value = item.value;
+    btn.dataset.type = 'simple-extension';
+    btn.onclick = () => selectSimpleExtension(item.value);
     baseQualitiesDiv.appendChild(btn);
   });
 
