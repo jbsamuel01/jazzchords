@@ -463,9 +463,10 @@ function drawTrebleClef(svg, x, y) {
   // Clé de sol responsive : plus grande sur PC, taille normale sur mobile
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
+  clef.setAttribute('data-version', 'v2.7-mobile-y8'); // Forcer le refresh
   
-  // Détection mobile/tablet pour ajuster la taille
-  const isMobile = window.innerWidth <= 768;
+  // Détection mobile/tablet pour ajuster la taille (seuil augmenté à 1024)
+  const isMobile = window.innerWidth <= 1024;
   console.log('DrawTrebleClef - isMobile:', isMobile, 'width:', window.innerWidth);
   
   if (isMobile) {
