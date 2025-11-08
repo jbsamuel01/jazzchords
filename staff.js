@@ -112,7 +112,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
     } else if (hasSharp) {
       drawSharp(svg, xPos - 15, pos.y);
     } else if (hasFlat) {
-      drawFlat(svg, xPos - 15, pos.y);
+      drawFlat(svg, xPos - 18, pos.y); // Augmenté de -15 à -18 pour éviter le chevauchement sur mobile
     }
     
     

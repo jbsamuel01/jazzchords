@@ -1,4 +1,7 @@
-// chords.js v2.3 - Génération de tous les accords
+// chords.js v2.4 - Génération de tous les accords
+// Correction v2.4 : 
+// - Cb : suppression du +1 sur octave (était trop haut sur la portée)
+// - A et B : descente de octave ET noteForKeyboardOctave de -1 (fondamentale trop haute sur le clavier)
 // Correction v2.3 : 
 // - Ajout d'une propriété noteForKeyboard pour compatibilité avec le clavier
 // - Correction du mapping de degré pour dim7 (Bbb au lieu de A)
@@ -353,7 +356,7 @@ function generateAllChords() {
       }
       // Note : D# et A# sont conservés car D#m et A#m sont des tonalités valides
       
-      // Vérifier si c'est Cb pour remonter d'une octave
+      // Vérifier si c'est Cb
       const isCb = (rootNote === 'C' && alt === 'b');
       // Vérifier si c'est A ou B (ou Ab, A#, Bb, B#) pour descendre d'une octave
       const isAorB = (rootNote === 'A' || rootNote === 'B');
@@ -363,11 +366,14 @@ function generateAllChords() {
         const majorIntervals = getIntervals('');
         let majorNotes = majorIntervals.map(interval => {
           const note = getNoteName(fullRoot, interval, '');
-          if (note && isCb) {
-            return { ...note, octave: note.octave + 1 };
-          }
+          // Pour Cb : ne rien faire (suppression du +1 de l'original)
+          // Pour A et B : descendre octave ET noteForKeyboardOctave
           if (note && isAorB) {
-            return { ...note, octave: note.octave - 1 };
+            return { 
+              ...note, 
+              octave: note.octave - 1,
+              noteForKeyboardOctave: note.noteForKeyboardOctave - 1
+            };
           }
           return note;
         }).filter(n => n !== null);
@@ -411,11 +417,14 @@ function generateAllChords() {
         const intervals = getIntervals(quality);
         let notes = intervals.map(interval => {
           const note = getNoteName(fullRoot, interval, quality);
-          if (note && isCb) {
-            return { ...note, octave: note.octave + 1 };
-          }
+          // Pour Cb : ne rien faire (suppression du +1 de l'original)
+          // Pour A et B : descendre octave ET noteForKeyboardOctave
           if (note && isAorB) {
-            return { ...note, octave: note.octave - 1 };
+            return { 
+              ...note, 
+              octave: note.octave - 1,
+              noteForKeyboardOctave: note.noteForKeyboardOctave - 1
+            };
           }
           return note;
         }).filter(n => n !== null);
