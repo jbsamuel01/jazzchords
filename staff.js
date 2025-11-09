@@ -475,9 +475,8 @@ function drawTrebleClef(svg, x, y) {
   console.log('Is Mobile:', isMobile);
   
   if (isMobile) {
-    // Mobile/Tablette : taille 38
-    // VALEUR EXAGÉRÉE POUR TEST - la clé devrait être TRÈS BASSE
-    const yPos = y + 20;
+    // Mobile/Tablette : taille 38, remontée d'un interligne
+    const yPos = y + 10;
     clef.setAttribute('y', yPos);
     clef.setAttribute('font-size', '38');
     console.log('MOBILE MODE: y=' + yPos + ', font-size=38');
