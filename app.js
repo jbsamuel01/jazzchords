@@ -219,6 +219,26 @@ function selectAlteredExtension(ext) {
     // Déselectionner
     selectedAlteredExtensions.splice(index, 1);
   } else {
+    // Vérifier les combinaisons incompatibles
+    const incompatible = {
+      'b5': ['#5'],
+      '#5': ['b5'],
+      'b9': ['#9'],
+      '#9': ['b9'],
+      '#11': ['b13'],
+      'b13': ['#11']
+    };
+    
+    // Retirer les altérations incompatibles si on en sélectionne une nouvelle
+    if (incompatible[ext]) {
+      incompatible[ext].forEach(incomp => {
+        const idx = selectedAlteredExtensions.indexOf(incomp);
+        if (idx > -1) {
+          selectedAlteredExtensions.splice(idx, 1);
+        }
+      });
+    }
+    
     // Sélectionner (max 2)
     if (selectedAlteredExtensions.length < 2) {
       selectedAlteredExtensions.push(ext);
@@ -230,9 +250,9 @@ function selectAlteredExtension(ext) {
     
     // Allumer automatiquement la touche 7 si aucune qualité 7 n'est sélectionnée
     // Exception: ne pas allumer 7 si maj7 ou maj7#5 ou maj7b5 est déjà sélectionné
-    // Ne pas allumer 7 pour #5 et #11 qui peuvent être utilisés avec maj7
+    // Ne pas allumer 7 pour #11 qui peut être utilisé avec maj7
     if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && selectedQuality !== 'maj7b5' && 
-        ext !== '#5' && ext !== '#11') {
+        ext !== '#11') {
       selectedQuality = '7';
       document.querySelectorAll('#qualities .mini-key').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.value === '7');
@@ -290,7 +310,13 @@ function buildManualChordLive() {
     chordName += 'm';
   }
   
-  chordName += selectedQuality + selectedSimpleExtension + selectedAlteredExtensions.join('');
+  // Trier les altérations dans l'ordre conventionnel : b5, #5, b9, #9, #11, b13
+  const alterationOrder = ['b5', '#5', 'b9', '#9', '#11', 'b13'];
+  const sortedAlterations = [...selectedAlteredExtensions].sort((a, b) => {
+    return alterationOrder.indexOf(a) - alterationOrder.indexOf(b);
+  });
+  
+  chordName += selectedQuality + selectedSimpleExtension + sortedAlterations.join('');
   
   const chord = ALL_CHORDS[chordName];
   

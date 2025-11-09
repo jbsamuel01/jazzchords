@@ -140,74 +140,54 @@
   <div id="helpModal" class="modal">
     <div class="modal-content">
       <button id="closeHelp" class="close-modal">✕</button>
-      <h3>Apprenez les accords de jazz</h3>
+      <h3>Mode d'emploi - Jazz Chords</h3>
       
       <div class="help-section">
-        <h4>🎹 Saisie manuelle</h4>
-        <p>Construisez votre accord en cliquant au moins sur le bouton d'une note fondamentale :</p>
-        <ul>
-          <li><strong>Ligne 1 :</strong> Note fondamentale (A-G) + altération (♯/♭)</li>
-          <li><strong>Ligne 2 :</strong> Qualités de base (mineur, diminué, augmenté, sus2, sus4)</li>
-          <li><strong>Ligne 3 :</strong> Qualités (7, M7, m7, m7b5, dim7...)</li>
-          <li><strong>Ligne 4 :</strong> Extensions (6, 9, 11, 13, 6/9, add9...)</li>
-          <li><strong>Ligne 5 :</strong> Altérations (♭5, ♯5, ♭9, ♯9, ♯11...)</li>
-        </ul>
-        <p>Accord inexistant = boutons rouges.</p>
+        <h4>✋ Saisie manuelle</h4>
+        <p><strong>Ligne 1 :</strong> Fondamentale (A-G) + altération (♯/♭) · <strong>Ligne 2 :</strong> Qualités (m, dim, aug, sus) · <strong>Ligne 3 :</strong> Septièmes (7, M7, m7...) · <strong>Ligne 4 :</strong> Extensions (9, 11, 13...) · <strong>Ligne 5 :</strong> Altérations (♭5, ♯9...). Boutons rouges = accord inexistant.</p>
       </div>
       
       <div class="help-section">
         <h4>🎮 Quiz</h4>
-        <p>Cliquez sur le nombre de notes (3, 4, 5 ou 6) pour générer un accord aléatoire. Trouvez les bonnes notes sur le clavier !</p>
-        <p>Le bouton œil 
-          <span style="display: inline-flex; align-items: center; background: #f97316; padding: 4px 6px; border-radius: 4px; margin: 0 4px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <p>Cliquez sur 3, 4, 5 ou 6 notes pour générer un accord aléatoire. Trouvez les bonnes notes sur le clavier ! Bouton œil 
+          <span style="display: inline-flex; align-items: center; background: #f97316; padding: 2px 4px; border-radius: 3px; margin: 0 2px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
               <line x1="1" y1="1" x2="23" y2="23"></line>
             </svg>
-          </span> 
-          permet de masquer/afficher les notes de l'accord.</p>
+          </span> = masquer/afficher les notes.</p>
       </div>
       
       <div class="help-section">
-        <h4>🎼 Clavier virtuel</h4>
-        <p>Cliquez sur les touches pour jouer les notes. Les notes jouées apparaissent en <strong style="color: #22c55e;">vert</strong> si elles font partie de l'accord, en <strong style="color: #ef4444;">rouge</strong> sinon. Le pouce 👍 s'affiche quand toutes les bonnes notes sont trouvées.</p>
-        <p>Si vous jouez des notes librement sur le clavier et qu'elles correspondent à un accord connu, celui-ci s'affichera automatiquement dans la zone d'affichage en haut.</p>
+        <h4>🎹 Clavier virtuel</h4>
+        <p>Cliquez pour jouer. Notes <strong style="color: #22c55e;">vertes</strong> = correctes, <strong style="color: #ef4444;">rouges</strong> = incorrectes. 👍 = toutes trouvées. Jouer librement détecte automatiquement l'accord.</p>
       </div>
       
       <div class="help-section">
-        <h4>🎵 Portée musicale</h4>
-        <p>Les notes de l'accord s'affichent sur une portée musicale en notation classique avec la clé de sol. La liste des notes à droite du nom de l'accord s'affiche verticalement, de haut en bas (comme sur la portée).</p>
+        <h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" style="vertical-align: middle; display: inline-block; margin-right: 4px;">
+          <line x1="2" y1="8" x2="22" y2="8"></line>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <line x1="2" y1="16" x2="22" y2="16"></line>
+          <circle cx="6" cy="12" r="2" fill="white"></circle>
+          <circle cx="12" cy="10" r="2" fill="white"></circle>
+          <circle cx="18" cy="14" r="2" fill="white"></circle>
+        </svg> Portée musicale</h4>
+        <p>Notes affichées en notation classique avec clé de sol. Liste verticale = notes de haut en bas comme sur la portée.</p>
       </div>
+      
       <div class="help-section">
         <h4>⚙️ Boutons</h4>
-        <ul>
-          <li><strong>▶ :</strong> Écouter l'accord</li>
-          <li><strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" style="vertical-align: middle; display: inline-block;">
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-            <path d="M21 3v5h-5"></path>
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-            <path d="M3 21v-5h5"></path>
-          </svg> :</strong> Réinitialiser</li>
-          <li><strong><svg width="14" height="14" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; display: inline-block;">
-      <path d="M16 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-      <path d="M23 10v2a7 7 0 0 1-14 0v-2"></path>
-      <line x1="16" x2="16" y1="19" y2="22"></line>
-      <path d="M24 7c1.5 1.5 2 3.5 2 5s-0.5 3.5-2 5" stroke-width="4" opacity="0.9"></path>
-      <path d="M7 7c-1.5 1.5-2 3.5-2 5s0.5 3.5 2 5" stroke-width="4" opacity="0.9"></path>
-      <path d="M28 4c2 2 3 5 3 8s-1 6-3 8" stroke-width="3.5" opacity="0.7"></path>
-      <path d="M3 4c-2 2-3 5-3 8s1 6 3 8" stroke-width="3.5" opacity="0.7"></path>
-    </svg> :</strong> Détecter les notes via micro</li>
-        </ul>
+        <p><strong>▶</strong> Écouter · <strong>↻</strong> Réinitialiser · <strong>🎤</strong> Détecter via micro</p>
       </div>
     </div>
   </div>
 
-  <script src="chords.js?v=2.7"></script>
-  <script src="keyboard.js?v=2.7"></script>
-  <script src="detector.js?v=2.7"></script>
-  <script src="audio-manager.js?v=2.7"></script>
-  <script src="staff.js?v=2.7fix"></script>
-  <script src="ui.js?v=2.7"></script>
-  <script src="app.js?v=2.7"></script>
+  <script src="chords.js?v=2.8"></script>
+  <script src="keyboard.js?v=2.8"></script>
+  <script src="detector.js?v=2.8"></script>
+  <script src="audio-manager.js?v=2.8"></script>
+  <script src="staff.js?v=2.8"></script>
+  <script src="ui.js?v=2.8"></script>
+  <script src="app.js?v=2.8"></script>
 </body>
 </html>
