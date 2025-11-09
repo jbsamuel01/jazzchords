@@ -463,28 +463,39 @@ function drawTrebleClef(svg, x, y) {
   // Clé de sol responsive : plus grande sur PC, taille normale sur mobile
   const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   clef.setAttribute('x', x);
-  clef.setAttribute('data-version', 'v2.7-mobile-y8'); // Forcer le refresh
+  clef.setAttribute('data-clef-version', 'v2.7-test'); // Pour vérifier que ce code s'exécute
   
-  // Détection mobile/tablet pour ajuster la taille (seuil augmenté à 1024)
-  const isMobile = window.innerWidth <= 1024;
-  console.log('DrawTrebleClef - isMobile:', isMobile, 'width:', window.innerWidth);
+  // Détection mobile/tablet pour ajuster la taille
+  const screenWidth = window.innerWidth;
+  const isMobile = screenWidth <= 1024;
+  
+  // TOUJOURS afficher dans la console
+  console.log('=== TREBLE CLEF DEBUG ===');
+  console.log('Screen width:', screenWidth);
+  console.log('Is Mobile:', isMobile);
   
   if (isMobile) {
-    // Mobile/Tablette : taille 38, baissée pour centrer la spirale sur la ligne du Sol
-    clef.setAttribute('y', y + 8);
+    // Mobile/Tablette : taille 38
+    // VALEUR EXAGÉRÉE POUR TEST - la clé devrait être TRÈS BASSE
+    const yPos = y + 20;
+    clef.setAttribute('y', yPos);
     clef.setAttribute('font-size', '38');
-    console.log('Mobile: y+8, size 38');
+    console.log('MOBILE MODE: y=' + yPos + ', font-size=38');
   } else {
-    // PC : taille 58, baissée de quelques pixels pour bien centrer la spirale sur la ligne du Sol
-    clef.setAttribute('y', y + 9);
+    // PC : taille 58
+    const yPos = y + 9;
+    clef.setAttribute('y', yPos);
     clef.setAttribute('font-size', '58');
-    console.log('PC: y+9, size 58');
+    console.log('PC MODE: y=' + yPos + ', font-size=58');
   }
   
   clef.setAttribute('fill', 'black');
   clef.setAttribute('font-family', 'serif');
   clef.textContent = '𝄞';
   svg.appendChild(clef);
+  
+  console.log('Clef element created with y:', clef.getAttribute('y'));
+  console.log('========================');
 }
 function drawDoubleSharp(svg, x, y) {
   // Dessiner le premier dièse (décalé vers la gauche)
