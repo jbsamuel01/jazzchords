@@ -135,7 +135,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
     const isMobile = window.innerWidth <= 768;
     const flatXOffset = isMobile ? -21 : -15; // Rapproché de -20 à -15 sur PC (même niveau que dièses)
     const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile (bémols simples)
-    const doubleFlatXOffset = isMobile ? -18 : -15; // Rapproché de -20 à -15 sur PC
+    const doubleFlatXOffset = isMobile ? -16 : -18; // Mobile : rapproché (-16), PC : éloigné (-18)
     const doubleFlatYOffset = isMobile ? -1 : 0; // 1 pixel plus haut (y+3 - 1 = y+2) sur mobile
     
     // Afficher toutes les altérations directement (pas d'armure)
