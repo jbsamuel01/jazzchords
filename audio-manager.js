@@ -94,22 +94,31 @@ function getAudioContext() {
 }
 
 function playNoteSound(note, duration = 1.0, startTime = 0) {
-  // Initialiser le piano si ce n'est pas déjà fait
+  // Initialiser le piano si ce n'est pas déjà fait (pour les clics sur le clavier)
   if (!piano) {
     initializePiano().then(() => {
-      playNoteSound(note, duration, startTime);
+      if (Tone.context.state !== 'running') {
+        Tone.start().then(() => {
+          playNoteSound(note, duration, startTime);
+        });
+      } else {
+        playNoteSound(note, duration, startTime);
+      }
     });
     return;
   }
   
   // Démarrer Tone.js au premier clic si nécessaire
   if (Tone.context.state !== 'running') {
-    Tone.start();
+    Tone.start().then(() => {
+      const now = Tone.now();
+      piano.triggerAttackRelease(note, duration, now + startTime);
+    });
+  } else {
+    // Jouer la note avec le piano échantillonné
+    const now = Tone.now();
+    piano.triggerAttackRelease(note, duration, now + startTime);
   }
-  
-  // Jouer la note avec le piano échantillonné
-  const now = Tone.now();
-  piano.triggerAttackRelease(note, duration, now + startTime);
 }
 
 async function toggleMicrophone() {

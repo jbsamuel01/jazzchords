@@ -21,8 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeUI();
 });
 
-window.playChord = function() {
+window.playChord = async function() {
   getAudioContext();
+  
+  // S'assurer que le piano est initialisé et Tone.js démarré AVANT de jouer
+  if (!piano) {
+    await initializePiano();
+  }
+  
+  if (Tone.context.state !== 'running') {
+    await Tone.start();
+  }
   
   let notesToPlay = [];
   
