@@ -133,9 +133,9 @@ function drawMusicalStaff(notes, chordNotation = '') {
     
     // Détecter si on est sur mobile pour ajuster la position des bémols
     const isMobile = window.innerWidth <= 768;
-    const flatXOffset = isMobile ? -21 : -20; // 1 pixel plus à gauche sur mobile (bémols simples)
+    const flatXOffset = isMobile ? -21 : -15; // Rapproché de -20 à -15 sur PC (même niveau que dièses)
     const flatYOffset = isMobile ? 1 : 0; // 1 pixel plus bas sur mobile (bémols simples)
-    const doubleFlatXOffset = isMobile ? -18 : -20; // 2 pixels plus à droite (-20 + 2 = -18) sur mobile
+    const doubleFlatXOffset = isMobile ? -18 : -15; // Rapproché de -20 à -15 sur PC
     const doubleFlatYOffset = isMobile ? -1 : 0; // 1 pixel plus haut (y+3 - 1 = y+2) sur mobile
     
     // Afficher toutes les altérations directement (pas d'armure)

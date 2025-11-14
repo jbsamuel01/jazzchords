@@ -250,9 +250,7 @@ function selectAlteredExtension(ext) {
     
     // Allumer automatiquement la touche 7 si aucune qualité 7 n'est sélectionnée
     // Exception: ne pas allumer 7 si maj7 ou maj7#5 ou maj7b5 est déjà sélectionné
-    // Ne pas allumer 7 pour #11 qui peut être utilisé avec maj7
-    if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && selectedQuality !== 'maj7b5' && 
-        ext !== '#11') {
+    if (selectedQuality !== '7' && selectedQuality !== 'maj7' && selectedQuality !== 'maj7#5' && selectedQuality !== 'maj7b5') {
       selectedQuality = '7';
       document.querySelectorAll('#qualities .mini-key').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.value === '7');
