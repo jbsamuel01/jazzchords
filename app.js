@@ -262,7 +262,7 @@ function selectAlteredExtension(ext) {
   }
   
   document.querySelectorAll('#alteredExtensions .mini-key').forEach(btn => {
-    btn.classList.toggle('active', selectedAlteredExtensions.includes(btn.textContent));
+    btn.classList.toggle('active', selectedAlteredExtensions.includes(btn.dataset.value));
     btn.classList.remove('error');
   });
   
@@ -631,7 +631,7 @@ function displayDetectedChord(chord, chordExists = null) {
     chordNotesMessage.innerHTML = '';
     drawMusicalStaff([]);
   } else {
-    chordName.textContent = chord.notation;
+    chordName.textContent = chord.displayNotation || chord.notation;
     chordName.style.color = '#22c55e';
     
     if (chordNotesVisible === false) {

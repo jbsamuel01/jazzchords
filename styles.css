@@ -430,7 +430,7 @@ body {
   padding: 6px 4px;
   background: #1e2638;
   color: #e8ecf8;
-  border: 1px solid #374151;
+  border: 1px solid #22c55e;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
@@ -499,7 +499,7 @@ body {
   flex-direction: column;
   gap: 0;
   align-items: stretch;
-  border: 1px solid #374151;
+  border: 1px solid #22c55e;
   border-radius: 4px;
   padding: 0;
   background: #1e2638;
@@ -532,7 +532,7 @@ body {
   grid-template-columns: 1fr 1fr !important;
   grid-template-rows: 1fr 1fr !important;
   gap: 0 !important;
-  border: 1px solid #374151;
+  border: 1px solid #22c55e;
   border-radius: 4px;
   padding: 0;
   background: #1e2638;
@@ -597,7 +597,7 @@ body {
   padding: 6px 12px;
   background: #1e2638;
   color: #e8ecf8;
-  border: 1px solid #374151;
+  border: 1px solid #22c55e;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;

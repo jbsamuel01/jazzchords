@@ -99,7 +99,7 @@ function initializeUI() {
     [{ label: '7', value: '7' }],
     [{ label: '-7', value: 'm7' }, { label: 'm(in)7', value: 'm7' }],
     [{ label: '°7', value: 'dim7' }, { label: 'dim7', value: 'dim7' }],
-    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7b5', value: 'm7b5' }]
+    [{ label: 'ø7', value: 'm7b5' }, { label: 'm7♭5', value: 'm7b5' }]
   ];
   
   qualityGroups.forEach((group) => {
@@ -132,7 +132,7 @@ function initializeUI() {
   maj7Container.style.display = 'grid';
   maj7Container.style.gridTemplateColumns = '1fr 1fr';
   maj7Container.style.gridTemplateRows = 'auto auto';
-  maj7Container.style.border = '1px solid #374151';
+  maj7Container.style.border = '1px solid #22c55e';
   maj7Container.style.borderRadius = '4px';
   maj7Container.style.overflow = 'hidden';
   maj7Container.style.background = '#1e2638';
@@ -176,9 +176,9 @@ function initializeUI() {
   maj7Sharp5Container.style.gridTemplateRows = '1fr 1fr';
   
   [
-    { label: 'M7#5', value: 'maj7#5' },
+    { label: 'M7♯5', value: 'maj7#5' },
     { label: '+M7', value: 'maj7#5' },
-    { label: 'maj7#5', value: 'maj7#5' },
+    { label: 'maj7♯5', value: 'maj7#5' },
     { label: '+maj7', value: 'maj7#5' }
   ].forEach(item => {
     const btn = document.createElement('button');
@@ -203,10 +203,11 @@ function initializeUI() {
 
   // Extensions altérées (LIGNE 5)
   const alteredExtDiv = document.getElementById('alteredExtensions');
-  ALTERED_EXTENSIONS.forEach(ext => {
+  ALTERED_EXTENSIONS.forEach((ext, idx) => {
     const btn = document.createElement('button');
     btn.className = 'mini-key';
-    btn.textContent = ext;
+    btn.textContent = ALTERED_EXTENSIONS_DISPLAY[idx];
+    btn.dataset.value = ext;
     btn.onclick = () => selectAlteredExtension(ext);
     alteredExtDiv.appendChild(btn);
   });

@@ -30,6 +30,7 @@ const CHORD_QUALITIES = [
 
 const SIMPLE_EXTENSIONS = ['6', '9', '11', '13', '6/9', 'add9', 'add11', 'add13'];
 const ALTERED_EXTENSIONS = ['b5', '#5', 'b9', '#9', '#11', 'b13'];
+const ALTERED_EXTENSIONS_DISPLAY = ['♭5', '♯5', '♭9', '♯9', '♯11', '♭13'];
 
 // Conversion notes vers français avec vrais symboles # et ♭
 const NOTE_FR = {
@@ -43,6 +44,11 @@ const NOTE_FR = {
 };
 
 const NOTE_FR_SHARP = NOTE_FR;
+
+// Fonction pour convertir # et b en vrais symboles musicaux ♯ et ♭
+function formatChordNotation(notation) {
+  return notation.replace(/#/g, '♯').replace(/b/g, '♭');
+}
 
 // Correspondance entre demi-tons et degrés
 const DEGREE_INTERVALS = {
@@ -86,6 +92,7 @@ function getIntervals(quality) {
     '7': [0, 4, 7, 10],
     'maj7': [0, 4, 7, 11],
     'm7': [0, 3, 7, 10],
+    'mmaj7': [0, 3, 7, 11],
     'dim7': [0, 3, 6, 9],
     'm7b5': [0, 3, 6, 10],
     '6': [0, 4, 7, 9],
@@ -112,17 +119,23 @@ function getIntervals(quality) {
     'maj7add9': [0, 4, 7, 11, 14],
     'maj7add11': [0, 4, 7, 11, 17],
     'maj7add13': [0, 4, 7, 11, 21],
+    'mmaj7add9': [0, 3, 7, 11, 14],
+    'mmaj7add11': [0, 3, 7, 11, 17],
+    'mmaj7add13': [0, 3, 7, 11, 21],
     '6/9': [0, 4, 7, 9, 14],
     'm6/9': [0, 3, 7, 9, 14],
     '9': [0, 4, 7, 10, 14],
     'maj9': [0, 4, 7, 11, 14],
     'm9': [0, 3, 7, 10, 14],
+    'mmaj9': [0, 3, 7, 11, 14],
     '11': [0, 4, 7, 10, 14, 17],
     'maj11': [0, 4, 7, 11, 14, 17],
     'm11': [0, 3, 7, 10, 14, 17],
+    'mmaj11': [0, 3, 7, 11, 14, 17],
     '13': [0, 4, 7, 10, 14, 21],
     'maj13': [0, 4, 7, 11, 14, 21],
     'm13': [0, 3, 7, 10, 14, 21],
+    'mmaj13': [0, 3, 7, 11, 14, 21],
     '7b5': [0, 4, 6, 10],
     '7#5': [0, 4, 8, 10],
     '7b9': [0, 4, 7, 10, 13],
@@ -145,6 +158,7 @@ function getIntervals(quality) {
     'maj7#5': [0, 4, 8, 11],
     'maj7b5': [0, 4, 6, 11],
     'maj7#11': [0, 4, 7, 11, 18],
+    'mmaj7#11': [0, 3, 7, 11, 18],
     'maj7#5#11': [0, 4, 8, 11, 18],
     'm9b5': [0, 3, 6, 10, 14],
   };
@@ -370,74 +384,66 @@ function generateAllChords() {
     [''].concat(ALTERATIONS).forEach(alt => {
       const fullRoot = rootNote + alt;
       
-      // Exclure les tonalités non utilisées (enharmoniques redondantes)
+      // Exclure les tonalités non utilisées (enharmoniques redondantes ou peu pratiques)
       if ((rootNote === 'E' && alt === '#') ||  // Mi# = Fa
           (rootNote === 'F' && alt === 'b') ||  // Fab = Mi
-          (rootNote === 'B' && alt === '#')) {  // Si# = Do
+          (rootNote === 'B' && alt === '#') ||  // Si# = Do
+          (rootNote === 'D' && alt === '#') ||  // Ré# = Mib (utiliser Eb à la place)
+          (rootNote === 'A' && alt === '#')) {  // La# = Sib (utiliser Bb à la place)
         return;
       }
-      // Note : D# et A# sont conservés car D#m et A#m sont des tonalités valides
       
       // Vérifier si c'est Cb
       const isCb = (rootNote === 'C' && alt === 'b');
       // Vérifier si c'est A ou B (ou Ab, A#, Bb, B#) pour descendre d'une octave
       const isAorB = (rootNote === 'A' || rootNote === 'B');
       
-      // Ajouter l'accord majeur (sauf pour D# et A# qui n'existent pas en majeur)
-      if (!((rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#'))) {
-        const majorIntervals = getIntervals('');
-        let majorNotes = majorIntervals.map(interval => {
-          const note = getNoteName(fullRoot, interval, '');
-          // Pour Cb : ne rien faire (suppression du +1 de l'original)
-          // Pour A et B : descendre octave ET noteForKeyboardOctave
-          if (note && isAorB) {
-            return { 
-              ...note, 
-              octave: note.octave - 1,
-              noteForKeyboardOctave: note.noteForKeyboardOctave - 1
-            };
-          }
-          return note;
-        }).filter(n => n !== null);
-        
-        // Assurer que les notes sont en ordre ascendant
-        majorNotes = ensureAscendingOrder(majorNotes);
-        
-        chords[fullRoot] = {
-          notation: fullRoot,
-          nomFrancais: `${fullRoot} majeur`,
-          notes: majorNotes.map(n => n.note),
-          notesFr: majorNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
-          notesWithOctave: majorNotes
-        };
-      }
+      // Ajouter l'accord majeur
+      const majorIntervals = getIntervals('');
+      let majorNotes = majorIntervals.map(interval => {
+        const note = getNoteName(fullRoot, interval, '');
+        // Pour Cb : ne rien faire (suppression du +1 de l'original)
+        // Pour A et B : descendre octave ET noteForKeyboardOctave
+        if (note && isAorB) {
+          return { 
+            ...note, 
+            octave: note.octave - 1,
+            noteForKeyboardOctave: note.noteForKeyboardOctave - 1
+          };
+        }
+        return note;
+      }).filter(n => n !== null);
+      
+      // Assurer que les notes sont en ordre ascendant
+      majorNotes = ensureAscendingOrder(majorNotes);
+      
+      chords[fullRoot] = {
+        notation: fullRoot,
+        displayNotation: formatChordNotation(fullRoot),
+        nomFrancais: `${fullRoot} majeur`,
+        notes: majorNotes.map(n => n.note),
+        notesFr: majorNotes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
+        notesWithOctave: majorNotes
+      };
       
       // Toutes les qualités
       const allQualities = [
-        'm', 'dim', 'ø7', 'aug', '7', 'maj7', 'm7', 'dim7', 'm7b5',
+        'm', 'dim', 'ø7', 'aug', '7', 'maj7', 'm7', 'mmaj7', 'dim7', 'm7b5',
         '6', 'm6', 'sus2', 'sus4', '7sus4', 'add2', 'add4', 'madd2', 'madd4', 
         'add9', 'madd9', 'add11', 'madd11', 'add13', 'madd13',
-        '7add9', '7add11', '7add13', 'm7add9', 'm7add11', 'm7add13', 'maj7add9', 'maj7add11', 'maj7add13',
+        '7add9', '7add11', '7add13', 'm7add9', 'm7add11', 'm7add13', 
+        'maj7add9', 'maj7add11', 'maj7add13', 'mmaj7add9', 'mmaj7add11', 'mmaj7add13',
         '6/9', 'm6/9',
-        '9', 'maj9', 'm9', '11', 'maj11', 'm11', '13', 'maj13', 'm13',
+        '9', 'maj9', 'm9', 'mmaj9', '11', 'maj11', 'm11', 'mmaj11', '13', 'maj13', 'm13', 'mmaj13',
         '7b5', '7#5', '7b9', '7#9', '7#11', '7b13',
         '7b5b9', '7#5b9', '7b5#9', '7#5#9', '7b5#11', '7b5b13', '7#5#11', '7#5b13',
         '7b9b13', '7#9b13', '7b9#11', '7#9#11', '7#11b13',
-        'maj7#5', 'maj7b5', 'maj7#11', 'maj7#5#11', 'm9b5'
+        'maj7#5', 'maj7b5', 'maj7#11', 'maj7#5#11', 
+    'mmaj7#11',
+    'm9b5'
       ];
       
       allQualities.forEach(quality => {
-        // Exclure D# et A# pour toutes les qualités sauf mineures (m, m7, m6, m9, m11, m13, m7b5, m6/9, m9b5)
-        const isMinorQuality = quality === 'm' || quality.startsWith('m7') || quality.startsWith('m6') || 
-                               quality.startsWith('m9') || quality.startsWith('m11') || quality.startsWith('m13') ||
-                               quality === 'm7b5' || quality === 'm6/9' || quality === 'm9b5' || quality === 'dim' || 
-                               quality === 'dim7' || quality === 'ø7';
-        const isDSharpOrASharp = (rootNote === 'D' && alt === '#') || (rootNote === 'A' && alt === '#');
-        
-        if (isDSharpOrASharp && !isMinorQuality) {
-          return; // Skip this chord
-        }
-        
         const chordName = fullRoot + quality;
         const intervals = getIntervals(quality);
         let notes = intervals.map(interval => {
@@ -459,6 +465,7 @@ function generateAllChords() {
         
         chords[chordName] = {
           notation: chordName,
+          displayNotation: formatChordNotation(chordName),
           nomFrancais: `${fullRoot} ${quality}`,
           notes: notes.map(n => n.note),
           notesFr: notes.map(n => NOTE_FR[n.displayNote] || n.displayNote),
