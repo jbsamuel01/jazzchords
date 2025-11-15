@@ -167,6 +167,45 @@ function initializeUI() {
   
   qualitiesDiv.appendChild(maj7Container);
   
+  // Groupe spécial pour M9/Δ9/maj9 : M9 et Δ9 côte à côte en haut, maj9 en dessous
+  const maj9Container = document.createElement('div');
+  maj9Container.style.display = 'grid';
+  maj9Container.style.gridTemplateColumns = '1fr 1fr';
+  maj9Container.style.gridTemplateRows = 'auto auto';
+  maj9Container.style.border = '1px solid #22c55e';
+  maj9Container.style.borderRadius = '4px';
+  maj9Container.style.overflow = 'hidden';
+  maj9Container.style.background = '#1e2638';
+  
+  // M9 (en haut à gauche)
+  const m9Btn = document.createElement('button');
+  m9Btn.className = 'mini-key stacked';
+  m9Btn.textContent = 'M9';
+  m9Btn.dataset.value = 'maj9';
+  m9Btn.style.borderRight = '1px solid #374151';
+  m9Btn.style.borderBottom = '1px solid #374151';
+  m9Btn.onclick = () => selectQuality('maj9');
+  maj9Container.appendChild(m9Btn);
+  
+  // Δ9 (en haut à droite)
+  const delta9Btn = document.createElement('button');
+  delta9Btn.className = 'mini-key stacked';
+  delta9Btn.textContent = 'Δ9';
+  delta9Btn.dataset.value = 'maj9';
+  delta9Btn.style.borderBottom = '1px solid #374151';
+  delta9Btn.onclick = () => selectQuality('maj9');
+  maj9Container.appendChild(delta9Btn);
+  
+  // maj9 (en bas, s'étend sur les 2 colonnes)
+  const maj9Btn = document.createElement('button');
+  maj9Btn.className = 'mini-key stacked';
+  maj9Btn.textContent = 'maj9';
+  maj9Btn.dataset.value = 'maj9';
+  maj9Btn.style.gridColumn = '1 / 3';
+  maj9Btn.onclick = () => selectQuality('maj9');
+  maj9Container.appendChild(maj9Btn);
+  
+  qualitiesDiv.appendChild(maj9Container);
   
   // Grand groupe CARRÉ pour M7#5/maj7#5 + +M7/+maj7 (2x2 grid)
   const maj7Sharp5Container = document.createElement('div');
