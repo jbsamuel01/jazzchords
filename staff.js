@@ -54,7 +54,7 @@ function drawMusicalStaff(notes, chordNotation = '') {
   const armatureStartX = 30;
 //   drawKeySignature(svg, armatureStartX, staffY, lineSpacing, keySignature);
   
-  const noteX = 62; // Position après la clé de sol (décalé vers la droite)
+  const noteX = 66; // Position après la clé de sol (décalé vers la droite de 4px)
   
   // Trier les notes de la plus haute à la plus basse
   const sortedNotes = [...notes].sort((a, b) => {

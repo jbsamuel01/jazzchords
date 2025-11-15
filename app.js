@@ -623,7 +623,7 @@ function displayDetectedChord(chord, chordExists = null) {
   
   if (!chord) {
     chordName.textContent = '-';
-    chordName.style.color = '#22c55e';
+    chordName.style.color = '#ffffff';
     chordNotesList.innerHTML = '<span class="empty-state">-</span>';
     chordNotesMessage.innerHTML = '';
     toggleBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -643,7 +643,7 @@ function displayDetectedChord(chord, chordExists = null) {
     drawMusicalStaff([]);
   } else {
     chordName.textContent = (chord.displayNotation || chord.notation) + ' :';
-    chordName.style.color = '#22c55e';
+    chordName.style.color = '#ffffff';
     
     if (chordNotesVisible === false) {
       chordNotesList.innerHTML = '';
