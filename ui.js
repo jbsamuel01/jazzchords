@@ -129,6 +129,7 @@ function initializeUI() {
   
   // Groupe spécial pour M7/Δ/maj7 : M7 et Δ côte à côte en haut, maj7 en dessous
   const maj7Container = document.createElement('div');
+  maj7Container.className = 'maj7-container';
   maj7Container.style.display = 'grid';
   maj7Container.style.gridTemplateColumns = '1fr 1fr';
   maj7Container.style.gridTemplateRows = 'auto auto';

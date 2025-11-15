@@ -642,7 +642,7 @@ function displayDetectedChord(chord, chordExists = null) {
     chordNotesMessage.innerHTML = '';
     drawMusicalStaff([]);
   } else {
-    chordName.textContent = chord.displayNotation || chord.notation;
+    chordName.textContent = (chord.displayNotation || chord.notation) + ' :';
     chordName.style.color = '#22c55e';
     
     if (chordNotesVisible === false) {
