@@ -9,11 +9,11 @@ function createKeyboard() {
   const whiteKeysDiv = document.createElement('div');
   whiteKeysDiv.className = 'white-keys';
   
-  // 22 touches blanches (F3 à F6)
-  // F3, G3, A3, B3 (octave 3) puis C4-B4, C5-B5, C6-F6
+  // 20 touches blanches (A3 à F6)
+  // A3, B3 (octave 3) puis C4-B4, C5-B5, C6-F6
   const startOctave = 3;
-  const startNoteIndex = 3; // F = index 3 dans WHITE_KEYS ['C', 'D', 'E', 'F', 'G', 'A', 'B']
-  const totalKeys = 22;
+  const startNoteIndex = 5; // A = index 5 dans WHITE_KEYS ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+  const totalKeys = 20;
   
   for (let i = 0; i < totalKeys; i++) {
     const absoluteNoteIndex = startNoteIndex + i;
@@ -46,11 +46,14 @@ function createKeyboard() {
     
     if (blackKey) {
       const fullNote = blackKey + octave;
-      const key = document.createElement('button');
-      key.className = 'black-key';
-      key.dataset.note = fullNote;
-      key.onclick = () => window.playNote(fullNote);
-      container.appendChild(key);
+      // Ne pas créer la touche F#6
+      if (fullNote !== 'F#6') {
+        const key = document.createElement('button');
+        key.className = 'black-key';
+        key.dataset.note = fullNote;
+        key.onclick = () => window.playNote(fullNote);
+        container.appendChild(key);
+      }
     }
     
     blackKeysDiv.appendChild(container);
