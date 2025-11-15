@@ -395,8 +395,8 @@ function generateAllChords() {
       
       // Vérifier si c'est Cb
       const isCb = (rootNote === 'C' && alt === 'b');
-      // Vérifier si c'est A ou B (ou Ab, A#, Bb, B#) pour descendre d'une octave
-      const isAorB = (rootNote === 'A' || rootNote === 'B');
+      // Vérifier si c'est A ou B (sauf Ab qui doit s'afficher comme G#) pour descendre d'une octave
+      const isAorB = ((rootNote === 'A' && alt !== 'b') || rootNote === 'B');
       
       // Ajouter l'accord majeur
       const majorIntervals = getIntervals('');
