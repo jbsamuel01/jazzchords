@@ -9,11 +9,11 @@ function createKeyboard() {
   const whiteKeysDiv = document.createElement('div');
   whiteKeysDiv.className = 'white-keys';
   
-  // 20 touches blanches (G3 à E6)
-  // G3, A3, B3 (octave 3) puis C4-B4, C5-B5, C6-E6
+  // 22 touches blanches (F3 à F6)
+  // F3, G3, A3, B3 (octave 3) puis C4-B4, C5-B5, C6-F6
   const startOctave = 3;
-  const startNoteIndex = 4; // G = index 4 dans WHITE_KEYS ['C', 'D', 'E', 'F', 'G', 'A', 'B']
-  const totalKeys = 20;
+  const startNoteIndex = 3; // F = index 3 dans WHITE_KEYS ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+  const totalKeys = 22;
   
   for (let i = 0; i < totalKeys; i++) {
     const absoluteNoteIndex = startNoteIndex + i;

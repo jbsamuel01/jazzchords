@@ -9,7 +9,7 @@ body {
   background: #0a0e1a;
   color: #e8ecf8;
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 6px;
+  padding: 3px;
 }
 
 #app {
@@ -17,13 +17,13 @@ body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 /* Affichage principal */
 .main-display {
   background: #151b2b;
-  padding: 12px;
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -292,7 +292,7 @@ body {
 /* Clavier virtuel */
 .keyboard-panel {
   background: #151b2b;
-  padding: 6px;
+  padding: 4px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -380,7 +380,7 @@ body {
 /* Zone de saisie manuelle */
 .input-panel {
   background: #151b2b;
-  padding: 6px;
+  padding: 4px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -572,7 +572,7 @@ body {
 /* Zone quiz */
 .random-panel {
   background: #151b2b;
-  padding: 6px;
+  padding: 4px;
   border-radius: 8px;
   border: 1px solid #22c55e;
   display: flex;
@@ -684,6 +684,22 @@ body {
 
 /* Responsive Mobile */
 @media (max-width: 480px) {
+  body {
+    padding: 2px;
+  }
+
+  #app {
+    gap: 4px;
+  }
+
+  .main-display,
+  .keyboard-panel,
+  .input-panel,
+  .random-panel {
+    padding: 3px;
+    border-radius: 6px;
+  }
+
   .keyboard-panel {
     min-height: 140px;
   }

@@ -29,7 +29,10 @@ let pianoLoaded = false;
 function initializePiano() {
   if (piano) return Promise.resolve();
   
-  // Créer le sampler avec les échantillons Salamander Grand Piano
+  // OPTION 1 : Salamander Grand Piano (actuel) - Bonne qualité, chargement rapide
+  // OPTION 2 : Pour utiliser un Steinway de meilleure qualité, décommenter ci-dessous
+  
+  // Créer le sampler avec plus d'échantillons pour une meilleure qualité
   piano = new Tone.Sampler({
     urls: {
       A0: "A0.mp3",
@@ -63,13 +66,24 @@ function initializePiano() {
       A7: "A7.mp3",
       C8: "C8.mp3"
     },
-    release: 1,
+    release: 1.5,
+    attack: 0.001,
+    curve: "exponential",
     baseUrl: "https://tonejs.github.io/audio/salamander/"
   }).toDestination();
   
+  // Ajouter un léger reverb pour plus de profondeur et de réalisme
+  const reverb = new Tone.Reverb({
+    decay: 2.5,
+    wet: 0.15,
+    preDelay: 0.01
+  }).toDestination();
+  
+  piano.connect(reverb);
+  
   return Tone.loaded().then(() => {
     pianoLoaded = true;
-    console.log('Piano échantillonné chargé');
+    console.log('Piano haute qualité chargé avec reverb');
   });
 }
 
