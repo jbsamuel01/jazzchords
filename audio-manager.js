@@ -107,16 +107,24 @@ function getAudioContext() {
   return audioContext;
 }
 
-function playNoteSound(note, duration = 1.0, startTime = 0) {
+function playNoteSound(note, duration = 1.0, startTime = 0, transpose = 0) {
+  // Transposer la note si demandé
+  let finalNote = note;
+  if (transpose !== 0) {
+    const noteWithoutOctave = note.replace(/\d+$/, '');
+    const octave = parseInt(note.match(/\d+$/)?.[0] || '4');
+    finalNote = noteWithoutOctave + (octave + transpose);
+  }
+  
   // Initialiser le piano si ce n'est pas déjà fait (pour les clics sur le clavier)
   if (!piano) {
     initializePiano().then(() => {
       if (Tone.context.state !== 'running') {
         Tone.start().then(() => {
-          playNoteSound(note, duration, startTime);
+          playNoteSound(note, duration, startTime, transpose);
         });
       } else {
-        playNoteSound(note, duration, startTime);
+        playNoteSound(note, duration, startTime, transpose);
       }
     });
     return;
@@ -126,12 +134,12 @@ function playNoteSound(note, duration = 1.0, startTime = 0) {
   if (Tone.context.state !== 'running') {
     Tone.start().then(() => {
       const now = Tone.now();
-      piano.triggerAttackRelease(note, duration, now + startTime);
+      piano.triggerAttackRelease(finalNote, duration, now + startTime);
     });
   } else {
     // Jouer la note avec le piano échantillonné
     const now = Tone.now();
-    piano.triggerAttackRelease(note, duration, now + startTime);
+    piano.triggerAttackRelease(finalNote, duration, now + startTime);
   }
 }
 

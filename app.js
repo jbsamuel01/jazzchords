@@ -36,26 +36,26 @@ window.playChord = async function() {
   let notesToPlay = [];
   
   if (quizMode && quizChord) {
-    notesToPlay = quizChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (3 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
+    notesToPlay = quizChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
   } else if (lastSelectedChordName) {
     const chord = ALL_CHORDS[lastSelectedChordName];
     if (chord) {
-      notesToPlay = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (3 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
+      notesToPlay = chord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
     }
   } else {
     // Détecter l'accord depuis les notes jouées au clavier
     const detectedChord = detectChord(playedNotes);
     if (detectedChord && detectedChord.name !== 'Inconnu' && detectedChord.notesWithOctave) {
-      notesToPlay = detectedChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (3 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
+      notesToPlay = detectedChord.notesWithOctave.map(n => (n.noteForKeyboard || n.note) + (4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave)));
     }
   }
   
   if (notesToPlay.length > 0) {
     notesToPlay.forEach((note, index) => {
-      playNoteSound(note, 0.6, index * 0.15);
+      playNoteSound(note, 0.6, index * 0.22, -1);
     });
     notesToPlay.forEach((note, index) => {
-      playNoteSound(note, 2.5, notesToPlay.length * 0.15 + 0.2 + index * 0.05);
+      playNoteSound(note, 2.5, notesToPlay.length * 0.22 + 0.2 + index * 0.05, -1);
     });
   }
 };
@@ -66,7 +66,7 @@ window.playNote = function(note) {
     playedNotes.splice(index, 1);
   } else {
     playedNotes.push(note);
-    playNoteSound(note, 1.0);
+    playNoteSound(note, 1.0, 0, -1);
   }
   updateDisplay();
 };
@@ -409,6 +409,10 @@ function startQuizMode() {
     if (name.startsWith('D#') || name.startsWith('A#')) {
       const isMinor = name.includes('m') || name.includes('dim') || name.includes('ø');
       if (!isMinor) return false;
+    }
+    // Exclure les accords maj11 et mmaj11 (trop rares)
+    if (name.includes('maj11') || name.includes('mmaj11')) {
+      return false;
     }
     return chord.notes.length === randomNoteCount;
   });

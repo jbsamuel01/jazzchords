@@ -444,21 +444,25 @@ body {
 }
 
 .mini-key-root {
-  font-size: 20px;
-  min-width: 34px;
-  padding: 8px 6px;
+  font-size: 24px;
+  min-width: 40px;
+  padding: 10px 8px;
 }
 
 .mini-key-alteration {
-  font-size: 20px;
-  min-width: 34px;
-  padding: 8px 6px;
+  font-size: 24px;
+  min-width: 40px;
+  padding: 10px 8px;
 }
 
 .mini-key-sus {
   font-size: 13px;
   min-width: 24px;
   padding: 5px 3px;
+}
+
+.delta-btn {
+  padding: 2px 1px !important;
 }
 
 .mini-key-compact {
@@ -655,15 +659,15 @@ body {
   }
   
   .mini-key-root {
-    font-size: 16px;
-    min-width: 26px;
-    padding: 5px 4px;
+    font-size: 20px;
+    min-width: 32px;
+    padding: 7px 5px;
   }
   
   .mini-key-alteration {
-    font-size: 16px;
-    min-width: 26px;
-    padding: 5px 4px;
+    font-size: 20px;
+    min-width: 32px;
+    padding: 7px 5px;
   }
   
   .mini-key.stacked {
@@ -716,15 +720,15 @@ body {
   }
   
   .mini-key-root {
-    font-size: 14px;
-    min-width: 22px;
-    padding: 4px 3px;
+    font-size: 18px;
+    min-width: 28px;
+    padding: 6px 4px;
   }
   
   .mini-key-alteration {
-    font-size: 14px;
-    min-width: 22px;
-    padding: 4px 3px;
+    font-size: 18px;
+    min-width: 28px;
+    padding: 6px 4px;
   }
   
   .mini-key.stacked {
