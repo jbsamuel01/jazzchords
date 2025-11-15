@@ -461,14 +461,6 @@ body {
   padding: 5px 3px;
 }
 
-.maj7-container {
-  max-width: 55px;
-}
-
-.maj7-container .mini-key.stacked {
-  padding: 2px 0px !important;
-}
-
 .mini-key-compact {
   padding: 3px 2px !important;
   min-height: auto !important;
@@ -681,14 +673,6 @@ body {
     line-height: 1;
   }
 
-  .maj7-container {
-    max-width: 48px;
-  }
-
-  .maj7-container .mini-key.stacked {
-    padding: 2px 0px !important;
-  }
-
   .input-row {
     gap: 2px;
   }
@@ -748,14 +732,6 @@ body {
     font-size: 10px;
     min-height: 14px;
     line-height: 1;
-  }
-
-  .maj7-container {
-    max-width: 42px;
-  }
-
-  .maj7-container .mini-key.stacked {
-    padding: 2px 0px !important;
   }
 
   #chordName {
