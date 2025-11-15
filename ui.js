@@ -150,7 +150,7 @@ function initializeUI() {
   
   // Δ (en haut à droite)
   const deltaBtn = document.createElement('button');
-  deltaBtn.className = 'mini-key stacked delta-btn';
+  deltaBtn.className = 'mini-key stacked';
   deltaBtn.textContent = 'Δ';
   deltaBtn.dataset.value = 'maj7';
   deltaBtn.style.borderBottom = '1px solid #374151';

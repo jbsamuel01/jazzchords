@@ -462,12 +462,11 @@ body {
 }
 
 .maj7-container {
-  max-width: 70px;
+  max-width: 55px;
 }
 
-.delta-btn {
+.maj7-container .mini-key.stacked {
   padding: 2px 0px !important;
-  font-size: 10px !important;
 }
 
 .mini-key-compact {
@@ -683,12 +682,11 @@ body {
   }
 
   .maj7-container {
-    max-width: 60px;
+    max-width: 48px;
   }
 
-  .delta-btn {
-    padding: 1px 0px !important;
-    font-size: 9px !important;
+  .maj7-container .mini-key.stacked {
+    padding: 2px 0px !important;
   }
 
   .input-row {
@@ -753,12 +751,11 @@ body {
   }
 
   .maj7-container {
-    max-width: 50px;
+    max-width: 42px;
   }
 
-  .delta-btn {
-    padding: 1px 0px !important;
-    font-size: 8px !important;
+  .maj7-container .mini-key.stacked {
+    padding: 2px 0px !important;
   }
 
   #chordName {
