@@ -29,6 +29,8 @@ let pianoLoaded = false;
 function initializePiano() {
   if (piano) return Promise.resolve();
   
+  console.log('🎹 Chargement du piano en cours...');
+  
   // OPTION 1 : Salamander Grand Piano (actuel) - Bonne qualité, chargement rapide
   // OPTION 2 : Pour utiliser un Steinway de meilleure qualité, décommenter ci-dessous
   
@@ -83,8 +85,41 @@ function initializePiano() {
   
   return Tone.loaded().then(() => {
     pianoLoaded = true;
-    console.log('Piano haute qualité chargé avec reverb');
+    console.log('✅ Piano haute qualité chargé avec reverb');
   });
+}
+
+// Précharger le piano au chargement de la page
+function preloadAudio() {
+  // Attendre que l'utilisateur interagisse avec la page (nécessaire pour iOS/Safari)
+  const startAudio = () => {
+    if (!piano) {
+      initializePiano().then(() => {
+        // Déclencher Tone.js au premier clic/touch
+        if (Tone.context.state !== 'running') {
+          Tone.start().then(() => {
+            console.log('🔊 Audio débloqué et prêt');
+          });
+        }
+      });
+    }
+    // Retirer les listeners après la première interaction
+    document.removeEventListener('click', startAudio);
+    document.removeEventListener('touchstart', startAudio);
+    document.removeEventListener('keydown', startAudio);
+  };
+  
+  // Ajouter les listeners pour la première interaction
+  document.addEventListener('click', startAudio, { once: true });
+  document.addEventListener('touchstart', startAudio, { once: true });
+  document.addEventListener('keydown', startAudio, { once: true });
+}
+
+// Lancer le préchargement dès que le DOM est prêt
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', preloadAudio);
+} else {
+  preloadAudio();
 }
 
 
@@ -116,8 +151,8 @@ function playNoteSound(note, duration = 1.0, startTime = 0, transpose = 0) {
     finalNote = noteWithoutOctave + (octave + transpose);
   }
   
-  // Initialiser le piano si ce n'est pas déjà fait (pour les clics sur le clavier)
-  if (!piano) {
+  // Si le piano n'est pas encore chargé, l'initialiser d'abord
+  if (!piano || !pianoLoaded) {
     initializePiano().then(() => {
       if (Tone.context.state !== 'running') {
         Tone.start().then(() => {
@@ -130,14 +165,14 @@ function playNoteSound(note, duration = 1.0, startTime = 0, transpose = 0) {
     return;
   }
   
-  // Démarrer Tone.js au premier clic si nécessaire
+  // Démarrer Tone.js si nécessaire (première interaction)
   if (Tone.context.state !== 'running') {
     Tone.start().then(() => {
       const now = Tone.now();
       piano.triggerAttackRelease(finalNote, duration, now + startTime);
     });
   } else {
-    // Jouer la note avec le piano échantillonné
+    // Jouer la note avec le piano échantillonné (cas normal, le plus rapide)
     const now = Tone.now();
     piano.triggerAttackRelease(finalNote, duration, now + startTime);
   }
