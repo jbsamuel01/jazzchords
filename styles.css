@@ -361,7 +361,7 @@ body {
 }
 
 .white-key.active {
-  background: #22c55e;
+  background: #22c55e !important;
 }
 
 .black-keys {
@@ -398,8 +398,8 @@ body {
 }
 
 .black-key.active {
-  background: #16a34a;
-  border-color: #16a34a;
+  background: #16a34a !important;
+  border-color: #16a34a !important;
 }
 
 /* Zone de saisie manuelle */
