@@ -2,21 +2,6 @@
 // Correction v2.1 : utilisation de noteForKeyboard pour le clavier
 
 let playedNotes = [];
-
-// Fonction pour trier les notes par hauteur croissante (grave → aigu)
-function sortNotesByPitch(notes) {
-  return [...notes].sort((a, b) => {
-    const octaveA = parseInt(a.match(/[0-9]/)?.[0] || '4');
-    const octaveB = parseInt(b.match(/[0-9]/)?.[0] || '4');
-    
-    if (octaveA !== octaveB) return octaveA - octaveB;
-    
-    const noteOrder = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
-    const noteA = a.replace(/[0-9]/g, '');
-    const noteB = b.replace(/[0-9]/g, '');
-    return noteOrder.indexOf(noteA) - noteOrder.indexOf(noteB);
-  });
-}
 let selectedRootNote = '';
 let selectedAlteration = '';
 let selectedMinor = false;
@@ -559,194 +544,45 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      // En mode quiz : vérifier les intervalles relatifs (peu importe l'octave de départ)
-      // En mode libre : vérifier seulement la note de base (sans octave)
-      let chordNotesWithOctave = [];
-      let chordNotes = [];
-      
-      if (quizMode) {
-        // Mode quiz : obtenir les notes de base et les intervalles de l'accord
-        chordNotes = quizChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
-      } else {
-        // Mode libre : notes de base seulement
-        chordNotes = currentChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
-      }
-      
+      // CORRECTION v2.1 : utiliser noteForKeyboard pour la comparaison
+      const chordNotes = quizMode 
+        ? quizChord.notesWithOctave.map(n => n.noteForKeyboard || n.note)
+        : currentChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
       
       let allCorrect = true;
       
-      // Trier les notes par hauteur croissante avant affichage
-      const sortedPlayedNotes = sortNotesByPitch(playedNotes);
-      
-      // Compter les occurrences de chaque note de base pour détecter les doublons
-      const noteOccurrences = new Map();
-      
-      // Fonction pour convertir une note en position chromatique absolue
-      const getNotePosition = (note) => {
-        const noteName = note.replace(/[0-9]/g, '');
-        const octave = parseInt(note.match(/[0-9]/)?.[0] || '4');
-        const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-        
-        let semitone = sharpNotes.indexOf(noteName);
-        if (semitone === -1) {
-          semitone = flatNotes.indexOf(noteName);
-        }
-        return octave * 12 + semitone;
-      };
-      
-      // En mode quiz, calculer les intervalles attendus de l'accord
-      let expectedIntervals = [];
-      if (quizMode && sortedPlayedNotes.length > 0) {
-        // Calculer les intervalles de l'accord quiz (en demi-tons)
-        const quizNotesPositions = quizChord.notesWithOctave.map(n => {
-          const noteName = n.noteForKeyboard || n.note;
-          const octave = 4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave);
-          const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-          const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+      const notesHTML = playedNotes
+        .map(note => {
+          const noteName = note.replace(/[0-9]/g, '');
+          const noteFr = getPlayedNoteFrenchName(note, currentChord);
           
-          let semitone = sharpNotes.indexOf(noteName);
-          if (semitone === -1) {
-            semitone = flatNotes.indexOf(noteName);
+          const isCorrect = chordNotes.includes(noteName);
+          const colorClass = isCorrect ? 'correct' : 'incorrect';
+          
+          if (!isCorrect) {
+            allCorrect = false;
           }
-          return octave * 12 + semitone;
-        });
-        
-        const quizBasePosition = Math.min(...quizNotesPositions);
-        expectedIntervals = quizNotesPositions.map(pos => pos - quizBasePosition).sort((a, b) => a - b);
-        
-        // Créer un mapping intervalle exact -> nom théorique de la note
-        // La clé est l'intervalle exact, la valeur est le nom théorique
-        const intervalToTheoreticalName = new Map();
-        quizChord.notesWithOctave.forEach((n, idx) => {
-          const noteName = n.noteForKeyboard || n.note;
-          const octave = 4 + (n.noteForKeyboardOctave !== undefined ? n.noteForKeyboardOctave : n.octave);
-          const sharpNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-          const flatNotes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
           
-          let semitone = sharpNotes.indexOf(noteName);
-          if (semitone === -1) {
-            semitone = flatNotes.indexOf(noteName);
-          }
-          const position = octave * 12 + semitone;
-          const interval = position - quizBasePosition;
-          
-          // Utiliser displayNote pour le nom théorique (ex: C## au lieu de D)
-          const theoreticalName = n.displayNote;
-          
-          // Stocker le mapping intervalle -> nom théorique
-          // Un même intervalle ne peut avoir qu'un seul nom théorique
-          intervalToTheoreticalName.set(interval, theoreticalName);
-        });
-        
-        // Calculer les intervalles des notes jouées
-        const playedPositions = sortedPlayedNotes.map(getNotePosition);
-        const playedBasePosition = Math.min(...playedPositions);
-        const playedIntervals = playedPositions.map(pos => pos - playedBasePosition).sort((a, b) => a - b);
-        
-        // Pour détecter les répétitions, on suit quels intervalles exacts ont été utilisés
-        const usedIntervals = new Set();
-        
-        const notesHTML = sortedPlayedNotes
-          .map(note => {
-            const noteName = note.replace(/[0-9]/g, '');
-            
-            // Calculer l'intervalle de cette note par rapport à la plus basse jouée
-            const notePosition = getNotePosition(note);
-            const interval = notePosition - playedBasePosition;
-            
-            // Vérifier si cet intervalle existe dans l'accord attendu
-            const isIntervalCorrect = intervalToTheoreticalName.has(interval);
-            
-            // Obtenir le nom français correct basé sur l'intervalle
-            let noteFr;
-            if (isIntervalCorrect) {
-              const theoreticalName = intervalToTheoreticalName.get(interval);
-              const theoreticalBaseName = theoreticalName.replace(/[0-9]/g, '');
-              noteFr = NOTE_FR_SHARP[theoreticalBaseName] || theoreticalBaseName;
-            } else {
-              noteFr = NOTE_FR_SHARP[noteName] || noteName;
-            }
-            
-            // Vérifier si c'est une répétition : cet intervalle exact a déjà été joué
-            const isRepeated = usedIntervals.has(interval);
-            
-            if (isIntervalCorrect && !isRepeated) {
-              usedIntervals.add(interval);
-            }
-            
-            // Une note est correcte si l'intervalle est bon ET pas de répétition
-            const isCorrect = isIntervalCorrect && !isRepeated;
-            const colorClass = isCorrect ? 'correct' : 'incorrect';
-            
-            if (!isCorrect) {
-              allCorrect = false;
-            }
-            
-            return `<span class="note-badge ${colorClass}">${noteFr}</span>`;
-          })
-          .join(' ');
-        
-        // Vérifier le match parfait : tous les intervalles attendus sont présents exactement une fois
-        const perfectMatch = playedIntervals.length === expectedIntervals.length &&
-                            playedIntervals.every((interval, idx) => interval === expectedIntervals[idx]) &&
-                            allCorrect;
-        
-        // Afficher le pouce si match parfait
-        if (perfectMatch) {
-          playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
-        } else {
-          playedNotesDiv.innerHTML = notesHTML;
-        }
-      } else if (!quizMode) {
-        // Mode libre : validation simple par note de base
-        const notesHTML = sortedPlayedNotes
-          .map(note => {
-            const noteName = note.replace(/[0-9]/g, '');
-            const noteFr = getPlayedNoteFrenchName(note, currentChord);
-            
-            // Vérifier si la note de base est dans l'accord
-            const isInChord = chordNotes.includes(noteName);
-            
-            // Vérifier si c'est une répétition d'une note déjà jouée (même note de base)
-            const occurrenceCount = noteOccurrences.get(noteName) || 0;
-            noteOccurrences.set(noteName, occurrenceCount + 1);
-            const isRepeated = occurrenceCount > 0;
-            
-            // Une note est correcte seulement si elle est dans l'accord ET n'est pas répétée
-            const isCorrect = isInChord && !isRepeated;
-            const colorClass = isCorrect ? 'correct' : 'incorrect';
-            
-            if (!isCorrect) {
-              allCorrect = false;
-            }
-            
-            return `<span class="note-badge ${colorClass}">${noteFr}</span>`;
-          })
-          .join(' ');
-        
-        // Vérifier le match parfait en mode libre
-        const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
-        const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
-        
-        if (perfectMatch && !chordNotesVisible) {
-          playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
-        } else {
-          playedNotesDiv.innerHTML = notesHTML;
-        }
+          return `<span class="note-badge ${colorClass}">${noteFr}</span>`;
+        })
+        .join(' ');
+      
+      const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
+      const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
+      
+      // Afficher le pouce seulement si les notes ont été jouées manuellement
+      if (perfectMatch && (!chordNotesVisible || quizMode)) {
+        playedNotesDiv.innerHTML = notesHTML + ' <span class="success-indicator">👍</span>';
       } else {
-        playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
+        playedNotesDiv.innerHTML = notesHTML;
       }
     }
   } else {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      // Trier les notes par hauteur croissante avant affichage
-      const sortedPlayedNotes = sortNotesByPitch(playedNotes);
-      
-      const notesHTML = sortedPlayedNotes
+      const notesHTML = playedNotes
         .map(note => {
           const noteFr = getPlayedNoteFrenchName(note, currentChord);
           return `<span class="note-badge">${noteFr}</span>`;
