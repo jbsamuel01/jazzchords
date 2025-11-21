@@ -4,6 +4,22 @@
   box-sizing: border-box;
 }
 
+/* Forcer le mode clair sur tous les éléments (spécial Samsung Internet) */
+*,
+*::before,
+*::after {
+  color-scheme: light only !important;
+  -webkit-color-scheme: light only !important;
+}
+
+/* Empêcher l'inversion des couleurs forcée par Samsung Internet */
+html {
+  color-scheme: light only !important;
+  -webkit-color-scheme: light only !important;
+  forced-color-adjust: none !important;
+  -webkit-forced-color-adjust: none !important;
+}
+
 body {
   min-height: 100vh;
   background: #0a0e1a;
