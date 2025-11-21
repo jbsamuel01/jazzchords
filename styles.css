@@ -333,12 +333,14 @@ body {
 
 .white-key {
   flex: 1;
-  background: #ffffff;
+  background: #ffffff !important;
   border: 1px solid #000;
   border-radius: 0 0 3px 3px;
   cursor: pointer;
   position: relative;
   transition: all 0.1s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .white-key.active {
