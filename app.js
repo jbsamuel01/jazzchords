@@ -502,6 +502,45 @@ function resetNotes() {
   lastResetTime = now;
 }
 
+function noteToSemitone(note) {
+  const semitoneMap = {
+    'C': 0, 'B#': 0,
+    'C#': 1, 'Db': 1,
+    'D': 2,
+    'D#': 3, 'Eb': 3,
+    'E': 4, 'Fb': 4,
+    'E#': 5, 'F': 5,
+    'F#': 6, 'Gb': 6,
+    'G': 7,
+    'G#': 8, 'Ab': 8,
+    'A': 9,
+    'A#': 10, 'Bb': 10,
+    'B': 11, 'Cb': 11
+  };
+  return semitoneMap[note] ?? -1;
+}
+
+function isEnharmonicallyIncluded(note, noteArray) {
+  const noteSemitone = noteToSemitone(note);
+  if (noteSemitone === -1) return false;
+  
+  return noteArray.some(n => noteToSemitone(n) === noteSemitone);
+}
+
+function getNoteValue(noteWithOctave) {
+  const noteName = noteWithOctave.replace(/[0-9]/g, '');
+  const octave = parseInt(noteWithOctave.match(/[0-9]/)?.[0] || '4');
+  const semitone = noteToSemitone(noteName);
+  
+  if (semitone === -1) return 0;
+  
+  return octave * 12 + semitone;
+}
+
+function sortNotesByPitch(notes) {
+  return notes.slice().sort((a, b) => getNoteValue(a) - getNoteValue(b));
+}
+
 function getPlayedNoteFrenchName(playedNote, chord) {
   if (!chord || !chord.notesWithOctave) {
     const noteName = playedNote.replace(/[0-9]/g, '');
@@ -509,11 +548,20 @@ function getPlayedNoteFrenchName(playedNote, chord) {
   }
   
   const playedNoteName = playedNote.replace(/[0-9]/g, '');
+  const playedSemitone = noteToSemitone(playedNoteName);
   
+  if (playedSemitone === -1) {
+    return NOTE_FR_SHARP[playedNoteName] || playedNoteName;
+  }
+  
+  // Chercher la note dans l'accord en utilisant la comparaison enharmonique
   for (let i = 0; i < chord.notesWithOctave.length; i++) {
     const chordNote = chord.notesWithOctave[i];
-    // CORRECTION v2.1 : comparer avec noteForKeyboard
-    if ((chordNote.noteForKeyboard || chordNote.note) === playedNoteName) {
+    const chordNoteName = chordNote.noteForKeyboard || chordNote.note;
+    const chordSemitone = noteToSemitone(chordNoteName);
+    
+    // Comparer les semitones pour gérer l'enharmonie
+    if (chordSemitone === playedSemitone) {
       return chord.notesFr[i];
     }
   }
@@ -550,14 +598,18 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
         : currentChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
       
+      // Trier les notes jouées par ordre croissant de hauteur
+      const sortedPlayedNotes = sortNotesByPitch(playedNotes);
+      
       let allCorrect = true;
       
-      const notesHTML = playedNotes
+      const notesHTML = sortedPlayedNotes
         .map(note => {
           const noteName = note.replace(/[0-9]/g, '');
           const noteFr = getPlayedNoteFrenchName(note, currentChord);
           
-          const isCorrect = chordNotes.includes(noteName);
+          // Utiliser la comparaison enharmonique au lieu de includes()
+          const isCorrect = isEnharmonicallyIncluded(noteName, chordNotes);
           const colorClass = isCorrect ? 'correct' : 'incorrect';
           
           if (!isCorrect) {
@@ -568,7 +620,8 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
         })
         .join(' ');
       
-      const allNotesFound = chordNotes.every(note => playedBaseNotes.includes(note));
+      // Vérifier que toutes les notes de l'accord ont été jouées (avec enharmonie)
+      const allNotesFound = chordNotes.every(note => isEnharmonicallyIncluded(note, playedBaseNotes));
       const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
       
       // Afficher le pouce seulement si les notes ont été jouées manuellement
@@ -582,7 +635,10 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      const notesHTML = playedNotes
+      // Trier les notes jouées par ordre croissant de hauteur
+      const sortedPlayedNotes = sortNotesByPitch(playedNotes);
+      
+      const notesHTML = sortedPlayedNotes
         .map(note => {
           const noteFr = getPlayedNoteFrenchName(note, currentChord);
           return `<span class="note-badge">${noteFr}</span>`;
