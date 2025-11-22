@@ -3,22 +3,32 @@
 // Correction v2.3 : Normalisation enharmonique pour détecter correctement les accords mineurs
 
 // Fonction pour normaliser les notes enharmoniques (A# = Bb = semitone 10)
+// Gère aussi les doubles altérations (F## = G, Cbb = Bb, etc.)
 function noteToSemitone(note) {
-  const semitoneMap = {
-    'C': 0, 'B#': 0,
-    'C#': 1, 'Db': 1,
-    'D': 2,
-    'D#': 3, 'Eb': 3,
-    'E': 4, 'Fb': 4,
-    'E#': 5, 'F': 5,
-    'F#': 6, 'Gb': 6,
-    'G': 7,
-    'G#': 8, 'Ab': 8,
-    'A': 9,
-    'A#': 10, 'Bb': 10,
-    'B': 11, 'Cb': 11
-  };
-  return semitoneMap[note] ?? -1;
+  // Gérer les doubles altérations (## et bb) et toutes les enharmonies
+  const baseNote = note.replace(/[#b]/g, '');
+  const chromaticMap = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+  let semitone = chromaticMap[baseNote];
+  
+  if (semitone === undefined) return -1;
+  
+  // Compter les dièses et bémols
+  if (note.includes('##')) {
+    semitone += 2;
+  } else if (note.includes('#')) {
+    semitone += 1;
+  }
+  
+  if (note.includes('bb')) {
+    semitone -= 2;
+  } else if (note.includes('b') && !note.includes('bb')) {
+    semitone -= 1;
+  }
+  
+  // Normaliser le semitone dans la gamme 0-11
+  semitone = ((semitone % 12) + 12) % 12;
+  
+  return semitone;
 }
 
 // Fonction pour vérifier si deux notes sont enharmoniquement équivalentes

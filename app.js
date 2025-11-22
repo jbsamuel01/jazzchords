@@ -503,21 +503,30 @@ function resetNotes() {
 }
 
 function noteToSemitone(note) {
-  const semitoneMap = {
-    'C': 0, 'B#': 0,
-    'C#': 1, 'Db': 1,
-    'D': 2,
-    'D#': 3, 'Eb': 3,
-    'E': 4, 'Fb': 4,
-    'E#': 5, 'F': 5,
-    'F#': 6, 'Gb': 6,
-    'G': 7,
-    'G#': 8, 'Ab': 8,
-    'A': 9,
-    'A#': 10, 'Bb': 10,
-    'B': 11, 'Cb': 11
-  };
-  return semitoneMap[note] ?? -1;
+  // Gérer les doubles altérations (## et bb) et toutes les enharmonies
+  const baseNote = note.replace(/[#b]/g, '');
+  const chromaticMap = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+  let semitone = chromaticMap[baseNote];
+  
+  if (semitone === undefined) return -1;
+  
+  // Compter les dièses et bémols
+  if (note.includes('##')) {
+    semitone += 2;
+  } else if (note.includes('#')) {
+    semitone += 1;
+  }
+  
+  if (note.includes('bb')) {
+    semitone -= 2;
+  } else if (note.includes('b') && !note.includes('bb')) {
+    semitone -= 1;
+  }
+  
+  // Normaliser le semitone dans la gamme 0-11
+  semitone = ((semitone % 12) + 12) % 12;
+  
+  return semitone;
 }
 
 function isEnharmonicallyIncluded(note, noteArray) {
@@ -548,20 +557,35 @@ function getPlayedNoteFrenchName(playedNote, chord) {
   }
   
   const playedNoteName = playedNote.replace(/[0-9]/g, '');
+  const playedOctave = parseInt(playedNote.match(/[0-9]/)?.[0] || '4');
   const playedSemitone = noteToSemitone(playedNoteName);
   
   if (playedSemitone === -1) {
     return NOTE_FR_SHARP[playedNoteName] || playedNoteName;
   }
   
-  // Chercher la note dans l'accord en utilisant la comparaison enharmonique
+  // Chercher la note dans l'accord en comparant semitone ET octave
   for (let i = 0; i < chord.notesWithOctave.length; i++) {
     const chordNote = chord.notesWithOctave[i];
     // Utiliser displayNote qui contient la vraie enharmonie de l'accord (Bb, B#, etc.)
     const chordNoteName = chordNote.displayNote || chordNote.note;
     const chordSemitone = noteToSemitone(chordNoteName);
     
-    // Comparer les semitones pour gérer l'enharmonie
+    // Calculer l'octave réelle de la note dans l'accord sur le clavier
+    const chordOctaveOnKeyboard = 4 + (chordNote.noteForKeyboardOctave !== undefined ? chordNote.noteForKeyboardOctave : chordNote.octave);
+    
+    // Comparer semitone ET octave pour gérer les enharmonies à octaves différentes
+    if (chordSemitone === playedSemitone && chordOctaveOnKeyboard === playedOctave) {
+      return chord.notesFr[i];
+    }
+  }
+  
+  // Si pas de match avec octave, chercher juste par semitone (fallback pour compatibilité)
+  for (let i = 0; i < chord.notesWithOctave.length; i++) {
+    const chordNote = chord.notesWithOctave[i];
+    const chordNoteName = chordNote.displayNote || chordNote.note;
+    const chordSemitone = noteToSemitone(chordNoteName);
+    
     if (chordSemitone === playedSemitone) {
       return chord.notesFr[i];
     }
