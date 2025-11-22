@@ -1,7 +1,9 @@
-// staff.js v2.8 - Dessin de la portée musicale [BUILD 20241108-6-IPHONE-FIX]
-// Corrections v2.8 :
-// - Clé de sol agrandie sur iPhone (font-size: 50, y+9) pour être mieux visible
-// - Trois tailles responsives : Phone (≤480px: 50), Tablet (≤1024px: 42), PC (>1024px: 58)
+// staff.js v2.10 - Dessin de la portée musicale [BUILD 20241122-SAMSUNG-IOS-FIX]
+// Corrections v2.10 :
+// - Clé de sol sur iPhone : 160 (x2 car elle était trop petite)
+// - Clé de sol sur Samsung Internet Browser : 21 (÷2 car elle était trop grande)
+// - Détection spécifique pour Samsung Browser via navigator.userAgent
+// - Cinq tailles : iOS (160), Samsung (21), Android Phone (42), Tablet (42), PC (58)
 // Corrections v2.7 :
 // - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+8)
 // - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
@@ -470,22 +472,41 @@ function drawTrebleClef(svg, x, y) {
   
   // Détection de l'appareil pour ajuster la taille
   const screenWidth = window.innerWidth;
-  const isPhone = screenWidth <= 480;      // iPhone et petits mobiles
-  const isTablet = screenWidth <= 1024 && !isPhone;  // Tablettes
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSamsungBrowser = /SamsungBrowser/i.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isPhone = screenWidth <= 480;
+  const isTablet = screenWidth <= 1024 && !isPhone;
   
   console.log('=== TREBLE CLEF DEBUG ===');
   console.log('Screen width:', screenWidth);
+  console.log('User Agent:', navigator.userAgent);
+  console.log('Is iOS:', isIOS);
+  console.log('Is Samsung Browser:', isSamsungBrowser);
+  console.log('Is Android:', isAndroid);
   console.log('Is Phone:', isPhone);
   console.log('Is Tablet:', isTablet);
   
-  if (isPhone) {
-    // iPhone et petits mobiles : taille 50 (augmentée de 38 à 50)
-    const yPos = y + 9;
+  if (isIOS) {
+    // iPhone/iPad : taille 160 (multipliée par 2 car trop petite)
+    const yPos = y + 18;
     clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '50');
-    console.log('PHONE MODE: y=' + yPos + ', font-size=50');
+    clef.setAttribute('font-size', '160');
+    console.log('iOS MODE: y=' + yPos + ', font-size=160');
+  } else if (isSamsungBrowser && isAndroid) {
+    // Samsung Internet Browser : taille 21 (divisée par 2 car trop grande)
+    const yPos = y + 7;
+    clef.setAttribute('y', yPos);
+    clef.setAttribute('font-size', '21');
+    console.log('SAMSUNG BROWSER MODE: y=' + yPos + ', font-size=21');
+  } else if (isPhone || (isAndroid && screenWidth <= 768)) {
+    // Petits mobiles Android : taille normale 42
+    const yPos = y + 10;
+    clef.setAttribute('y', yPos);
+    clef.setAttribute('font-size', '42');
+    console.log('ANDROID PHONE MODE: y=' + yPos + ', font-size=42');
   } else if (isTablet) {
-    // Tablette : taille 42
+    // Tablette Android : taille 42
     const yPos = y + 10;
     clef.setAttribute('y', yPos);
     clef.setAttribute('font-size', '42');
