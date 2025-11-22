@@ -51,42 +51,45 @@ function detectChord(notes) {
   
   // Fonction pour mapper les notes théoriques de l'accord aux notes jouées (avec leurs octaves réels)
   function mapChordToPlayedNotes(chord) {
-    const mappedNotesWithOctave = chord.notesWithOctave.map(theoreticalNote => {
-      // Chercher la note jouée qui correspond à cette note théorique
-      // On compare via noteForKeyboard car c'est ce qui est utilisé pour le clavier
-      const noteToMatch = theoreticalNote.noteForKeyboard || theoreticalNote.note;
+    // Trouver la fondamentale de l'accord (première note)
+    const rootNote = chord.notesWithOctave[0];
+    const rootNoteToMatch = rootNote.noteForKeyboard || rootNote.note;
+    
+    // Trouver la note jouée correspondant à la fondamentale
+    const playedRootNote = notesWithOctave.find(pn => areNotesEnharmonic(pn.base, rootNoteToMatch));
+    
+    // Calculer l'écart d'octave entre la note jouée et l'octave théorique de la fondamentale
+    let octaveOffset = 0;
+    if (playedRootNote) {
+      // L'octave théorique absolu de la fondamentale dans l'accord
+      // (octave relatif + octave de référence 4)
+      const theoreticalRootOctave = 4 + rootNote.octave;
       
-      // Trouver la note jouée correspondante en utilisant la comparaison enharmonique
-      const playedNote = notesWithOctave.find(pn => areNotesEnharmonic(pn.base, noteToMatch));
-      
-      if (playedNote) {
-        // Calculer l'octave relatif en tenant compte de l'enharmonie
-        // Si la note théorique est B# ou E# (qui se jouent comme C ou F),
-        // il faut ajuster l'octave car B#4 = C5, E#4 = F5
-        let adjustedOctave = playedNote.octave;
-        
-        // Si displayNote contient un # sur B ou E, c'est un cas enharmonique ascendant
-        if ((theoreticalNote.displayNote.startsWith('B') && theoreticalNote.displayNote.includes('#')) ||
-            (theoreticalNote.displayNote.startsWith('E') && theoreticalNote.displayNote.includes('#'))) {
-          // B#4 se joue comme C5, donc si on joue C5, l'octave théorique est 4
-          adjustedOctave = playedNote.octave - 1;
-        }
-        // Si displayNote contient un b sur C ou F, c'est un cas enharmonique descendant
-        else if ((theoreticalNote.displayNote.startsWith('C') && theoreticalNote.displayNote.includes('b')) ||
-                 (theoreticalNote.displayNote.startsWith('F') && theoreticalNote.displayNote.includes('b'))) {
-          // Cb4 se joue comme B3, donc si on joue B3, l'octave théorique est 4
-          adjustedOctave = playedNote.octave + 1;
-        }
-        
-        // Utiliser l'octave réel ajusté de la note jouée (mais relatif à l'octave 4)
-        return {
-          ...theoreticalNote,
-          octave: adjustedOctave - 4  // Convertir en octave relatif
-        };
+      // L'octave de la note jouée, ajusté pour les cas enharmoniques
+      let adjustedPlayedOctave = playedRootNote.octave;
+      if ((rootNote.displayNote.startsWith('B') && rootNote.displayNote.includes('#')) ||
+          (rootNote.displayNote.startsWith('E') && rootNote.displayNote.includes('#'))) {
+        // B#4 se joue comme C5, donc si on joue C5, l'octave théorique est 4
+        adjustedPlayedOctave = playedRootNote.octave - 1;
+      } else if ((rootNote.displayNote.startsWith('C') && rootNote.displayNote.includes('b')) ||
+                 (rootNote.displayNote.startsWith('F') && rootNote.displayNote.includes('b'))) {
+        // Cb4 se joue comme B3, donc si on joue B3, l'octave théorique est 4
+        adjustedPlayedOctave = playedRootNote.octave + 1;
       }
       
-      // Si pas trouvé, garder l'octave théorique
-      return theoreticalNote;
+      // L'écart entre l'octave jouée et l'octave théorique
+      octaveOffset = adjustedPlayedOctave - theoreticalRootOctave;
+    }
+    
+    // Appliquer cet écart à toutes les notes de l'accord
+    const mappedNotesWithOctave = chord.notesWithOctave.map(theoreticalNote => {
+      return {
+        ...theoreticalNote,
+        octave: theoreticalNote.octave + octaveOffset,
+        noteForKeyboardOctave: (theoreticalNote.noteForKeyboardOctave !== undefined 
+          ? theoreticalNote.noteForKeyboardOctave + octaveOffset 
+          : theoreticalNote.octave + octaveOffset)
+      };
     });
     
     return {

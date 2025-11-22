@@ -52,10 +52,10 @@ window.playChord = async function() {
   
   if (notesToPlay.length > 0) {
     notesToPlay.forEach((note, index) => {
-      playNoteSound(note, 0.6, index * 0.22, -1);
+      playNoteSound(note, 0.6, index * 0.22, 0);
     });
     notesToPlay.forEach((note, index) => {
-      playNoteSound(note, 2.5, notesToPlay.length * 0.22 + 0.2 + index * 0.05, -1);
+      playNoteSound(note, 2.5, notesToPlay.length * 0.22 + 0.2 + index * 0.05, 0);
     });
   }
 };
@@ -66,7 +66,7 @@ window.playNote = function(note) {
     playedNotes.splice(index, 1);
   } else {
     playedNotes.push(note);
-    playNoteSound(note, 1.0, 0, -1);
+    playNoteSound(note, 1.0, 0, 0);
   }
   updateDisplay();
 };
