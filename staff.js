@@ -1,9 +1,7 @@
-// staff.js v2.9 - Dessin de la portée musicale [BUILD 20241122-IOS-CLEF-FIX]
-// Corrections v2.9 :
-// - Clé de sol doublée UNIQUEMENT sur iOS/iPhone (font-size: 80, y+12)
-// - Android reste à taille normale (42)
-// - Détection spécifique iOS via navigator.userAgent
-// - Quatre tailles : iOS (80), Android Phone (42), Tablet (42), PC (58)
+// staff.js v2.8 - Dessin de la portée musicale [BUILD 20241108-6-IPHONE-FIX]
+// Corrections v2.8 :
+// - Clé de sol agrandie sur iPhone (font-size: 50, y+9) pour être mieux visible
+// - Trois tailles responsives : Phone (≤480px: 50), Tablet (≤1024px: 42), PC (>1024px: 58)
 // Corrections v2.7 :
 // - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+8)
 // - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
@@ -472,32 +470,22 @@ function drawTrebleClef(svg, x, y) {
   
   // Détection de l'appareil pour ajuster la taille
   const screenWidth = window.innerWidth;
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isAndroid = /Android/.test(navigator.userAgent);
-  const isPhone = screenWidth <= 480;
-  const isTablet = screenWidth <= 1024 && !isPhone;
+  const isPhone = screenWidth <= 480;      // iPhone et petits mobiles
+  const isTablet = screenWidth <= 1024 && !isPhone;  // Tablettes
   
   console.log('=== TREBLE CLEF DEBUG ===');
   console.log('Screen width:', screenWidth);
-  console.log('Is iOS:', isIOS);
-  console.log('Is Android:', isAndroid);
   console.log('Is Phone:', isPhone);
   console.log('Is Tablet:', isTablet);
   
-  if (isIOS) {
-    // iPhone/iPad : taille 80 (doublée)
-    const yPos = y + 12;
+  if (isPhone) {
+    // iPhone et petits mobiles : taille 50 (augmentée de 38 à 50)
+    const yPos = y + 9;
     clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '80');
-    console.log('iOS MODE: y=' + yPos + ', font-size=80');
-  } else if (isPhone) {
-    // Petits mobiles Android : taille normale 42
-    const yPos = y + 10;
-    clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '42');
-    console.log('ANDROID PHONE MODE: y=' + yPos + ', font-size=42');
+    clef.setAttribute('font-size', '50');
+    console.log('PHONE MODE: y=' + yPos + ', font-size=50');
   } else if (isTablet) {
-    // Tablette Android : taille 42
+    // Tablette : taille 42
     const yPos = y + 10;
     clef.setAttribute('y', yPos);
     clef.setAttribute('font-size', '42');
