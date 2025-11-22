@@ -1,4 +1,5 @@
-// detector.js v2.3 - Détection des accords
+// detector.js v2.4 - Détection des accords
+// Correction v2.4 : PRIORITÉ ABSOLUE à la note la plus basse comme fondamentale
 // Correction v2.3 : Normalisation enharmonique pour détecter correctement les accords mineurs
 
 // Fonction pour normaliser les notes enharmoniques (A# = Bb = semitone 10)
@@ -94,70 +95,73 @@ function detectChord(notes) {
     };
   }
   
-  // Recherche exacte - priorité aux accords dont la fondamentale est la note la plus basse
-  const exactMatches = [];
+  // PRIORITÉ ABSOLUE : chercher d'abord les accords dont la fondamentale = note la plus basse
+  const matchesWithLowestAsRoot = [];
+  const matchesWithoutLowestAsRoot = [];
+  
   for (const [name, chord] of Object.entries(ALL_CHORDS)) {
     const chordSemitones = chord.notes.map(n => noteToSemitone(n)).sort((a, b) => a - b);
-    
-    // Comparer les semitones au lieu des noms de notes pour gérer l'enharmonie
-    if (chordSemitones.length === playedSemitones.length && 
-        chordSemitones.every((semitone, idx) => semitone === playedSemitones[idx])) {
-      
-      // Extraire la fondamentale de l'accord
-      const rootNote = name.match(/^[A-G][#b]?/)?.[0] || '';
-      
-      // Priorité si la fondamentale correspond à la note la plus basse (enharmoniquement)
-      if (areNotesEnharmonic(rootNote, lowestNote)) {
-        return mapChordToPlayedNotes({ name, ...chord });
-      }
-      
-      exactMatches.push({ name, ...chord, rootNote });
-    }
-  }
-  
-  // Si on a des correspondances exactes mais pas avec la basse, prendre celle avec la basse
-  if (exactMatches.length > 0) {
-    // Trier par priorité : ceux dont la basse correspond à la note la plus basse
-    exactMatches.sort((a, b) => {
-      const aHasLowest = areNotesEnharmonic(a.rootNote, lowestNote) ? 0 : 1;
-      const bHasLowest = areNotesEnharmonic(b.rootNote, lowestNote) ? 0 : 1;
-      return aHasLowest - bHasLowest;
-    });
-    return mapChordToPlayedNotes(exactMatches[0]);
-  }
-  
-  // Recherche partielle - avec priorité sur la note la plus basse
-  const matches = [];
-  for (const [name, chord] of Object.entries(ALL_CHORDS)) {
     const chordNotes = chord.notes;
-    // Vérifier si toutes les notes jouées sont enharmoniquement présentes dans l'accord
+    
+    // Extraire la fondamentale de l'accord
+    const rootNote = name.match(/^[A-G][#b]?/)?.[0] || '';
+    const hasLowestAsRoot = areNotesEnharmonic(rootNote, lowestNote);
+    
+    // Vérifier si toutes les notes jouées sont dans l'accord
     const allNotesMatch = baseNotes.every(playedNote => 
       chordNotes.some(chordNote => areNotesEnharmonic(playedNote, chordNote))
     );
     
-    if (allNotesMatch) {
-      const rootNote = name.match(/^[A-G][#b]?/)?.[0] || '';
-      const hasLowestAsRoot = areNotesEnharmonic(rootNote, lowestNote);
-      
-      matches.push({ 
-        name, 
-        ...chord, 
-        matchScore: chordNotes.length,
-        rootNote,
-        hasLowestAsRoot
-      });
+    if (!allNotesMatch) continue;
+    
+    // Vérifier si c'est une correspondance exacte (même nombre de notes)
+    const isExactMatch = chordSemitones.length === playedSemitones.length && 
+                        chordSemitones.every((semitone, idx) => semitone === playedSemitones[idx]);
+    
+    // Calculer le score : nombre de notes manquantes (plus petit = mieux)
+    const missingNotes = chordNotes.length - baseNotes.length;
+    
+    const matchData = {
+      name,
+      ...chord,
+      rootNote,
+      hasLowestAsRoot,
+      isExactMatch,
+      missingNotes,
+      totalNotes: chordNotes.length
+    };
+    
+    if (hasLowestAsRoot) {
+      matchesWithLowestAsRoot.push(matchData);
+    } else {
+      matchesWithoutLowestAsRoot.push(matchData);
     }
   }
   
-  if (matches.length > 0) {
-    // Trier d'abord par si la basse correspond, puis par score
-    matches.sort((a, b) => {
-      if (a.hasLowestAsRoot !== b.hasLowestAsRoot) {
-        return a.hasLowestAsRoot ? -1 : 1;
-      }
-      return a.matchScore - b.matchScore;
-    });
-    return mapChordToPlayedNotes(matches[0]);
+  // Fonction de tri : exactes d'abord, puis par nombre de notes manquantes, puis par nombre total de notes
+  const sortMatches = (a, b) => {
+    // 1. Correspondances exactes d'abord
+    if (a.isExactMatch !== b.isExactMatch) {
+      return a.isExactMatch ? -1 : 1;
+    }
+    // 2. Moins de notes manquantes = mieux
+    if (a.missingNotes !== b.missingNotes) {
+      return a.missingNotes - b.missingNotes;
+    }
+    // 3. Moins de notes au total = mieux (accord plus simple)
+    return a.totalNotes - b.totalNotes;
+  };
+  
+  // PRIORITÉ 1 : Accords avec la note la plus basse comme fondamentale
+  if (matchesWithLowestAsRoot.length > 0) {
+    matchesWithLowestAsRoot.sort(sortMatches);
+    return mapChordToPlayedNotes(matchesWithLowestAsRoot[0]);
+  }
+  
+  // PRIORITÉ 2 : Autres accords (seulement si aucun avec la basse comme fondamentale)
+  if (matchesWithoutLowestAsRoot.length > 0) {
+    matchesWithoutLowestAsRoot.sort(sortMatches);
+    return mapChordToPlayedNotes(matchesWithoutLowestAsRoot[0]);
   }
   
   return { 
