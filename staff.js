@@ -1,9 +1,9 @@
-// staff.js v2.10 - Dessin de la portée musicale [BUILD 20241122-SAMSUNG-IOS-FIX]
-// Corrections v2.10 :
-// - Clé de sol sur iPhone : 160 (x2 car elle était trop petite)
-// - Clé de sol sur Samsung Internet Browser : 21 (÷2 car elle était trop grande)
+// staff.js v2.11 - Dessin de la portée musicale [BUILD 20241122-SAMSUNG-IOS-FIX-V2]
+// Corrections v2.11 :
+// - Clé de sol sur iPhone : 80
+// - Clé de sol sur Samsung Internet Browser : 42
 // - Détection spécifique pour Samsung Browser via navigator.userAgent
-// - Cinq tailles : iOS (160), Samsung (21), Android Phone (42), Tablet (42), PC (58)
+// - Cinq tailles : iOS (80), Samsung (42), Android Phone (42), Tablet (42), PC (58)
 // Corrections v2.7 :
 // - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+8)
 // - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
@@ -488,17 +488,17 @@ function drawTrebleClef(svg, x, y) {
   console.log('Is Tablet:', isTablet);
   
   if (isIOS) {
-    // iPhone/iPad : taille 160 (multipliée par 2 car trop petite)
-    const yPos = y + 18;
+    // iPhone/iPad : taille 80
+    const yPos = y + 12;
     clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '160');
-    console.log('iOS MODE: y=' + yPos + ', font-size=160');
+    clef.setAttribute('font-size', '80');
+    console.log('iOS MODE: y=' + yPos + ', font-size=80');
   } else if (isSamsungBrowser && isAndroid) {
-    // Samsung Internet Browser : taille 21 (divisée par 2 car trop grande)
-    const yPos = y + 7;
+    // Samsung Internet Browser : taille 42
+    const yPos = y + 10;
     clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '21');
-    console.log('SAMSUNG BROWSER MODE: y=' + yPos + ', font-size=21');
+    clef.setAttribute('font-size', '42');
+    console.log('SAMSUNG BROWSER MODE: y=' + yPos + ', font-size=42');
   } else if (isPhone || (isAndroid && screenWidth <= 768)) {
     // Petits mobiles Android : taille normale 42
     const yPos = y + 10;
