@@ -557,7 +557,8 @@ function getPlayedNoteFrenchName(playedNote, chord) {
   // Chercher la note dans l'accord en utilisant la comparaison enharmonique
   for (let i = 0; i < chord.notesWithOctave.length; i++) {
     const chordNote = chord.notesWithOctave[i];
-    const chordNoteName = chordNote.noteForKeyboard || chordNote.note;
+    // Utiliser displayNote qui contient la vraie enharmonie de l'accord (Bb, B#, etc.)
+    const chordNoteName = chordNote.displayNote || chordNote.note;
     const chordSemitone = noteToSemitone(chordNoteName);
     
     // Comparer les semitones pour gérer l'enharmonie
@@ -572,11 +573,19 @@ function getPlayedNoteFrenchName(playedNote, chord) {
 function updateDisplay(chordExists = null, forcedChordName = null) {
   const playedNotesDiv = document.getElementById('playedNotes');
   
+  // Détecter l'accord en premier pour pouvoir l'utiliser partout
   let currentChord = null;
   if (quizMode && quizChord) {
     currentChord = quizChord;
   } else if (lastSelectedChordName) {
     currentChord = ALL_CHORDS[lastSelectedChordName];
+  } else if (playedNotes.length > 0) {
+    // Détecter l'accord depuis les notes jouées
+    currentChord = detectChord(playedNotes);
+    // Ne garder que si c'est un accord reconnu
+    if (currentChord && currentChord.name === 'Inconnu') {
+      currentChord = null;
+    }
   }
   
   // Déterminer si les notes ont été jouées manuellement ou générées automatiquement
@@ -592,10 +601,10 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      // CORRECTION v2.1 : utiliser noteForKeyboard pour la comparaison
+      // Utiliser displayNote pour avoir la bonne enharmonie
       const chordNotes = quizMode 
-        ? quizChord.notesWithOctave.map(n => n.noteForKeyboard || n.note)
-        : currentChord.notesWithOctave.map(n => n.noteForKeyboard || n.note);
+        ? quizChord.notesWithOctave.map(n => n.displayNote || n.note)
+        : currentChord.notesWithOctave.map(n => n.displayNote || n.note);
       const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
       
       // Trier les notes jouées par ordre croissant de hauteur
@@ -651,14 +660,8 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
 
   updateKeyboardHighlight(playedNotes);
 
-  let chord = null;
-  if (quizMode && quizChord) {
-    chord = quizChord;
-  } else if (lastSelectedChordName) {
-    chord = ALL_CHORDS[lastSelectedChordName];
-  } else {
-    chord = detectChord(playedNotes);
-  }
+  // Utiliser l'accord déjà détecté plus haut
+  const chord = currentChord;
   
   // Afficher le bouton play si un accord est détecté (même depuis le clavier)
   const playBtn = document.getElementById('playChordBtn');
