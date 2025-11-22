@@ -1,7 +1,7 @@
-// staff.js v2.8 - Dessin de la portée musicale [BUILD 20241108-6-IPHONE-FIX]
-// Corrections v2.8 :
-// - Clé de sol agrandie sur iPhone (font-size: 50, y+9) pour être mieux visible
-// - Trois tailles responsives : Phone (≤480px: 50), Tablet (≤1024px: 42), PC (>1024px: 58)
+// staff.js v2.9 - Dessin de la portée musicale [BUILD 20241122-IPHONE-CLEF-FIX]
+// Corrections v2.9 :
+// - Clé de sol encore agrandie sur iPhone (font-size: 80, y+12) pour être bien visible (environ 2x plus grande)
+// - Trois tailles responsives : Phone (≤480px: 80), Tablet (≤1024px: 42), PC (>1024px: 58)
 // Corrections v2.7 :
 // - Clé de sol agrandie sur PC (font-size: 58, y+9) et mobile (font-size: 38, y+8)
 // - Position de la clé ajustée pour centrer la spirale sur la 2ème ligne EN PARTANT DU BAS (Sol) = staffY + 3 * lineSpacing
@@ -479,11 +479,11 @@ function drawTrebleClef(svg, x, y) {
   console.log('Is Tablet:', isTablet);
   
   if (isPhone) {
-    // iPhone et petits mobiles : taille 50 (augmentée de 38 à 50)
-    const yPos = y + 9;
+    // iPhone et petits mobiles : taille 80 (environ deux fois plus grande)
+    const yPos = y + 12;
     clef.setAttribute('y', yPos);
-    clef.setAttribute('font-size', '50');
-    console.log('PHONE MODE: y=' + yPos + ', font-size=50');
+    clef.setAttribute('font-size', '80');
+    console.log('PHONE MODE: y=' + yPos + ', font-size=80');
   } else if (isTablet) {
     // Tablette : taille 42
     const yPos = y + 10;
