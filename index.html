@@ -4,8 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light only">
-  <meta name="theme-color" content="#0a0e1a">
+  <meta name="theme-color" content="#22c55e">
   <meta name="supported-color-schemes" content="light">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Jazz Chords">
+  <link rel="apple-touch-icon" href="icons/icon-152.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-72.png">
   <!-- Forcer le mode clair sur Samsung Internet Browser -->
   <style>
     :root {
@@ -206,5 +215,29 @@
   <script src="staff.js?v=2.8"></script>
   <script src="ui.js?v=2.8"></script>
   <script src="app.js?v=2.8"></script>
+  <script>
+    // Enregistrement du Service Worker pour PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker enregistré:', registration.scope);
+            
+            // Vérifier les mises à jour
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔄 Nouvelle version disponible');
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.log('❌ Erreur Service Worker:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
