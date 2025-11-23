@@ -19,7 +19,9 @@ const ASSETS_TO_CACHE = [
   './icons/icon-152.png',
   './icons/icon-192.png',
   './icons/icon-384.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './screenshots/screenshot-main.webp',
+  './screenshots/screenshot-help.webp'
 ];
 
 // Ressources externes à mettre en cache

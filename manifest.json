@@ -58,5 +58,21 @@
     }
   ],
   "categories": ["education", "music"],
-  "lang": "fr-FR"
+  "lang": "fr-FR",
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot-main.webp",
+      "sizes": "900x2000",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Écran principal - Construction d'accords"
+    },
+    {
+      "src": "screenshots/screenshot-help.webp",
+      "sizes": "900x2000",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Mode d'emploi"
+    }
+  ]
 }
