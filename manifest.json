@@ -1,10 +1,10 @@
 {
-  "id": "/?homescreen=1",
+  "id": "/jazzchords/",
   "name": "Jazz Chords - Accords de Jazz",
   "short_name": "Jazz Chords",
   "description": "Apprenez et reconnaissez les accords de jazz",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/jazzchords/",
+  "scope": "/jazzchords/",
   "display": "standalone",
   "background_color": "#0a0e1a",
   "theme_color": "#22c55e",
