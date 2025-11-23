@@ -1,9 +1,10 @@
 {
-  "id": "jazz-chords-app",
+  "id": "/?homescreen=1",
   "name": "Jazz Chords - Accords de Jazz",
   "short_name": "Jazz Chords",
   "description": "Apprenez et reconnaissez les accords de jazz",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0e1a",
   "theme_color": "#22c55e",
