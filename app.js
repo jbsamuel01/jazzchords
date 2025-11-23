@@ -625,11 +625,18 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
     if (playedNotes.length === 0) {
       playedNotesDiv.innerHTML = '<span class="empty-state">Aucune</span>';
     } else {
-      // Utiliser displayNote pour avoir la bonne enharmonie
-      const chordNotes = quizMode 
-        ? quizChord.notesWithOctave.map(n => n.displayNote || n.note)
-        : currentChord.notesWithOctave.map(n => n.displayNote || n.note);
-      const playedBaseNotes = playedNotes.map(n => n.replace(/[0-9]/g, ''));
+      // Calculer les touches attendues du clavier (SANS octave)
+      // Pour C7#5b13 : [C, E, G#, A#, G#] (G# apparaît 2 fois car G# et Ab)
+      const chordForValidation = quizMode ? quizChord : currentChord;
+      const expectedKeysNoOctave = chordForValidation.notesWithOctave.map(n => 
+        n.noteForKeyboard || n.note
+      );
+      
+      // Copie pour le suivi des touches consommées
+      const remainingKeys = [...expectedKeysNoOctave];
+      
+      // Notes de l'accord pour l'affichage français
+      const chordNotes = chordForValidation.notesWithOctave.map(n => n.displayNote || n.note);
       
       // Trier les notes jouées par ordre croissant de hauteur
       const sortedPlayedNotes = sortNotesByPitch(playedNotes);
@@ -638,11 +645,20 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
       
       const notesHTML = sortedPlayedNotes
         .map(note => {
-          const noteName = note.replace(/[0-9]/g, '');
           const noteFr = getPlayedNoteFrenchName(note, currentChord);
+          const playedKeyNoOctave = note.replace(/[0-9]/g, ''); // Extraire la touche sans octave
           
-          // Utiliser la comparaison enharmonique au lieu de includes()
-          const isCorrect = isEnharmonicallyIncluded(noteName, chordNotes);
+          // Vérifier si cette touche (sans octave) est dans les touches restantes de l'accord
+          const keyIndex = remainingKeys.indexOf(playedKeyNoOctave);
+          let isCorrect = false;
+          
+          if (keyIndex !== -1) {
+            // Touche trouvée et non encore consommée → correcte
+            isCorrect = true;
+            remainingKeys.splice(keyIndex, 1); // Consommer cette touche
+          }
+          // Si non trouvée → incorrecte (doublon ou note hors accord)
+          
           const colorClass = isCorrect ? 'correct' : 'incorrect';
           
           if (!isCorrect) {
@@ -653,9 +669,9 @@ function updateDisplay(chordExists = null, forcedChordName = null) {
         })
         .join(' ');
       
-      // Vérifier que toutes les notes de l'accord ont été jouées (avec enharmonie)
-      const allNotesFound = chordNotes.every(note => isEnharmonicallyIncluded(note, playedBaseNotes));
-      const perfectMatch = allNotesFound && allCorrect && playedBaseNotes.length === chordNotes.length;
+      // Vérifier que toutes les notes de l'accord ont été jouées
+      const allNotesFound = remainingKeys.length === 0;
+      const perfectMatch = allNotesFound && allCorrect && sortedPlayedNotes.length === expectedKeysNoOctave.length;
       
       // Afficher le pouce seulement si les notes ont été jouées manuellement
       if (perfectMatch && (!chordNotesVisible || quizMode)) {
