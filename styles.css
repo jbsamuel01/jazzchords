@@ -122,7 +122,6 @@ body {
 
 .chord-notes-message {
   display: inline;
-}
   flex-wrap: wrap;
 }
 
@@ -350,8 +349,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #374151;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #374151;
 }
 
 .white-keys {
